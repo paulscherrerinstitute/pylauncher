@@ -573,7 +573,7 @@ if __name__ == '__main__':
                 text-align:left;
             }
         """)
-    launcherWindow = LauncherWindow("F_L2.menu")
+    launcherWindow = LauncherWindow(sys.argv[1])
     launcherWindow.setGeometry(0, 0, 150, 0)
     launcherWindow.show()
     sys.exit(app.exec_())
