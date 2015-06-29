@@ -9,11 +9,18 @@ from PyQt4.QtCore import pyqtSlot, Qt
 
 class LauncherMenuModel:
     """
-    LauncherMenuModel parses the configuration file and builds the listof
+    LauncherMenuModel parses the configuration file and builds the list of
     menu items. Each LauncherMenuModel object holds only a list of items
     defined in its configuration file. If submenu is needed, new
     LauncherMenuModel object is created and its reference is stored on the
     calling object list menuItems.
+
+    Each menu has:
+        _items
+        mainTitle: holding the title of the menu
+        list of menuItems: list of all LauncherMenuModelItems
+        TODO: in future it will also hold the styles, levels and list of
+        possible pictures on the buttons
     """
 
     def __init__(self, filePath):
@@ -23,14 +30,6 @@ class LauncherMenuModel:
         # simple text files with list of tuples.
 
         self._cfg = eval(self._cfgFile.read())
-        """
-        Each menu has:_items
-          mainTitle: holding the title of the menu
-          list of menuItems: list of all LauncherMenuModelItems
-          TODO: in future it will also hold the styles, levels and list of
-                possible pictures on the buttons
-        """
-
         self.menuItems = list()
         for tuple in self._cfg:
             if tuple[0] == "main-title":
