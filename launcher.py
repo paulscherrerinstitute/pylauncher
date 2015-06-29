@@ -447,7 +447,9 @@ class LauncherItemSeparator(QtGui.QFrame):
     itemType = "separator"
 
     def __init__(self, style=None, key=None):
-        LauncherMenuModelItem.__init__(self, None, style, key)
+        QtGui.QFrame.__init__(self, None, style, key)
+        self.setFrameStyle(QFrame.HLine | QFrame.Plain)
+        self.setLineWidth(2)
 
 
 class LauncherMenuTitle(QtGui.QLabel):
