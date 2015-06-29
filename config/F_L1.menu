@@ -14,6 +14,7 @@
 ("cmd","Orbit Correction","ls"),
 ("cmd", "Multi Quad Scan","ls"),
 ("cmd","MotusGUI","ls"),
+#("separator")
 ("title","Utillities"),
 ("cmd","Remote network access control by control room","ll"),
 ("menu","Strip Tool","./config/F_L2.menu")
