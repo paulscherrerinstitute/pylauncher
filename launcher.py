@@ -8,6 +8,7 @@ from PyQt4.QtCore import pyqtSlot, Qt
 
 
 class LauncherMenuModel:
+
     """
     LauncherMenuModel parses the configuration file and builds the list of
     menu items. Each LauncherMenuModel object holds only a list of items
@@ -44,7 +45,7 @@ class LauncherMenuModel:
                 self._menuItem = LauncherTitleItem(tuple[1])
                 self.menuItems.append(self._menuItem)
             elif tuple[0] == "separator":
-                self._menuItem = LauncherItemSeparator(tuple[1], tuple[2])
+                self._menuItem = LauncherItemSeparator()
                 self.menuItems.append(self._menuItem)
             elif tuple[0] == "file-choice":
                 self._menuItem = LauncherFileChoiceItem(tuple[1], tuple[2])
@@ -57,6 +58,7 @@ class LauncherMenuModel:
 
 
 class LauncherMenuModelItem:
+
     """
     LauncherMenuModelItem is a parent super class for menu items that needs
     to be visualized, such as menu buttons, separators, titles. It implements
@@ -70,7 +72,18 @@ class LauncherMenuModelItem:
         self.key = key
 
 
+class LauncherItemSeparator(LauncherMenuModelItem):
+
+    """Special LauncherMenuModelItem, with no text, style or help."""
+
+    itemType = "separator"
+
+    def __init__(self, key=None):
+        LauncherMenuModelItem.__init__(self, text=None, style=None, key=key)
+
+
 class LauncherCmdItem(LauncherMenuModelItem):
+
     """
     LauncherCmdItem holds the shell command together with its arguments.
     """
@@ -84,6 +97,7 @@ class LauncherCmdItem(LauncherMenuModelItem):
 
 
 class LauncherSubMenuItem(LauncherMenuModelItem):
+
     """
     LauncherSubMenuItem builds new menu which is defined in subMenuFile.
     If detach == True this sub-menu should be automaticaly detached if
@@ -100,6 +114,7 @@ class LauncherSubMenuItem(LauncherMenuModelItem):
 
 
 class LauncherFileChoiceItem(LauncherMenuModelItem):
+
     """
     Launcher can be "rebuild" from new root menu file. LauncherFileChoiceItem
     holds the file of the new root menu (rootMenuFile).
@@ -114,6 +129,7 @@ class LauncherFileChoiceItem(LauncherMenuModelItem):
 
 
 class LauncherTitleItem(LauncherMenuModelItem):
+
     """Special LauncherMenuModelItem with no extra parameters."""
 
     itemType = "title"
@@ -123,6 +139,7 @@ class LauncherTitleItem(LauncherMenuModelItem):
 
 
 class LauncherWindow(QtGui.QMainWindow):
+
     """
     Main launcher window. At initialization recursively builds visualisation
     of launcher menus, builds menu bar, ...
@@ -200,6 +217,7 @@ class LauncherWindow(QtGui.QMainWindow):
 
 
 class LauncherMenu(QtGui.QMenu):
+
     """
     Is a parent super class which takes the model of menu as an argument and
     builds a "vital" part of the menu. It aslo implements methods for menu
@@ -215,17 +233,16 @@ class LauncherMenu(QtGui.QMenu):
 
         for item in self.menuModel.menuItems:
             if item.itemType == "cmd":
-                self._button = LauncherCmdButton(item, self)
-                self.addToMenu(self._button)
+                self.addToMenu(LauncherCmdButton(item, self))
 
             elif item.itemType == "menu":
-                # Make new menu and append its reference to the button.
-                self._button = LauncherMenuButton(item, self)
-                self.addToMenu(self._button)
+                self.addToMenu(LauncherMenuButton(item, self))
 
             elif item.itemType == "title":
-                self._button = LauncherMenuTitle(item, self)
-                self.addToMenu(self._button)
+                self.addToMenu(LauncherMenuTitle(item, self))
+
+            elif item.itemType == "separator":
+                self.addAction(LauncherSeparator(item, self))
 
     def addToMenu(self, widget):
         """Create widget action for widget. Pair them and add to the menu."""
@@ -336,6 +353,7 @@ class LauncherMenu(QtGui.QMenu):
 
 
 class LauncherSubMenu(LauncherMenu):
+
     """
     Implements a visualization of the menu when used as a sub menu. Popuped
     from the main menu or button.
@@ -371,6 +389,7 @@ class LauncherSubMenu(LauncherMenu):
 
 
 class LauncherDetachedMenu(LauncherMenu):
+
     """
     Creates detached menu. It adds find/search input. It also overrides the
     hide() method of the menu, because it should not be hidden  when action
@@ -408,6 +427,7 @@ class LauncherDetachedMenu(LauncherMenu):
 
 
 class LauncherMenuWidgetAction(QtGui.QWidgetAction):
+
     """
     When QWidget needs to be appended to QMenu it must be "wrapped" into
     QWidgetAction. This class "wrapps" LauncherButton in the smae way.
@@ -428,6 +448,7 @@ class LauncherMenuWidgetAction(QtGui.QWidgetAction):
 
 
 class LauncherSearchWidget(QtGui.QLineEdit):
+
     """
     LauncherSearchWidget is QLineEdit which does filtering of menu items
     recursevly by putting the filter  to child menus. When enter button is
@@ -441,18 +462,19 @@ class LauncherSearchWidget(QtGui.QLineEdit):
         self.textChanged.connect(lambda: menu.filterMenu(self.text()))
 
 
-class LauncherItemSeparator(QtGui.QFrame):
-    """Special LauncherMenuModelItem, with no text or help."""
+class LauncherSeparator(QtGui.QAction):
+
+    """It is a normal separator with a key option (key TODO)."""
 
     itemType = "separator"
 
-    def __init__(self, style=None, key=None):
-        QtGui.QFrame.__init__(self, None, style, key)
-        self.setFrameStyle(QFrame.HLine | QFrame.Plain)
-        self.setLineWidth(2)
+    def __init__(self, itemModel, parent=None):
+        QtGui.QAction.__init__(self, parent)
+        self.setSeparator(True)
 
 
 class LauncherMenuTitle(QtGui.QLabel):
+
     """Passive element with no action and no key focus."""
 
     itemType = "title"
@@ -463,6 +485,7 @@ class LauncherMenuTitle(QtGui.QLabel):
 
 
 class LauncherButton(QtGui.QPushButton):
+
     """
     Parent class for all active menu items. To recreate th enative menu
     behaviour (when QActions are used) this class also handles keyboard
@@ -504,6 +527,7 @@ class LauncherButton(QtGui.QPushButton):
 
 
 class LauncherDetachButton(LauncherButton):
+
     """
     LauncherDetachButton is always shown as first item of popup menu. It
     builds new LauncherMenu from the model of parent menu and opens it in
@@ -514,11 +538,21 @@ class LauncherDetachButton(LauncherButton):
 
     def __init__(self, parent=None):
         LauncherButton.__init__(self, parent)
-        self.setStyleSheet("height: 2px")
+        self.setStyleSheet("""
+            QPushButton{
+                height: 2px;
+                background-color: #666666
+            }
+            QPushButton:focus {
+                background-color: #bdbdbd;
+                outline: none
+            }
+        """)
         self.clicked.connect(parent.detach)
 
 
 class LauncherNamedButton(LauncherButton):
+
     """
     LauncherNamedButton is a parent class to all buttons with  label (text)
     """
@@ -529,6 +563,7 @@ class LauncherNamedButton(LauncherButton):
 
 
 class LauncherFileChoiceButton(LauncherNamedButton):
+
     """
     LauncherFileChoiceButton causes the launcher to change the root menu and
     sets new view.
@@ -553,6 +588,7 @@ class LauncherFileChoiceButton(LauncherNamedButton):
 
 
 class LauncherCmdButton(LauncherNamedButton):
+
     """LauncherCmdButton executes shell command. """
 
     itemType = "cmd"
@@ -569,6 +605,7 @@ class LauncherCmdButton(LauncherNamedButton):
 
 
 class LauncherMenuButton(LauncherNamedButton):
+
     """
     LauncherMenuButton builds new menu from model. When pressed the menu is
     popuped up.
@@ -619,8 +656,16 @@ if __name__ == '__main__':
                 padding: 4px;
                 text-align:left;
             }
+            QMenu {
+                background-color: #e9e9e9
+            }
+            QMenu::separator {
+                height: 1px;
+                background: b0b0b0;
+            }
         """)
     launcherWindow = LauncherWindow(sys.argv[1])
     launcherWindow.setGeometry(0, 0, 150, 0)
     launcherWindow.show()
     sys.exit(app.exec_())
+

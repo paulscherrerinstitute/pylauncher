@@ -3,6 +3,7 @@
 ("file-choice","load F_L1","./config/F_L1.menu"),
 ("title","Striptool"),
 ("cmd","Strip Tool Generic","pwd"),
+("separator",""),
 ("cmd","RF Startup","ls"),
 ("cmd","RF Conditioning","ls"),
 ]
