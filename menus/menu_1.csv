@@ -1,0 +1,21 @@
+main-title,"F_L1"
+
+# Test comment
+file-choice,"Load F_L2","menu_2.csv"
+title,"General"
+cmd,"Who is online?", "pwd"
+title,"HighLevel Applications"
+cmd,"ScreenMonitorTool","pwd"
+cmd,"QE Measurement","pwd"
+cmd,"Compressor","pwd"
+cmd,"ScanAppEasy","ls"
+cmd,"ScanAppPro (beta)","ls"
+cmd,"ScanToolTwo", "pwd"
+cmd,"Schottky Scan","ls"
+cmd,"Orbit Correction","ls"
+cmd,"Multi Quad Scan","ls"
+cmd,"MotusGUI","ls"
+separator
+title,"Utillities"
+cmd,"Remote network access control by control room", "ll"
+menu,"Strip Tool","menu_2.csv"

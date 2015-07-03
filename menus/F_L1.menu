@@ -1,6 +1,6 @@
 [
 ("main-title","F_L1"),
-("file-choice","Load F_L2","./config/F_L2.menu"),
+("file-choice","Load F_L2","F_L2.menu"),
 ("title","General"),
 ("cmd","Who is online?","pwd"),
 ("title","HighLevel Applications"),
@@ -17,5 +17,5 @@
 ("separator",""),
 ("title","Utillities"),
 ("cmd","Remote network access control by control room","ll"),
-("menu","Strip Tool","./config/F_L2.menu")
+("menu","Strip Tool","F_L2.menu")
 ]
