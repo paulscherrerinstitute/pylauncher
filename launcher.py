@@ -3,6 +3,7 @@
 import sys
 import os
 import argparse
+import csv
 
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import pyqtSlot, Qt
@@ -26,59 +27,106 @@ class LauncherMenuModel:
         possible pictures on the buttons
     """
 
-    def __init__(self, menuFilePath, launcherCfg):
+    def __init__(self, menuFile, launcherCfg):
 
-        # File format specific. For testing the configuration files are just
-        # simple text files with list of tuples.
-        menuFilePath = launcherCfg["LAUNCHER_BASE"] + "/" + menuFilePath
-        self.menuItems = self._parseSimple(menuFilePath, launcherCfg)
-        #self.menuItems = self._(menuFilePath, launcherCfg)
+        # Parses comma separated files of defined format. Parser adds menu
+        # objects to self.menuItems list.
+
+        self.menuItems = list()
+        self._parseCsv(menuFile, launcherCfg)
 
     def getItemsOfType(self, itemsType):
         """Returns a list of all items of specified type."""
 
         return filter(lambda x: x.itemType == itemsType, self.menuItems)
 
-    #def _parseCvs(self, menuFilePath, launcherCfg):
+    def _parseCsv(self, menuFile, launcherCfg):
+        """Parses .csv Menu file and builds model.
 
+        For each line checks if:
+            -type of entry is valid
+            -has enough attributes
+            -if files exists (for submenus, and file-choice)
 
-
-    def _parseSimple(self, menuFilePath, launcherCfg):
-        """This is testing parser.
-        Parses files which are simply a list of tuples. No error checking. Will
-        be removed in final version.
+        Returns detailed error message and stops the program.
         """
 
-        try:
-            _menuFile = open(menuFilePath, 'r')
-        except IOError:
-            _errMsg = "Error: File \"" + menuFilePath + "\" cannot be found."
+        _parsed = list(csv.reader(menuFile, delimiter=","))
+        _menu = list(_parsed)
+        self.menuItems = list()
+        _i = 1
+        for _item in _menu:
+            # Ignore comments and empty lines
+
+            if _item and not _item[0].strip().startswith("#"):
+                # Check item types and if they have enough arguments. Then
+                # concentrate parameters with config file properties.
+
+                _itemType = _item[0].strip()
+                if _itemType == "main-title":
+                    self.mainTitle = _item[1]
+                elif _itemType == "cmd":
+                    self._checkItemFormat(_item, 3, menuFile.name, _i)
+                    _menuItem = LauncherCmdItem(
+                        launcherCfg, _item[1], _item[2])
+                    self.menuItems.append(_menuItem)
+                elif _itemType == "menu":
+                    self._checkItemFormat(_item, 3, menuFile.name, _i)
+                    try:
+                        _subMenuFile = open(launcherCfg["LAUNCHER_BASE"] +
+                                            _item[2].strip())
+                    except IOError:
+                        _errMsg = "ParseErr:" + menuFile.name + \
+                            " (line " + str(_i) + "): File \"" + \
+                            _item[2].strip() + "\" not found."
+                        sys.exit(_errMsg)
+
+                    _menuItem = LauncherSubMenuItem(
+                        launcherCfg, _item[1], _subMenuFile)
+                    _subMenuFile.close()
+                    self.menuItems.append(_menuItem)
+                elif _itemType == "title":
+                    self._checkItemFormat(_item, 2, menuFile.name, _i)
+                    _menuItem = LauncherTitleItem(_item[1])
+                    self.menuItems.append(_menuItem)
+
+                elif _itemType == "separator":
+                    _menuItem = LauncherItemSeparator()
+                    self.menuItems.append(_menuItem)
+
+                elif _itemType == "file-choice":
+                    self._checkItemFormat(_item, 3, menuFile.name, _i)
+                    # Do not open file just check if exists. Will be opened,
+                    # in LauncherWindow._buildMenuModel
+
+                    if not os.path.isfile(launcherCfg["LAUNCHER_BASE"] +
+                                          _item[2].strip()):
+                        _errMsg = "ParseErr:" + menuFile.name + \
+                            " (line " + str(_i) + "): File \"" + \
+                            _item[2].strip() + "\" not found."
+                        sys.exit(_errMsg)
+                    _menuItem = LauncherFileChoiceItem(
+                        launcherCfg, _item[1], _item[2])
+                    self.menuItems.append(_menuItem)
+                else:
+                    _errMsg = "ParseErr:" + menuFile.name + " (line " + \
+                        str(_i) + "): Unknown type \"" + _item[0].strip() + \
+                        "\"."
+                    sys.exit(_errMsg)
+            _i += 1
+
+    def _checkItemFormat(self, item, minLength, fileName, line):
+        """ Checks item format
+
+        For now checks only number of attributes. When optional parameters will
+        be implemented this function will be smarter.
+        """
+        
+        if not len(item) >= minLength:
+            _errMsg = "ParseErr:" + fileName + " (line " + str(line) + \
+                "): \"" + item[0].strip() + "\" requires at least " + \
+                str(minLength-1) + " attributes."
             sys.exit(_errMsg)
-
-        _cfg = eval(_menuFile.read())
-        _menuFile.close()
-
-        menuItems = list()
-        for tuple in _cfg:
-            if tuple[0] == "main-title":
-                self.mainTitle = tuple[1]
-            elif tuple[0] == "cmd":
-                _menuItem = LauncherCmdItem(launcherCfg, tuple[1], tuple[2])
-                menuItems.append(_menuItem)
-            elif tuple[0] == "menu":
-                _menuItem = LauncherSubMenuItem(launcherCfg, tuple[1],
-                                                tuple[2])
-                menuItems.append(_menuItem)
-            elif tuple[0] == "title":
-                _menuItem = LauncherTitleItem(tuple[1])
-                menuItems.append(_menuItem)
-            elif tuple[0] == "separator":
-                _menuItem = LauncherItemSeparator()
-                menuItems.append(_menuItem)
-            elif tuple[0] == "file-choice":
-                _menuItem = LauncherFileChoiceItem(launcherCfg, tuple[1], tuple[2])
-                menuItems.append(_menuItem)
-        return menuItems
 
 
 class LauncherMenuModelItem:
@@ -134,7 +182,6 @@ class LauncherSubMenuItem(LauncherMenuModelItem):
                  helpLink=None, detach=False, key=None):
         LauncherMenuModelItem.__init__(self, text, style, key)
         self.subMenu = LauncherMenuModel(subMenuFile, launcherCfg)
-        self.detach = detach
 
 
 class LauncherFileChoiceItem(LauncherMenuModelItem):
@@ -150,7 +197,7 @@ class LauncherFileChoiceItem(LauncherMenuModelItem):
     def __init__(self, launcherCfg, text=None, rootMenuFile=None, style=None,
                  helpLink=None, key=None):
         LauncherMenuModelItem.__init__(self, text, style, key)
-        self.rootMenuFile = self.cmd = launcherCfg["cmd"] + rootMenuFile
+        self.rootMenuFile = launcherCfg["cmd"] + rootMenuFile
 
 
 class LauncherTitleItem(LauncherMenuModelItem):
@@ -173,11 +220,17 @@ class LauncherWindow(QtGui.QMainWindow):
 
     def __init__(self, rootFilePath, cfgFilePath, parent=None):
         QtGui.QMainWindow.__init__(self, parent)
-        self.launcherCfg = self._parseLauncherCfg(cfgFilePath)
+        try:
+            _cfgFile = open(cfgFilePath)  # Catch exception outside.
+        except IOError:
+            _errMsg = "Err: Configuration file \"" + cfgFilePath + \
+                "\" not found."
+            sys.exit(_errMsg)
+        self.launcherCfg = self._parseLauncherCfg(_cfgFile)
 
         # Build menu model from rootMenuFile and set general parameters.
         self._menuModel = self._buildMenuModel(rootFilePath)
-        
+
         self.setWindowTitle(self._menuModel.mainTitle)
         # QMainWindow has predefined layout. Content should be in the central
         # widget. Create widget with a QVBoxLayout and set it as central.
@@ -236,16 +289,20 @@ class LauncherWindow(QtGui.QMainWindow):
                 self.isActiveWindow():
             self._searchInput.setFocus()
 
-    def _buildMenuModel(self, rootMenuFile):
+    def _buildMenuModel(self, rootMenuPath):
         """Return model of a menu defined in rootMenuFile."""
-
-        return LauncherMenuModel(rootMenuFile, self.launcherCfg)
-
-    def _parseLauncherCfg(self, cfgFilePath):
+        _rootMeniFullPath = self.launcherCfg["LAUNCHER_BASE"] + \
+            "/" + rootMenuPath
         try:
-            cfgFile = open(cfgFilePath)  # Catch exception outside.
+            _rootMenuFile = open(_rootMeniFullPath)
         except IOError:
-            raise
+            _errMsg = "Err: File \"" + rootMenuPath + "\" not found."
+            sys.exit(_errMsg)
+        _rootMenu = LauncherMenuModel(_rootMenuFile, self.launcherCfg)
+        _rootMenuFile.close()
+        return _rootMenu
+
+    def _parseLauncherCfg(self, cfgFile):
         valid = ["cmd", "LAUNCHER_BASE"]
         cfg = dict()
         i = 0
@@ -281,13 +338,10 @@ class LauncherMenu(QtGui.QMenu):
         for item in self.menuModel.menuItems:
             if item.itemType == "cmd":
                 self.appendToMenu(LauncherCmdButton(item, self))
-
             elif item.itemType == "menu":
                 self.appendToMenu(LauncherMenuButton(item, self))
-
             elif item.itemType == "title":
                 self.appendToMenu(LauncherMenuTitle(item, self))
-
             elif item.itemType == "separator":
                 self.addAction(LauncherSeparator(item, self))
 
@@ -326,7 +380,8 @@ class LauncherMenu(QtGui.QMenu):
         for action in self.actions():
             _widget = action.defaultWidget()
             _type = _widget.itemType
-            if not filterTerm:  # Empty filter. Show all.
+            if not filterTerm:
+                # Empty filter. Show all, but handle separator differently.
                 action.setVisibility(True)
                 _hasVisible = True
             elif _type is "search" or _type is "detach":
@@ -695,7 +750,7 @@ if __name__ == '__main__':
                           help="Launcher menu file.")
     argsPars.add_argument('config',
                           help='Launcher configuration file')
-    #argsPars.add_argument('LAUNCHER_BASE',
+    # argsPars.add_argument('LAUNCHER_BASE',
     #                      help='Directory containing launcher menus \
     #                      specifications.')
 

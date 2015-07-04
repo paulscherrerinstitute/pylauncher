@@ -14,7 +14,7 @@ cmd,"ScanToolTwo", "pwd"
 cmd,"Schottky Scan","ls"
 cmd,"Orbit Correction","ls"
 cmd,"Multi Quad Scan","ls"
-cmd,"MotusGUI","ls"
+cmd,"MotusGUI","ls -l"
 separator
 title,"Utillities"
 cmd,"Remote network access control by control room", "ll"
