@@ -778,7 +778,7 @@ if __name__ == '__main__':
             }
             QMenu::separator {
                 height: 1px;
-                background: b0b0b0;
+                background: #b0b0b0;
             }
         """)
 

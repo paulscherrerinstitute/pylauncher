@@ -21,7 +21,7 @@ To configure and run luncher follow steps below.
         launcher.py <name-of-menu-file> <path-to-config-file>
 
     To run the launcher with example configuration run:
-        launcher.py menu_1.csv ./config/config.ini
+        launcher.py F_DI_BAM_BAM3-Main.csv ./config/config.ini
 
     Run "launcher -h" to access the help.
 -----------------------------------------------

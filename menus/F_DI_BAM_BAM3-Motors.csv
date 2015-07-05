@@ -1,0 +1,15 @@
+#-------------------------------------------------------------------- 
+# Concurrent Version System (CVS) Information
+#  
+# $Author: heiniger $ 
+# $Date: 2013/12/05 19:23:57 $ 
+# $Revision: 1.2 $ 
+# $Source: /cvs/F/DI/BAM/App/config/launcher/F_DI_BAM_BAM1-Motors.config,v $ 
+# $State: Exp $ 
+# 
+#-------------------------------------------------------------------- 
+
+cmd,MX80,G_CS_medm -macro "DEVICE=F10D1-DBAM20:MX80" F_DI_BAM_MX80_CONTROL_orig.adl "MX80"
+cmd,LTM80 BAM Rough Delay,start_Motor.sh F10D1-DBAM20: MOT-RDLY 
+cmd,LTM80 BAM Rough Delay Motor Init,G_CS_medm F_DI_BAM_MOTOR_F10D1-DBAM20_MOT-RDLY.adl "LTM80 BAM Rough Delay Motor Init"
+#-------------------------------------------------------------------- 

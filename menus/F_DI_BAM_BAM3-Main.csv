@@ -1,0 +1,19 @@
+#-------------------------------------------------------------------- 
+# Concurrent Version System (CVS) Information
+#  
+# $Author: heiniger $ 
+# $Date: 2013/09/04 08:51:52 $ 
+# $Revision: 1.2 $ 
+# $Source: /cvs/F/DI/BAM/App/config/launcher/F_DI_BAM_BAM3-Main.config,v $ 
+# $State: Exp $ 
+# 
+#-------------------------------------------------------------------- 
+main-title,F_DI_BAM3
+cmd,EDFA1,'G_CS_medm -macro "DEVICE=F10D1-DBAM20:EDFA1" F_DI_BAM_EDFA_CONTROL.adl "EDFA1"'
+cmd,EDFA2,'G_CS_medm -macro "DEVICE=F10D1-DBAM20:EDFA2" F_DI_BAM_EDFA_CONTROL.adl "EDFA2"'
+cmd,Temperatures BAM3,G_CS_medm F_MSCB_FIN-CMSCB-CP11W_Temperatures_Node5_6.adl "Temperatures BAM3"
+menu,Motors,F_DI_BAM_BAM3-Motors.csv
+cmd,Timing,G_CS_medm F_DI_BAM_TIM_F10D1-DBAM-CV20W.adl "Timing"
+cmd,GPAC-ADC,G_CS_medm -macro "DEV=F10D1-DBAM-CV20W,PB=PB1,BAM=BAM1" F_DI_BAM_GPAC_BPM1.adl "GPAC-ADC"
+separator
+cmd,Remote Mains (230V) Control,Remote Mains (230V) ControlG_CS_medm F_REMOTECTRL_GUDE_F10D1-CRG-CP20W.adl "Remote Mains (230V) Control"
