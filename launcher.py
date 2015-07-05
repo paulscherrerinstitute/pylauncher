@@ -543,6 +543,7 @@ class LauncherMenuWidgetAction(QtGui.QWidgetAction):
     def __init__(self, widget, parent=None):
         QtGui.QWidgetAction.__init__(self, parent)
         self.setDefaultWidget(widget)
+        widget.setMyAction(self)  # Let widget know about action.
 
     def setVisibility(self, visibility):
         """Set visibility of both the widget action and the widget."""
@@ -564,6 +565,10 @@ class LauncherSearchWidget(QtGui.QLineEdit):
     def __init__(self, menu, parent=None):
         QtGui.QLineEdit.__init__(self, parent)
         self.textChanged.connect(lambda: menu.filterMenu(self.text()))
+        self._myAction = None
+
+    def setMyAction(self, action):
+        self._myAction = action
 
 
 class LauncherSeparator(QtGui.QAction):
@@ -585,6 +590,10 @@ class LauncherMenuTitle(QtGui.QLabel):
     def __init__(self, itemModel, parent=None):
         QtGui.QLabel.__init__(self, itemModel.text, parent)
         self.setStyleSheet("QLabel { color: blue; }")
+        self._myAction = None
+
+    def setMyAction(self, action):
+        self._myAction = action
 
 
 class LauncherButton(QtGui.QPushButton):
@@ -595,12 +604,18 @@ class LauncherButton(QtGui.QPushButton):
     behavior (when QActions are used) this class also handles keyboard
     events to navigate through the menu.
 
-    Parent of any LauncherButton must be a QMenu.
+    Parent of any LauncherButton must be a QMenu and it must be paired with
+    a LauncherMenuWidgetAction.
     """
 
     def __init__(self, parent=None):
         QtGui.QPushButton.__init__(self, parent)
         self.setMouseTracking(True)
+        self._parent = parent
+        self._myAction = None
+
+    def setMyAction(self, action):
+        self._myAction = action
 
     def keyPressEvent(self, event):
         """Catch key pressed event.
@@ -628,7 +643,8 @@ class LauncherButton(QtGui.QPushButton):
             QtGui.QPushButton.keyPressEvent(self, event)
 
     def mouseMoveEvent(self, event):
-        self.setFocus()  # Set focus when mouse is over.
+        self.setFocus()
+        self._parent.setActiveAction(self._myAction)
 
 
 class LauncherDetachButton(LauncherButton):
