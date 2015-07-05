@@ -368,22 +368,16 @@ class LauncherMenu(QtGui.QMenu):
         _hasVisible = False
         _visible_count = 0
         _last_title = None
-        for action in self.actions():
-            if action.__class__.__name__ != "LauncherSeparator":
+        # Skip first item since it is either search entry or detach button.
+
+        for action in self.actions()[1:len(self.actions())]:
+            if action.__class__.__name__ == "LauncherMenuWidgetAction":
                 _widget = action.defaultWidget()
                 _type = _widget.__class__.__name__
+
             if not filterTerm:
-                # Empty filter. Show all, but handle separator differently.
+                # Empty filter. Show all.
                 action.setVisibility(True)
-                _hasVisible = True
-            elif _type == "LauncherSearchWidget" or \
-                    _type == "LauncherDetachButton":
-                # Filter/search and detach are allway visible.
-
-                action.setVisibility(True)
-
-            elif action.__class__.__name__ == "LauncherSeparator":
-                action.setVisibility(False)
 
             elif _type == "LauncherMenuTitle":
                 # Visible actions below title are counted. If count > 0 then
@@ -410,12 +404,9 @@ class LauncherMenu(QtGui.QMenu):
                 # Filter term is found in the button text. For now filter only
                 # cmd buttons.
 
-                if _type == "LauncherCmdButton":
-                    action.setVisibility(True)
-                    _hasVisible = True
-                    _visible_count += 1
-                else:
-                    action.setVisibility(False)
+                action.setVisibility(True)
+                _hasVisible = True
+                _visible_count += 1
             else:
                 action.setVisibility(False)
 
