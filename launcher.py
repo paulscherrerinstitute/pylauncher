@@ -38,7 +38,8 @@ class LauncherMenuModel:
     def getItemsOfType(self, itemsType):
         """Returns a list of all items of specified type."""
 
-        return filter(lambda x: x.itemType == itemsType, self.menuItems)
+        return filter(lambda x: x.__class__.__name__ ==
+                      itemsType, self.menuItems)
 
     def _parseCsv(self, menuFile, launcherCfg):
         """Parses .csv Menu file and builds model.
@@ -121,7 +122,7 @@ class LauncherMenuModel:
         For now checks only number of attributes. When optional parameters will
         be implemented this function will be smarter.
         """
-        
+
         if not len(item) >= minLength:
             _errMsg = "ParseErr:" + fileName + " (line " + str(line) + \
                 "): \"" + item[0].strip() + "\" requires at least " + \
@@ -149,8 +150,6 @@ class LauncherItemSeparator(LauncherMenuModelItem):
 
     """Special LauncherMenuModelItem, with no text, style or help."""
 
-    itemType = "separator"
-
     def __init__(self, key=None):
         LauncherMenuModelItem.__init__(self, text=None, style=None, key=key)
 
@@ -158,8 +157,6 @@ class LauncherItemSeparator(LauncherMenuModelItem):
 class LauncherCmdItem(LauncherMenuModelItem):
 
     """LauncherCmdItem holds the whole shell command."""
-
-    itemType = "cmd"
 
     def __init__(self, launcherCfg, text=None, cmd=None, style=None, helpLink=None,
                  key=None):
@@ -176,8 +173,6 @@ class LauncherSubMenuItem(LauncherMenuModelItem):
     detachment is supported in view.
     """
 
-    itemType = "menu"
-
     def __init__(self, launcherCfg, text=None, subMenuFile=None, style=None,
                  helpLink=None, detach=False, key=None):
         LauncherMenuModelItem.__init__(self, text, style, key)
@@ -192,8 +187,6 @@ class LauncherFileChoiceItem(LauncherMenuModelItem):
     holds the file of the new root menu (rootMenuFile).
     """
 
-    itemType = "file-choice"
-
     def __init__(self, launcherCfg, text=None, rootMenuFile=None, style=None,
                  helpLink=None, key=None):
         LauncherMenuModelItem.__init__(self, text, style, key)
@@ -203,8 +196,6 @@ class LauncherFileChoiceItem(LauncherMenuModelItem):
 class LauncherTitleItem(LauncherMenuModelItem):
 
     """Text menu separator."""
-
-    itemType = "title"
 
     def __init__(self, text=None, style=None, helpLink=None, key=None):
         LauncherMenuModelItem.__init__(self, text, style, key)
@@ -259,7 +250,7 @@ class LauncherWindow(QtGui.QMainWindow):
         _menuBar = self.menuBar()
         self._fileMenu = QtGui.QMenu("&File", _menuBar)
         self._fileChoiceItems = self._menuModel.getItemsOfType(
-            "file-choice"
+            "LauncherFileChoiceItem"
         )
         for item in self._fileChoiceItems:
             _button = LauncherFileChoiceButton(item, self._fileMenu)
@@ -336,13 +327,13 @@ class LauncherMenu(QtGui.QMenu):
         # from it and add them to the menu.
 
         for item in self.menuModel.menuItems:
-            if item.itemType == "cmd":
+            if item.__class__.__name__ == "LauncherCmdItem":
                 self.appendToMenu(LauncherCmdButton(item, self))
-            elif item.itemType == "menu":
+            elif item.__class__.__name__ == "LauncherSubMenuItem":
                 self.appendToMenu(LauncherMenuButton(item, self))
-            elif item.itemType == "title":
+            elif item.__class__.__name__ == "LauncherTitleItem":
                 self.appendToMenu(LauncherMenuTitle(item, self))
-            elif item.itemType == "separator":
+            elif item.__class__.__name__ == "LauncherItemSeparator":
                 self.addAction(LauncherSeparator(item, self))
 
     def appendToMenu(self, widget):
@@ -378,18 +369,23 @@ class LauncherMenu(QtGui.QMenu):
         _visible_count = 0
         _last_title = None
         for action in self.actions():
-            _widget = action.defaultWidget()
-            _type = _widget.itemType
+            if action.__class__.__name__ != "LauncherSeparator":
+                _widget = action.defaultWidget()
+                _type = _widget.__class__.__name__
             if not filterTerm:
                 # Empty filter. Show all, but handle separator differently.
                 action.setVisibility(True)
                 _hasVisible = True
-            elif _type is "search" or _type is "detach":
+            elif _type == "LauncherSearchWidget" or \
+                    _type == "LauncherDetachButton":
                 # Filter/search and detach are allway visible.
 
                 action.setVisibility(True)
 
-            elif _type is "title":
+            elif action.__class__.__name__ == "LauncherSeparator":
+                action.setVisibility(False)
+
+            elif _type == "LauncherMenuTitle":
                 # Visible actions below title are counted. If count > 0 then
                 # show last title. Then reset counter and store current title
                 # as last.
@@ -399,7 +395,7 @@ class LauncherMenu(QtGui.QMenu):
                 _visible_count = 0
                 _last_title = action
 
-            elif _type is "menu":
+            elif _type == "LauncherMenuButton":
                 # Recursively filter menus. Show only sub-menus that have
                 # visible items.
 
@@ -414,7 +410,7 @@ class LauncherMenu(QtGui.QMenu):
                 # Filter term is found in the button text. For now filter only
                 # cmd buttons.
 
-                if _type is "cmd":
+                if _type == "LauncherCmdButton":
                     action.setVisibility(True)
                     _hasVisible = True
                     _visible_count += 1
@@ -565,8 +561,6 @@ class LauncherSearchWidget(QtGui.QLineEdit):
     pressed a search window with results is opened (TODO).
     """
 
-    itemType = "search"
-
     def __init__(self, menu, parent=None):
         QtGui.QLineEdit.__init__(self, parent)
         self.textChanged.connect(lambda: menu.filterMenu(self.text()))
@@ -576,18 +570,17 @@ class LauncherSeparator(QtGui.QAction):
 
     """Normal menu separator with a key option (key TODO)."""
 
-    itemType = "separator"
-
     def __init__(self, itemModel, parent=None):
         QtGui.QAction.__init__(self, parent)
         self.setSeparator(True)
+
+    def setVisibility(self, visibility):
+        self.setVisible(visibility)
 
 
 class LauncherMenuTitle(QtGui.QLabel):
 
     """Passive element with no action and no key focus."""
-
-    itemType = "title"
 
     def __init__(self, itemModel, parent=None):
         QtGui.QLabel.__init__(self, itemModel.text, parent)
@@ -647,8 +640,6 @@ class LauncherDetachButton(LauncherButton):
     a new window.
     """
 
-    itemType = "detach"
-
     def __init__(self, parent=None):
         LauncherButton.__init__(self, parent)
         self.setStyleSheet("""
@@ -681,8 +672,6 @@ class LauncherFileChoiceButton(LauncherNamedButton):
     sets new view.
     """
 
-    itemType = "file-choice"
-
     def __init__(self, itemModel, parent=None):
         LauncherNamedButton.__init__(self, itemModel, parent)
         self._itemModel = itemModel
@@ -703,8 +692,6 @@ class LauncherCmdButton(LauncherNamedButton):
 
     """LauncherCmdButton executes shell command. """
 
-    itemType = "cmd"
-
     def __init__(self, itemModel, parent=None):
         LauncherNamedButton.__init__(self, itemModel, parent)
         self._cmd = itemModel.cmd
@@ -723,8 +710,6 @@ class LauncherMenuButton(LauncherNamedButton):
     LauncherMenuButton builds new menu from model. When pressed the menu is
     popped up.
     """
-
-    itemType = "menu"
 
     def __init__(self, itemModel, parent=None):
         LauncherNamedButton.__init__(self, itemModel, parent)
