@@ -1,0 +1,5 @@
+main-title,"Test Menu 1"
+file-choice,"Load TEST Menu2","test_2.csv"
+title,"General"
+cmd,"Test ui 1",caqtdm -macro "SYS=SYS1" ./test_uis/test1.ui
+menu,"Submenu 2","test_2.csv"

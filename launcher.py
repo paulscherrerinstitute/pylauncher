@@ -3,6 +3,7 @@
 import sys
 import os
 import argparse
+import subprocess
 import csv
 
 from PyQt4 import QtGui, QtCore
@@ -721,7 +722,7 @@ class LauncherCmdButton(LauncherNamedButton):
 
     @pyqtSlot()
     def _executeCmd(self):
-        os.system(self._cmd)
+        subprocess.Popen(self._cmd, stdout=subprocess.PIPE, shell=True)
         self.parent().hide()  # When done hide popuped menu.
 
 
