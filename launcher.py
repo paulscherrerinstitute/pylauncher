@@ -418,7 +418,7 @@ class LauncherMenu(QtGui.QMenu):
         return _hasVisible
 
     def showEvent(self, showEvent):
-        """Catch event when menu is showed and move it by side of parent.
+        """Catch event when menu is shown and move it by side of parent.
 
         Whenever show(), popup(), exec() are called this method is called.
         Move the menu to the left side of the button (default is bellow)
@@ -429,8 +429,13 @@ class LauncherMenu(QtGui.QMenu):
         position.setY(position.y()-self.parent().height())
         self.move(position)
 
-        # Set focus on first button (skip detach button)
-        self.actions()[1].defaultWidget().setFocus()
+        # Set focus on first button (skip detach button and titles)
+        _i = 1
+        while isinstance(self.actions()[_i].defaultWidget(),
+                         LauncherMenuTitle):
+            _i += 1
+        self.actions()[_i].defaultWidget().setFocus()
+        self.setActiveAction(self.actions()[_i])
 
     def _getRootAncestor(self):
         """Return mainButton from which all menus expand.
@@ -629,9 +634,17 @@ class LauncherButton(QtGui.QPushButton):
         elif event.key() == Qt.Key_Right:
             pass
         elif event.key() == Qt.Key_Down:
-            self.focusNextChild()
+            _candidate = self.nextInFocusChain()
+            while isinstance(_candidate, LauncherMenuTitle):
+                _candidate.focusNextChild()
+                _candidate = _candidate.nextInFocusChain()
+            _candidate.focusNextChild()
         elif event.key() == Qt.Key_Up:
-            self.focusPreviousChild()
+            _candidate = self.previousInFocusChain()
+            while isinstance(_candidate, LauncherMenuTitle):
+                _candidate.focusPreviousChild()
+                _candidate = _candidate.previousInFocusChain()
+            _candidate.focusPreviousChild()
         else:
             QtGui.QPushButton.keyPressEvent(self, event)
 
