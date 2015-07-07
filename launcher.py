@@ -99,9 +99,10 @@ class LauncherMenuModel:
                     self._checkItemFormat(_item, 3, menuFile.name, _i)
                     # Do not open file just check if exists. Will be opened,
                     # in LauncherWindow._buildMenuModel
-
-                    if not os.path.isfile(launcherCfg["LAUNCHER_BASE"] +
-                                          _item[2].strip()):
+                    _filePath = os.path.join(launcherCfg["LAUNCHER_BASE"],
+                                             _item[2].strip())
+                    _filePath = os.path.normpath(_filePath)
+                    if not os.path.isfile(_filePath):
                         _errMsg = "ParseErr:" + menuFile.name + \
                             " (line " + str(_i) + "): File \"" + \
                             _item[2].strip() + "\" not found."
@@ -158,8 +159,8 @@ class LauncherCmdItem(LauncherMenuModelItem):
 
     """LauncherCmdItem holds the whole shell command."""
 
-    def __init__(self, launcherCfg, text=None, cmd=None, style=None, helpLink=None,
-                 key=None):
+    def __init__(self, launcherCfg, text=None, cmd=None, style=None,
+                 helpLink=None, key=None):
         LauncherMenuModelItem.__init__(self, text, style, key)
         self.cmd = launcherCfg["cmd"] + " " + cmd
 
@@ -212,7 +213,7 @@ class LauncherWindow(QtGui.QMainWindow):
     def __init__(self, rootFilePath, cfgFilePath, parent=None):
         QtGui.QMainWindow.__init__(self, parent)
         try:
-            _cfgFile = open(cfgFilePath)  # Catch exception outside.
+            _cfgFile = open(cfgFilePath)
         except IOError:
             _errMsg = "Err: Configuration file \"" + cfgFilePath + \
                 "\" not found."
@@ -240,7 +241,7 @@ class LauncherWindow(QtGui.QMainWindow):
         self._launcherMenu = LauncherSubMenu(self._menuModel, self.mainButton)
         self.mainButton.setMenu(self._launcherMenu)
 
-        # create Filter/search item. Add it and main button to the layout.
+        # Create Filter/search item. Add it and main button to the layout.
         self._searchInput = LauncherSearchWidget(self._launcherMenu, self)
         self._mainLayout.addWidget(self._searchInput)
         self._mainLayout.addWidget(self.mainButton)
@@ -282,8 +283,9 @@ class LauncherWindow(QtGui.QMainWindow):
 
     def _buildMenuModel(self, rootMenuPath):
         """Return model of a menu defined in rootMenuFile."""
-        _rootMeniFullPath = self.launcherCfg["LAUNCHER_BASE"] + \
-            "/" + rootMenuPath
+        _rootMeniFullPath = os.path.join(self.launcherCfg["LAUNCHER_BASE"],
+                                         rootMenuPath)
+        _rootMeniFullPath = os.path.normpath(_rootMeniFullPath)
         try:
             _rootMenuFile = open(_rootMeniFullPath)
         except IOError:
@@ -301,7 +303,7 @@ class LauncherWindow(QtGui.QMainWindow):
             line = line.strip()
             if line and not line.startswith("#"):
                 cfgPair = line.split(":")
-                if cfgPair[0].strip()not in valid:
+                if cfgPair[0].strip() not in valid:
                     raise SyntaxError("Unknown parameter.", cfgFilePath, i)
                 else:
                     cfg[cfgPair[0].strip()] = cfgPair[1].strip()
@@ -513,7 +515,7 @@ class LauncherDetachedMenu(LauncherMenu):
             self.searchInput.setFocus()
 
     def keyPressEvent(self, event):
-        """Catch escape (originally closes the menu window) and skip actions."""
+        """Catch escape (originally closes the window) and skip actions."""
 
         if event.key() == Qt.Key_Escape:
             pass
@@ -783,7 +785,7 @@ if __name__ == '__main__':
         """)
 
     rootMenuFile = sys.argv[1]
-    cfgFile = sys.argv[2]
+    cfgFile = os.path.normpath(sys.argv[2])
 
     launcherWindow = LauncherWindow(rootMenuFile, cfgFile)
     launcherWindow.setGeometry(0, 0, 150, 0)
