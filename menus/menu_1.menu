@@ -1,0 +1,17 @@
+{
+    "menu-title": "F_L1",
+    "file-choice": [
+        {"text": "Load F_L2", "file": "menu_2.menu"}
+    ],
+    "menu": [
+        {"type": "title", "text": "General"},
+        {"type": "cmd", "text": "Who is online", "param": "ls"},
+        {"type": "title", "text": "HighLevel Applications"},
+        {"type": "cmd", "text": "ScreenMonitorTool", "param": "ls"},
+        {"type": "cmd", "text": "QE Measurement", "param": "ls -l"},
+        {"type": "separator"},
+        {"type": "title", "text": "Utilities"},
+        {"type": "cmd", "text": "Remote network access control by control room", "param": "ls"},
+        {"type": "menu", "text": "Strip-tool", "file": "menu_2.menu"}
+    ]
+}

@@ -1,0 +1,13 @@
+{
+    "menu-title": "F_L2",
+    "file-choice": [
+        {"text": "Load F_L1", "file": "menu_1.menu"}
+    ],
+    "menu": [
+        {"type": "title", "text": "Striptool"},
+        {"type": "cmd", "text": "Strip Tool Generic", "param": "ls"},
+        {"type": "separator"},
+        {"type": "cmd", "text": "RF Startup", "param": "ls"},
+        {"type": "cmd", "text": "Conditioning", "param": "ls"}
+    ]
+}

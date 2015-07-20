@@ -4,6 +4,7 @@ import sys
 import os
 import argparse
 import subprocess
+import json
 import csv
 
 from PyQt4 import QtGui, QtCore
@@ -42,6 +43,78 @@ class LauncherMenuModel:
         return filter(lambda x: x.__class__.__name__ ==
                       itemsType, self.menuItems)
 
+    def _parseMenuJson(self, menuFile, launcherCfg):
+        """Parse JSON type menu config file."""
+
+        _menu = json.load(menuFile)
+        self.mainTitle = _menu.get("menu-title",
+                                   os.path.basename(menuFile.name))
+        # Get list of possible views (e.g. expert, user)
+
+        _listOfViews = _menu.get("file-choice", list())
+        self.fileChoices = list()
+        for _view in _listOfViews:
+            self._checkItemFormatJson(_view, ["text", "file"])  # exits if not
+            _text = _view.get("text").strip()
+            _fileName = _view.get("file").strip()
+            # Do not open file just check if exists. Will be opened, in
+            # LauncherWindow._buildMenuModel
+
+            _filePath = os.path.join(launcherCfg.get("LAUNCHER_BASE"),
+                                     _fileName)
+            _filePath = os.path.normpath(_filePath)
+            if not os.path.isfile(_filePath):
+                _errMsg = "ParseErr: " + menuFile.name + ": File \"" +\
+                    _fileName + "\" not found."
+                sys.exit(_errMsg)
+            self.fileChoices.append(LauncherFileChoiceItem(launcherCfg, _text,
+                                                           _fileName))
+        # Build menu model. Report error if menu is not defined.
+
+        _listOfMenuItems = _menu.get("menu", list())
+        if not _listOfMenuItems:
+            errMsg = "ParseErr: " + menuFile.name + ": Launcher menu is not "\
+                "defined."
+            sys.exit(_errMsg)
+        for _item in _listOfMenuItems:
+            _type = _item.get("type", "")
+            # For each check mandatory parameters and exit if not all.
+
+            if _type == "cmd":
+                self._checkItemFormatJson(_item, ["text", "param"])
+                _text = _item.get("text").strip()
+                _param = _item.get("param").strip()
+                _menuItem = LauncherCmdItem(launcherCfg, _text, _param)
+            elif _type == "menu":
+                self._checkItemFormatJson(_item, ["text", "file"])
+                _text = _item.get("text").strip()
+                _fileName = _item.get("file").strip()
+                try:
+                    _file = open(launcherCfg["LAUNCHER_BASE"] + _fileName)
+                except IOError:
+                    _errMsg = "ParseErr: " + menuFile.name + ": File \"" + \
+                              _fileName + "\" not found."
+                    sys.exit(_errMsg)
+                _menuItem = LauncherSubMenuItem(launcherCfg, _text, _file)
+                _file.close()
+
+            # TODO add other cases
+
+            self.menuItems.append(_menuItem)
+
+    def _checkItemFormatJson(self, item, mandatoryParam):
+        """Check dictionary for mandatory keys.
+
+        Check item (dictionary) if it holds all mandatory keys. If any key is
+        missing, exit the program and report error.
+        """
+
+        for _param in mandatoryParam:
+            if not item.get(param):
+                _errMsg = "ParseErr: Parameter \"" + _param + "\" is mandatory"\
+                    " in configuration \"" + item + "\"."
+                sys.exit(_errMsg)
+
     def _parseCsv(self, menuFile, launcherCfg):
         """Parses .csv Menu file and builds model.
 
@@ -52,9 +125,7 @@ class LauncherMenuModel:
 
         Returns detailed error message and stops the program.
         """
-
-        _parsed = list(csv.reader(menuFile, delimiter=","))
-        _menu = list(_parsed)
+        _menu = list(csv.reader(menuFile, delimiter=","))
         self.menuItems = list()
         _i = 1
         for _item in _menu:
@@ -68,12 +139,12 @@ class LauncherMenuModel:
                 if _itemType == "main-title":
                     self.mainTitle = _item[1]
                 elif _itemType == "cmd":
-                    self._checkItemFormat(_item, 3, menuFile.name, _i)
+                    self._checkItemFormatCvs(_item, 3, menuFile.name, _i)
                     _menuItem = LauncherCmdItem(
                         launcherCfg, _item[1], _item[2])
                     self.menuItems.append(_menuItem)
                 elif _itemType == "menu":
-                    self._checkItemFormat(_item, 3, menuFile.name, _i)
+                    self._checkItemFormatCvs(_item, 3, menuFile.name, _i)
                     try:
                         _subMenuFile = open(launcherCfg["LAUNCHER_BASE"] +
                                             _item[2].strip())
@@ -88,7 +159,7 @@ class LauncherMenuModel:
                     _subMenuFile.close()
                     self.menuItems.append(_menuItem)
                 elif _itemType == "title":
-                    self._checkItemFormat(_item, 2, menuFile.name, _i)
+                    self._checkItemFormatCvs(_item, 2, menuFile.name, _i)
                     _menuItem = LauncherTitleItem(_item[1])
                     self.menuItems.append(_menuItem)
 
@@ -97,7 +168,7 @@ class LauncherMenuModel:
                     self.menuItems.append(_menuItem)
 
                 elif _itemType == "file-choice":
-                    self._checkItemFormat(_item, 3, menuFile.name, _i)
+                    self._checkItemFormatCvs(_item, 3, menuFile.name, _i)
                     # Do not open file just check if exists. Will be opened,
                     # in LauncherWindow._buildMenuModel
                     _filePath = os.path.join(launcherCfg["LAUNCHER_BASE"],
@@ -118,7 +189,7 @@ class LauncherMenuModel:
                     sys.exit(_errMsg)
             _i += 1
 
-    def _checkItemFormat(self, item, minLength, fileName, line):
+    def _checkItemFormatCvs(self, item, minLength, fileName, line):
         """ Checks item format
 
         For now checks only number of attributes. When optional parameters will
@@ -740,7 +811,7 @@ class LauncherMenuButton(LauncherNamedButton):
         self.setMenu(_menu)
 
     def keyPressEvent(self, event):
-        """Submenu can be opened and closed with arrow keys."""
+        """Submenu can be opened and closed with carrow keys."""
 
         if event.key() == Qt.Key_Right:
             self.click()
