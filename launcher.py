@@ -5,7 +5,6 @@ import os
 import argparse
 import subprocess
 import json
-import csv
 
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import pyqtSlot, Qt
@@ -35,7 +34,7 @@ class LauncherMenuModel:
         # objects to self.menuItems list.
 
         self.menuItems = list()
-        self._parseCsv(menuFile, launcherCfg)
+        self._parseMenuJson(menuFile, launcherCfg)
 
     def getItemsOfType(self, itemsType):
         """Returns a list of all items of specified type."""
@@ -97,8 +96,19 @@ class LauncherMenuModel:
                     sys.exit(_errMsg)
                 _menuItem = LauncherSubMenuItem(launcherCfg, _text, _file)
                 _file.close()
+            elif _type == "title":
+                self._checkItemFormatJson(_item, ["text"])
+                _text = _item.get("text").strip()
+                _menuItem = LauncherTitleItem(_text)
 
-            # TODO add other cases
+            elif _type == "separator":
+                _menuItem = LauncherItemSeparator()
+
+            else:
+                _errMsg = "ParseErr:" + menuFile.name + " (line " + \
+                    str(_i) + "): Unknown type \"" + _item[0].strip() + \
+                    "\"."
+                sys.exit(_errMsg)
 
             self.menuItems.append(_menuItem)
 
@@ -110,97 +120,10 @@ class LauncherMenuModel:
         """
 
         for _param in mandatoryParam:
-            if not item.get(param):
-                _errMsg = "ParseErr: Parameter \"" + _param + "\" is mandatory"\
-                    " in configuration \"" + item + "\"."
+            if not item.get(_param):
+                _errMsg = "ParseErr: Parameter \"" + _param + \
+                    "\" is mandatory in configuration \"" + item + "\"."
                 sys.exit(_errMsg)
-
-    def _parseCsv(self, menuFile, launcherCfg):
-        """Parses .csv Menu file and builds model.
-
-        For each line checks if:
-            -type of entry is valid
-            -has enough attributes
-            -if files exists (for submenus, and file-choice)
-
-        Returns detailed error message and stops the program.
-        """
-        _menu = list(csv.reader(menuFile, delimiter=","))
-        self.menuItems = list()
-        _i = 1
-        for _item in _menu:
-            # Ignore comments and empty lines
-
-            if _item and not _item[0].strip().startswith("#"):
-                # Check item types and if they have enough arguments. Then
-                # concentrate parameters with config file properties.
-
-                _itemType = _item[0].strip()
-                if _itemType == "main-title":
-                    self.mainTitle = _item[1]
-                elif _itemType == "cmd":
-                    self._checkItemFormatCvs(_item, 3, menuFile.name, _i)
-                    _menuItem = LauncherCmdItem(
-                        launcherCfg, _item[1], _item[2])
-                    self.menuItems.append(_menuItem)
-                elif _itemType == "menu":
-                    self._checkItemFormatCvs(_item, 3, menuFile.name, _i)
-                    try:
-                        _subMenuFile = open(launcherCfg["LAUNCHER_BASE"] +
-                                            _item[2].strip())
-                    except IOError:
-                        _errMsg = "ParseErr:" + menuFile.name + \
-                            " (line " + str(_i) + "): File \"" + \
-                            _item[2].strip() + "\" not found."
-                        sys.exit(_errMsg)
-
-                    _menuItem = LauncherSubMenuItem(
-                        launcherCfg, _item[1], _subMenuFile)
-                    _subMenuFile.close()
-                    self.menuItems.append(_menuItem)
-                elif _itemType == "title":
-                    self._checkItemFormatCvs(_item, 2, menuFile.name, _i)
-                    _menuItem = LauncherTitleItem(_item[1])
-                    self.menuItems.append(_menuItem)
-
-                elif _itemType == "separator":
-                    _menuItem = LauncherItemSeparator()
-                    self.menuItems.append(_menuItem)
-
-                elif _itemType == "file-choice":
-                    self._checkItemFormatCvs(_item, 3, menuFile.name, _i)
-                    # Do not open file just check if exists. Will be opened,
-                    # in LauncherWindow._buildMenuModel
-                    _filePath = os.path.join(launcherCfg["LAUNCHER_BASE"],
-                                             _item[2].strip())
-                    _filePath = os.path.normpath(_filePath)
-                    if not os.path.isfile(_filePath):
-                        _errMsg = "ParseErr:" + menuFile.name + \
-                            " (line " + str(_i) + "): File \"" + \
-                            _item[2].strip() + "\" not found."
-                        sys.exit(_errMsg)
-                    _menuItem = LauncherFileChoiceItem(
-                        launcherCfg, _item[1], _item[2])
-                    self.menuItems.append(_menuItem)
-                else:
-                    _errMsg = "ParseErr:" + menuFile.name + " (line " + \
-                        str(_i) + "): Unknown type \"" + _item[0].strip() + \
-                        "\"."
-                    sys.exit(_errMsg)
-            _i += 1
-
-    def _checkItemFormatCvs(self, item, minLength, fileName, line):
-        """ Checks item format
-
-        For now checks only number of attributes. When optional parameters will
-        be implemented this function will be smarter.
-        """
-
-        if not len(item) >= minLength:
-            _errMsg = "ParseErr:" + fileName + " (line " + str(line) + \
-                "): \"" + item[0].strip() + "\" requires at least " + \
-                str(minLength-1) + " attributes."
-            sys.exit(_errMsg)
 
 
 class LauncherMenuModelItem:
@@ -322,10 +245,7 @@ class LauncherWindow(QtGui.QMainWindow):
         # File menu.
         _menuBar = self.menuBar()
         self._fileMenu = QtGui.QMenu("&File", _menuBar)
-        self._fileChoiceItems = self._menuModel.getItemsOfType(
-            "LauncherFileChoiceItem"
-        )
-        for item in self._fileChoiceItems:
+        for item in self._menuModel.fileChoices:
             _button = LauncherFileChoiceButton(item, self._fileMenu)
             _buttonAction = QtGui.QWidgetAction(self._fileMenu)
             _buttonAction.setDefaultWidget(_button)
