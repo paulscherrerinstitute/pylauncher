@@ -2,6 +2,7 @@
 
 import sys
 import os
+import platform
 import argparse
 import subprocess
 import json
@@ -59,7 +60,7 @@ class LauncherMenuModel:
             # Do not open file just check if exists. Will be opened, in
             # LauncherWindow._buildMenuModel
 
-            _filePath = os.path.join(launcherCfg.get("LAUNCHER_BASE"),
+            _filePath = os.path.join(launcherCfg.get("launcher_base"),
                                      _fileName)
             _filePath = os.path.normpath(_filePath)
             if not os.path.isfile(_filePath):
@@ -89,7 +90,7 @@ class LauncherMenuModel:
                 _text = _item.get("text").strip()
                 _fileName = _item.get("file").strip()
                 try:
-                    _file = open(launcherCfg["LAUNCHER_BASE"] + _fileName)
+                    _file = open(launcherCfg.get("launcher_base") + _fileName)
                 except IOError:
                     _errMsg = "ParseErr: " + menuFile.name + ": File \"" + \
                               _fileName + "\" not found."
@@ -157,7 +158,9 @@ class LauncherCmdItem(LauncherMenuModelItem):
     def __init__(self, launcherCfg, text=None, cmd=None, style=None,
                  helpLink=None, key=None):
         LauncherMenuModelItem.__init__(self, text, style, key)
-        self.cmd = launcherCfg["cmd"] + " " + cmd
+        _itemCfg = launcherCfg.get("cmd")
+        _prefix = _itemCfg.get("command")
+        self.cmd = _prefix + " " + cmd
 
 
 class LauncherSubMenuItem(LauncherMenuModelItem):
@@ -186,7 +189,7 @@ class LauncherFileChoiceItem(LauncherMenuModelItem):
     def __init__(self, launcherCfg, text=None, rootMenuFile=None, style=None,
                  helpLink=None, key=None):
         LauncherMenuModelItem.__init__(self, text, style, key)
-        self.rootMenuFile = launcherCfg["cmd"] + rootMenuFile
+        self.rootMenuFile = launcherCfg.get("launcher_base") + rootMenuFile
 
 
 class LauncherTitleItem(LauncherMenuModelItem):
@@ -213,7 +216,11 @@ class LauncherWindow(QtGui.QMainWindow):
             _errMsg = "Err: Configuration file \"" + cfgFilePath + \
                 "\" not found."
             sys.exit(_errMsg)
-        self.launcherCfg = self._parseLauncherCfg(_cfgFile)
+        _cfg = json.load(_cfgFile)
+        _cfgFile.close()
+        # Get configuration for current system.
+
+        self.launcherCfg = _cfg.get(platform.system())
 
         # Build menu model from rootMenuFile and set general parameters.
         self._menuModel = self._buildMenuModel(rootFilePath)
@@ -275,7 +282,7 @@ class LauncherWindow(QtGui.QMainWindow):
 
     def _buildMenuModel(self, rootMenuPath):
         """Return model of a menu defined in rootMenuFile."""
-        _rootMeniFullPath = os.path.join(self.launcherCfg["LAUNCHER_BASE"],
+        _rootMeniFullPath = os.path.join(self.launcherCfg.get("launcher_base"),
                                          rootMenuPath)
         _rootMeniFullPath = os.path.normpath(_rootMeniFullPath)
         try:
@@ -286,22 +293,6 @@ class LauncherWindow(QtGui.QMainWindow):
         _rootMenu = LauncherMenuModel(_rootMenuFile, self.launcherCfg)
         _rootMenuFile.close()
         return _rootMenu
-
-    def _parseLauncherCfg(self, cfgFile):
-        valid = ["cmd", "LAUNCHER_BASE"]
-        cfg = dict()
-        i = 0
-        for line in cfgFile:
-            line = line.strip()
-            if line and not line.startswith("#"):
-                cfgPair = line.split(":")
-                if cfgPair[0].strip() not in valid:
-                    raise SyntaxError("Unknown parameter.", cfgFilePath, i)
-                else:
-                    cfg[cfgPair[0].strip()] = cfgPair[1].strip()
-        i += 1
-        cfgFile.close()
-        return cfg
 
 
 class LauncherMenu(QtGui.QMenu):
@@ -749,9 +740,6 @@ if __name__ == '__main__':
                           help="Launcher menu file.")
     argsPars.add_argument('config',
                           help='Launcher configuration file')
-    # argsPars.add_argument('LAUNCHER_BASE',
-    #                      help='Directory containing launcher menus \
-    #                      specifications.')
 
     args = argsPars.parse_args()
 

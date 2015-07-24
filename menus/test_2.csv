@@ -1,4 +1,0 @@
-main-title,"Test Menu 2"
-file-choice,"Load TEST Menu1","test_1.csv"
-title,"Sub General"
-cmd,"Test ui 2","./test_uis/start_Screen.sh test2.ui SYS=SYS2"
