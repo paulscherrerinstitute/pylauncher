@@ -1,3 +1,4 @@
+# Overview
 
 To configure and run luncher follow steps below.
 
@@ -24,8 +25,10 @@ To configure and run luncher follow steps below.
         launcher.py F_DI_BAM_BAM3-Main.csv ./config/config.ini
 
     Run "launcher -h" to access the help.
+
 -----------------------------------------------
 -----------------------------------------------
+
 Currently comma separated value configuration format is supported (for details check examples in ./menus/ directory) with additional support for comments.
 
 Following items are currently supported:
@@ -50,5 +53,3 @@ Following items are currently supported:
 
 - Menu item which opens another menu defined in different file (for example to open user/expert view)
         file-choice,"This is button text",menu-file-name
-
-
