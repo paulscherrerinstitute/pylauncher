@@ -43,45 +43,44 @@ Currently comma separated value configuration format is supported (for details c
 
 Following items are currently supported:
 
-- Main menu title which is shown as label of main launcher button. Only one should be defined
+-   Main menu title which is shown as label of main launcher button. Only one should be defined
 
-  ```
-  main-title,"This is menu title"
-  ```
+    ```
+    main-title,"This is menu title"
+    ```
 
-- comment
+-   comment
 
-  ```
-  # This is some comment
-  ```
+    ```
+    # This is some comment
+    ```
 
-- separator to visually separate menu items
+-   separator to visually separate menu items
 
-  ```
-  separator
-  ```
+    ```
+    separator
+    ```
 
-- "title" is a special separator with text
+-   "title" is a special separator with text
 
-  ```
-  title,"This is text"
-  ```
+    ```
+    title,"This is text"
+    ```
 
-- Button which executes shell command defined in parameter. parameter is combined with "cmd" parameter in configuration file (e.g. bash -c 'parameter').
+-   Button which executes shell command defined in parameter. parameter is combined with "cmd" parameter in configuration file (e.g. bash -c 'parameter').
 
-  ```
-  cmd,"This is button text",parameter
-  ```
+    ```
+    cmd,"This is button text",parameter
+    ```
 
-- Button which opens submenu defined in different file.
+-   Button which opens submenu defined in different file.
 
-  ```
-  menu,"This is button text",submenu-file-name
-  ```
+    ```
+    menu,"This is button text",submenu-file-name
+    ```
 
-- Menu item which opens another menu defined in different file (for example to open user/expert view)
+-   Menu item which opens another menu defined in different file (for example to open user/expert view)
 
-  ```
-  file-choice,"This is button text",menu-file-name
-  ```
-  
+    ```
+    file-choice,"This is button text",menu-file-name
+    ```
