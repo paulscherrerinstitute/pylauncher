@@ -8,5 +8,25 @@
             "command": "caqtdm",
             "macro_flag": "-macro"
         }
+    },
+    "Windows": {
+        "launcher_base": "./menus/",
+        "cmd": {
+            "command": ""
+        },
+        "caqtdm":{
+            "command": "caqtdm",
+            "macro_flag": "-macro"
+        }
+    },
+    "OS_X": {
+        "launcher_base": "./menus/",
+        "cmd": {
+            "command": ""
+        },
+        "caqtdm":{
+            "command": "caqtdm",
+            "macro_flag": "-macro"
+        }
     }
 }

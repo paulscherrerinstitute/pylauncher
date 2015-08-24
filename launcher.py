@@ -31,13 +31,17 @@ class LauncherWindow(QtGui.QMainWindow):
             sys.exit(_errMsg)
         _cfg = json.load(_cfgFile)
         _cfgFile.close()
-        # Get configuration for current system.
+        # Get configuration for current system. platform.system() returns:
+        #     - "Darvin" when OS X
+        #     - "Linux" when Linux
+        #     - "Windows" when Windows
 
         self.launcherCfg = _cfg.get(platform.system())
-
+        if self.launcher_base == "Darvin":
+            self.launcher_base = "OS_X"
         # Build menu model from rootMenuFile and set general parameters.
-        self._menuModel = self._buildMenuModel(rootFilePath)
 
+        self._menuModel = self._buildMenuModel(rootFilePath)
         self.setWindowTitle(self._menuModel.mainTitle)
         # QMainWindow has predefined layout. Content should be in the central
         # widget. Create widget with a QVBoxLayout and set it as central.
@@ -55,14 +59,15 @@ class LauncherWindow(QtGui.QMainWindow):
 
         self._launcherMenu = LauncherSubMenu(self._menuModel, self.mainButton)
         self.mainButton.setMenu(self._launcherMenu)
-
         # Create Filter/search item. Add it and main button to the layout.
+
         self._searchInput = LauncherSearchWidget(self._launcherMenu, self)
         self._mainLayout.addWidget(self._searchInput)
         self._mainLayout.addWidget(self.mainButton)
         # Create menu bar. In current visualization menu bar also exposes all
         # LauncherFileChoiceItem items from the model. They are exposed in
         # File menu.
+        
         _menuBar = self.menuBar()
         self._fileMenu = QtGui.QMenu("&File", _menuBar)
         for item in self._menuModel.fileChoices:
