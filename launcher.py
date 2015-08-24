@@ -204,7 +204,7 @@ class LauncherMenu(QtGui.QMenu):
                     _visible_count += 1
                 _hasVisible = _hasVisible or _subHasVisible
 
-            elif filterTerm in _widget.text():
+            elif _widget.text().contains(filterTerm, Qt.CaseInsensitive):
                 # Filter term is found in the button text. For now filter only
                 # cmd buttons.
 
