@@ -1,7 +1,7 @@
 {
     "menu-title": "F_L1",
     "file-choice": [
-        {"text": "Load F_L2", "file": "menu_2.menu"}
+        {"text": "Load F_L2", "file": "menu_2.json"}
     ],
     "menu": [
         {"type": "title", "text": "General"},
@@ -12,6 +12,6 @@
         {"type": "separator"},
         {"type": "title", "text": "Utilities"},
         {"type": "cmd", "text": "Remote network access control by control room", "param": "ls"},
-        {"type": "menu", "text": "Strip-tool", "file": "menu_2.menu"}
+        {"type": "menu", "text": "Strip-tool", "file": "menu_2.json"}
     ]
 }

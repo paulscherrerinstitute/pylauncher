@@ -1,7 +1,7 @@
 {
     "menu-title": "F_L2",
     "file-choice": [
-        {"text": "Load F_L1", "file": "menu_1.menu"}
+        {"text": "Load F_L1", "file": "menu_1.json"}
     ],
     "menu": [
         {"type": "title", "text": "Striptool"},
