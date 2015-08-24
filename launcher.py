@@ -36,9 +36,10 @@ class LauncherWindow(QtGui.QMainWindow):
         #     - "Linux" when Linux
         #     - "Windows" when Windows
 
-        self.launcherCfg = _cfg.get(platform.system())
-        if self.launcher_base == "Darvin":
-            self.launcher_base = "OS_X"
+        systemType = platform.system()
+        if systemType == "Darvin":
+            systemType = "OS_X"
+        self.launcherCfg = _cfg.get(systemType)
         # Build menu model from rootMenuFile and set general parameters.
 
         self._menuModel = self._buildMenuModel(rootFilePath)
@@ -67,7 +68,7 @@ class LauncherWindow(QtGui.QMainWindow):
         # Create menu bar. In current visualization menu bar also exposes all
         # LauncherFileChoiceItem items from the model. They are exposed in
         # File menu.
-        
+
         _menuBar = self.menuBar()
         self._fileMenu = QtGui.QMenu("&File", _menuBar)
         for item in self._menuModel.fileChoices:
