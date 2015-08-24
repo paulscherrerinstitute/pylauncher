@@ -79,36 +79,42 @@ To configure and run luncher follow steps below.
 -----------------------------------------------
 
 Currently json configuration format is supported (for details check examples in ./menus/ directory). The configuration file consists of 3 configurations to:
-  1. set the menu title
+ 1. set the menu title
+
     ```
     "menu-title": "This is menu title",
     ``` 
 
-  2. To specify possible views of the launcher (e.g. exert, user, ...) [If no views leave empty]
+ 2. To specify possible views of the launcher (e.g. exert, user, ...) [If no views leave empty]
+
     ```
     "file-choice": [
             {"text": "Expert", "file": "expert.json"}
             {"text": "Developer", "file": "dev.json"}
         ]
     ```
-  3. Main section to specify launcher to define each launcher item. Following types of items are supported:
+ 3. Main section to specify launcher to define each launcher item. Following types of items are supported:
 
     - separator to visually separate menu items
+
     ```
     {"type": "separator"}
     ```
 
     - "title" is a special separator with text
+
     ```
     {"type": "title", "text": "This is button text"},
     ```
 
     - Button which executes shell command defined in parameter. parameter is combined with "cmd" parameter in configuration file (e.g. bash -c 'parameter').
+
     ```
     {"type": "cmd", "text": "This is command button", "param": "ls"},
     ```
 
     - Button which opens submenu defined in different file.
+    
     ```
     {"type": "menu", "text": "Strip-tool", "file": "menu_2.json"}
     ```
