@@ -2,27 +2,66 @@
 
 To configure and run luncher follow steps below.
 
-1.  Create configuration file with following content:
+1.  Modify configuration file (config/config.json) and properly specify following parameters for system you are using:
+
+    launcher_base: path to direcotry where all launcher configurations are stored
+    cmd:
+        - command: prefix for commands that should be executed in shell (e.g. "bash -c")
+        - caqtdm: SUPPORT NOT YET IMPLEMENTED (just prototype of possible configuration)
 
     ```
-    LAUNCHER_BASE: <path-to-the-launcher-menu-dir>
-    cmd: <cmd-prefix>
+    {
+        "Linux": {
+            "launcher_base": "./menus/",
+            "cmd": {
+                "command": "bash -c"
+            },
+            "caqtdm":{
+                "command": "caqtdm",
+                "macro_flag": "-macro"
+            }
+        },
+        "Windows": {
+            "launcher_base": "./menus/",
+            "cmd": {
+                "command": ""
+            },
+            "caqtdm":{
+                "command": "caqtdm",
+                "macro_flag": "-macro"
+            }
+        },
+        "OS_X": {
+            "launcher_base": "./menus/",
+            "cmd": {
+                "command": ""
+            },
+            "caqtdm":{
+                "command": "caqtdm",
+                "macro_flag": "-macro"
+            }
+        }
+    }
     ```
 
-    Where `LAUNCHER_BASE` specifies the path to the directory
-    with all launcher menu files and `cmd` specifies the prefix
-    which will be added to all commands. e.g.:
-
+2.  Prepare menu configuration in json format (see example):
     ```
-    LAUNCHER_BASE: ./menus/
-    cmd: bash -c
+    {
+        "menu-title": "F_L2",
+        "file-choice": [
+            {"text": "Load F_L1", "file": "menu_1.json"}
+        ],
+        "menu": [
+            {"type": "title", "text": "Striptool"},
+            {"type": "cmd", "text": "Strip Tool Generic", "param": "ls"},
+            {"type": "separator"},
+            {"type": "cmd", "text": "RF Startup", "param": "ls"},
+            {"type": "cmd", "text": "Conditioning", "param": "ls"}
+        ]
+    }
     ```
 
-2.  Prepare menu configurations in comma separated value format
-    (see end of this file for details) and save them to the
-    directory specified with `LAUNCHER_BASE`.
-
-3.  Start the launcher wit following command:
+3.  Start the launcher with following command:
 
     ```
     launcher.py <name-of-menu-file> <path-to-config-file>
@@ -31,7 +70,7 @@ To configure and run luncher follow steps below.
     To run the launcher with example configuration run:
 
     ```
-    launcher.py F_DI_BAM_BAM3-Main.csv ./config/config.ini
+    launcher.py menu_1.json ./config/config.json
     ```
 
     Run `launcher -h` to access the help.
@@ -39,48 +78,37 @@ To configure and run luncher follow steps below.
 -----------------------------------------------
 -----------------------------------------------
 
-Currently comma separated value configuration format is supported (for details check examples in ./menus/ directory) with additional support for comments.
-
-Following items are currently supported:
-
--   Main menu title which is shown as label of main launcher button. Only one should be defined
-
+Currently json configuration format is supported (for details check examples in ./menus/ directory). The configuration file consists of 3 configurations to:
+  1. set the menu title
     ```
-    main-title,"This is menu title"
-    ```
+    "menu-title": "This is menu title",
+    ``` 
 
--   comment
-
+  2. To specify possible views of the launcher (e.g. exert, user, ...) [If no views leave empty]
     ```
-    # This is some comment
+    "file-choice": [
+            {"text": "Expert", "file": "expert.json"}
+            {"text": "Developer", "file": "dev.json"}
+        ]
     ```
+  3. Main section to specify launcher to define each launcher item. Following types of items are supported:
 
--   separator to visually separate menu items
-
+    - separator to visually separate menu items
     ```
-    separator
+    {"type": "separator"}
     ```
 
--   "title" is a special separator with text
-
+    - "title" is a special separator with text
     ```
-    title,"This is text"
-    ```
-
--   Button which executes shell command defined in parameter. parameter is combined with "cmd" parameter in configuration file (e.g. bash -c 'parameter').
-
-    ```
-    cmd,"This is button text",parameter
+    {"type": "title", "text": "This is button text"},
     ```
 
--   Button which opens submenu defined in different file.
-
+    - Button which executes shell command defined in parameter. parameter is combined with "cmd" parameter in configuration file (e.g. bash -c 'parameter').
     ```
-    menu,"This is button text",submenu-file-name
+    {"type": "cmd", "text": "This is command button", "param": "ls"},
     ```
 
--   Menu item which opens another menu defined in different file (for example to open user/expert view)
-
+    - Button which opens submenu defined in different file.
     ```
-    file-choice,"This is button text",menu-file-name
+    {"type": "menu", "text": "Strip-tool", "file": "menu_2.json"}
     ```
