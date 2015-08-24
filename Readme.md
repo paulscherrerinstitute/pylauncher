@@ -79,6 +79,7 @@ To configure and run luncher follow steps below.
 -----------------------------------------------
 
 Currently json configuration format is supported (for details check examples in ./menus/ directory). The configuration file consists of 3 configurations to:
+ 
  1. set the menu title
 
     ```
