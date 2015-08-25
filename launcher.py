@@ -368,6 +368,7 @@ class LauncherSearchWidget(QtGui.QLineEdit):
         QtGui.QLineEdit.__init__(self, parent)
         self.textChanged.connect(lambda: menu.filterMenu(self.text()))
         self._myAction = None
+        self.setPlaceholderText("Enter filter term.")
 
     def setMyAction(self, action):
         self._myAction = action
