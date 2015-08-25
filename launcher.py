@@ -54,12 +54,8 @@ class LauncherWindow(QtGui.QMainWindow):
         # Main window consist of filter/serach entry and a main button which
         # pops up the root menu. Create a layout and add the items.
 
-        self.mainButton = QtGui.QPushButton(self._menuModel.mainTitle, self)
-        # Visualize the menus by recursively creating LauncherSubMenu objects
-        # for each LauncherMenuModel from model. Append it to the button.
-
-        self._launcherMenu = LauncherSubMenu(self._menuModel, self.mainButton)
-        self.mainButton.setMenu(self._launcherMenu)
+        self._launcherMenu = LauncherSubMenu(self._menuModel, self)
+        self.mainButton = LauncherMainButton(self._launcherMenu, self)
         # Create Filter/search item. Add it and main button to the layout.
 
         self._searchInput = LauncherSearchWidget(self._launcherMenu, self)
@@ -482,6 +478,36 @@ class LauncherDetachButton(LauncherButton):
         self.clicked.connect(parent.detach)
 
 
+class LauncherMainButton(LauncherButton):
+
+    """ Main Launcher button to expand menu
+
+    This class extends LauncherButton similar as LauncherMenuButton, but
+    with a different inputs.
+    """
+
+    def __init__(self, menu, parent=None):
+        LauncherButton.__init__(self, parent)
+        self.setText(menu.menuModel.mainTitle)
+        self.setMenu(menu)
+
+    def mouseMoveEvent(self, event):
+        self.setFocus()
+
+    def keyPressEvent(self, event):
+        """Open main menu
+
+        Open menu also with right arrow key. Override option to hide parent 
+        with left arrow key, because main button is not part of popuped window.
+        """
+
+        if event.key() == Qt.Key_Right:
+            self.click()
+        elif event.key() == Qt.Key_Left:
+            pass
+        else:
+            LauncherButton.keyPressEvent(self, event)
+
 class LauncherNamedButton(LauncherButton):
 
     """Parent class to all buttons with text."""
@@ -544,12 +570,10 @@ class LauncherMenuButton(LauncherNamedButton):
         self.setMenu(_menu)
 
     def keyPressEvent(self, event):
-        """Submenu can be opened and closed with carrow keys."""
+        """Submenu can also be opened with right arrow key."""
 
         if event.key() == Qt.Key_Right:
             self.click()
-        elif event.key() == Qt.Key_Left:
-            self.menu().hide()
         else:
             LauncherNamedButton.keyPressEvent(self, event)
 
