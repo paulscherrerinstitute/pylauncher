@@ -180,8 +180,10 @@ class LauncherMenu(QtGui.QMenu):
                 _type = _widget.__class__.__name__
 
             if not filterTerm:
-                # Empty filter. Show all.
+                # Empty filter. Show all. If submenu recursively empty  filter.
                 action.setVisibility(True)
+                if _type == "LauncherMenuButton":
+                    action.defaultWidget().menu().filterMenu(filterTerm)
 
             elif _type == "LauncherMenuTitle":
                 # Visible actions below title are counted. If count > 0 then
