@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import sys
 import os
@@ -32,12 +32,12 @@ class LauncherWindow(QtGui.QMainWindow):
         _cfg = json.load(_cfgFile)
         _cfgFile.close()
         # Get configuration for current system. platform.system() returns:
-        #     - "Darvin" when OS X
+        #     - "Darwin" when OS X
         #     - "Linux" when Linux
         #     - "Windows" when Windows
 
         systemType = platform.system()
-        if systemType == "Darvin":
+        if systemType == "Darwin":
             systemType = "OS_X"
         self.launcherCfg = _cfg.get(systemType)
         # Build menu model from rootMenuFile and set general parameters.
