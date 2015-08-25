@@ -281,7 +281,7 @@ class LauncherSubMenu(LauncherMenu):
         _detachedMenu = LauncherDetachedMenu(self.menuModel, _launcherWindow)
         # Put an existing filter to it and set property to open it as new
         # window.
-
+        _detachedMenu.setWindowTitle(self.menuModel.mainTitle)
         _detachedMenu.searchInput.setText(self.filterTerm)
         _detachedMenu.setWindowFlags(Qt.Window | Qt.Tool)
         _detachedMenu.setAttribute(Qt.WA_DeleteOnClose, True)
