@@ -6,6 +6,7 @@ import platform
 import argparse
 import subprocess
 import json
+import copy
 
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import pyqtSlot, Qt
@@ -54,14 +55,15 @@ class LauncherWindow(QtGui.QMainWindow):
         # Main window consist of filter/serach entry and a main button which
         # pops up the root menu. Create a layout and add the items.
 
-        self._launcherMenu = LauncherSubMenu(self._menuModel, self)
+        #####self._launcherMenu = LauncherSubMenu(self._menuModel, self)
+        self._launcherMenu = LauncherSearchMenuView(self._menuModel, self)
         self.mainButton = LauncherMainButton(self._launcherMenu, self)
         # Create Filter/search item. Add it and main button to the layout.
 
         self._searchInput = LauncherSearchWidget(self._launcherMenu, self)
         self._mainLayout.addWidget(self._searchInput)
         self._mainLayout.addWidget(self.mainButton)
-        # Create menu bar. In current visualization menu bar also exposes all
+        # Create menu bar. In current visualization menu bar exposes all
         # LauncherFileChoiceItem items from the model. They are exposed in
         # File menu.
 
@@ -74,13 +76,13 @@ class LauncherWindow(QtGui.QMainWindow):
             self._fileMenu.addAction(_buttonAction)
         _menuBar.addMenu(self._fileMenu)
 
+
     def setNewView(self, rootMenuFile):
         """Rebuild launcher from new config file.
 
         Destroy previous model and create new one. Build menus and edit main
         window elements.
         """
-
         del self._menuModel
         self._menuModel = self._buildMenuModel(rootMenuFile)
         self.setWindowTitle(self._menuModel.mainTitle)
@@ -99,7 +101,6 @@ class LauncherWindow(QtGui.QMainWindow):
         """Return model of a menu defined in rootMenuFile."""
         _rootMeniFullPath = os.path.join(self.launcherCfg.get("launcher_base"),
                                          rootMenuPath)
-        _rootMeniFullPath = os.path.normpath(_rootMeniFullPath)
         try:
             _rootMenuFile = open(_rootMeniFullPath)
         except IOError:
@@ -123,8 +124,14 @@ class LauncherMenu(QtGui.QMenu):
         QtGui.QMenu.__init__(self, parent)
         self.filterTerm = ""
         self.menuModel = menuModel
-        # menuModel has a list of menuItems with models of items. Build buttons
-        # from it and add them to the menu.
+        self.buildMenu(self.menuModel.menuItems)
+
+    def buildMenu(self, menuModel):
+        """Visualize menu
+
+        menuModel has a list of menuItems with models of items. Build buttons
+        from it and add them to the menu.
+        """
 
         for item in self.menuModel.menuItems:
             if item.__class__.__name__ == "LauncherCmdItem":
@@ -230,12 +237,12 @@ class LauncherMenu(QtGui.QMenu):
         self.move(position)
 
         # Set focus on first button (skip detach button and titles)
-        _i = 1
-        while isinstance(self.actions()[_i].defaultWidget(),
+        i = 1
+        while isinstance(self.actions()[i].defaultWidget(),
                          LauncherMenuTitle):
-            _i += 1
-        self.actions()[_i].defaultWidget().setFocus()
-        self.setActiveAction(self.actions()[_i])
+            i += 1
+        self.actions()[i].defaultWidget().setFocus()
+        self.setActiveAction(self.actions()[i])
 
     def _getRootAncestor(self):
         """Return mainButton from which all menus expand.
@@ -328,6 +335,41 @@ class LauncherDetachedMenu(LauncherMenu):
             LauncherMenu.keyPressEvent(self, event)
 
 
+class LauncherSearchMenuView(LauncherMenu):
+
+    """Search view
+
+    A bit different visualization (without submenus) of menu for searching.
+    """
+
+    def __init__(self, menuModel, parent=None):
+        LauncherMenu.__init__(self, menuModel, parent)
+
+    def buildMenu(self, menuModel):
+        """Visualize menu
+        
+        Override this method and build diffrent visualization.
+        """
+        cMenuItems = copy.copy(self.menuModel.menuItems)
+        level = 0
+        for item in cMenuItems:
+            if item.__class__.__name__ == "LauncherCmdItem":
+                self.appendToMenu(LauncherCmdButton(item, self))
+            elif item.__class__.__name__ == "LauncherSubMenuItem":
+                self.appendToMenu(LauncherSubMenuAsTitle(item, self))
+                # Take subemnu model and build (visulaize) it below
+                print item.subMenu.menuItems
+                cSubMenuItems = copy.copy(item.subMenu.menuItems)
+                for cItem in cSubMenuItems:
+                    if cItem.__class__.__name__ != "LauncherItemSeparator":
+                        cItem.text = "| " + cItem.text
+                cMenuItems[cMenuItems.index(item)+1:cMenuItems.index(item)+1] = cSubMenuItems
+            elif item.__class__.__name__ == "LauncherTitleItem":
+                self.appendToMenu(LauncherMenuTitle(item, self))
+            elif item.__class__.__name__ == "LauncherItemSeparator":
+                self.addAction(LauncherSeparator(item, self))
+
+
 class LauncherMenuWidgetAction(QtGui.QWidgetAction):
 
     """Wrap widgets to be added to menu.
@@ -364,7 +406,7 @@ class LauncherSearchWidget(QtGui.QLineEdit):
         QtGui.QLineEdit.__init__(self, parent)
         self.textChanged.connect(lambda: menu.filterMenu(self.text()))
         self._myAction = None
-        #self.setPlaceholderText("Enter filter term.") # Not supported at Qt 4.6.2
+        self.setPlaceholderText("Enter filter term.") # Not supported on Qt 4.6.2
 
     def setMyAction(self, action):
         self._myAction = action
@@ -389,6 +431,22 @@ class LauncherMenuTitle(QtGui.QLabel):
     def __init__(self, itemModel, parent=None):
         QtGui.QLabel.__init__(self, itemModel.text, parent)
         self.setStyleSheet("QLabel { color: blue; }")
+        self._myAction = None
+
+    def setMyAction(self, action):
+        self._myAction = action
+
+
+class LauncherSubMenuAsTitle(QtGui.QLabel):
+
+    """Menu button as title
+
+    Passive element with no action and no key focus.Used only in
+    LauncherSearchMenuView"""
+
+    def __init__(self, itemModel, parent=None):
+        QtGui.QLabel.__init__(self, itemModel.text, parent)
+        self.setStyleSheet("QLabel { color: red; }")
         self._myAction = None
 
     def setMyAction(self, action):
@@ -558,7 +616,7 @@ class LauncherCmdButton(LauncherNamedButton):
 
 class LauncherMenuButton(LauncherNamedButton):
 
-    """Builds a new model from a view.
+    """Builds a new view from model.
 
     LauncherMenuButton builds new menu from model. When pressed the menu is
     popped up.

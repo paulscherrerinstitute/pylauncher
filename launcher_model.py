@@ -183,7 +183,7 @@ class LauncherFileChoiceItem(LauncherMenuModelItem):
     def __init__(self, launcherCfg, text=None, rootMenuFile=None, style=None,
                  helpLink=None, key=None):
         LauncherMenuModelItem.__init__(self, text, style, key)
-        self.rootMenuFile = launcherCfg.get("launcher_base") + rootMenuFile
+        self.rootMenuFile = rootMenuFile
 
 
 class LauncherTitleItem(LauncherMenuModelItem):
