@@ -55,8 +55,8 @@ class LauncherWindow(QtGui.QMainWindow):
         # Main window consist of filter/serach entry and a main button which
         # pops up the root menu. Create a layout and add the items.
 
-        #####self._launcherMenu = LauncherSubMenu(self._menuModel, self)
-        self._launcherMenu = LauncherSearchMenuView(self._menuModel, self)
+        self._launcherMenu = LauncherSubMenu(self._menuModel, self)
+        ########self._launcherMenu = LauncherSearchMenuView(self._menuModel, self)
         self.mainButton = LauncherMainButton(self._launcherMenu, self)
         # Create Filter/search item. Add it and main button to the layout.
 
@@ -75,7 +75,6 @@ class LauncherWindow(QtGui.QMainWindow):
             _buttonAction.setDefaultWidget(_button)
             self._fileMenu.addAction(_buttonAction)
         _menuBar.addMenu(self._fileMenu)
-
 
     def setNewView(self, rootMenuFile):
         """Rebuild launcher from new config file.
@@ -106,7 +105,7 @@ class LauncherWindow(QtGui.QMainWindow):
         except IOError:
             _errMsg = "Err: File \"" + rootMenuPath + "\" not found."
             sys.exit(_errMsg)
-        _rootMenu = LauncherMenuModel(_rootMenuFile, self.launcherCfg)
+        _rootMenu = LauncherMenuModel(_rootMenuFile, 0, self.launcherCfg)
         _rootMenuFile.close()
         return _rootMenu
 
@@ -132,14 +131,17 @@ class LauncherMenu(QtGui.QMenu):
         menuModel has a list of menuItems with models of items. Build buttons
         from it and add them to the menu.
         """
-
+        group = list()
         for item in self.menuModel.menuItems:
             if item.__class__.__name__ == "LauncherCmdItem":
-                self.appendToMenu(LauncherCmdButton(item, self))
+                self.appendToMenu(LauncherCmdButton(item, group, self))
             elif item.__class__.__name__ == "LauncherSubMenuItem":
-                self.appendToMenu(LauncherMenuButton(item, self))
+                self.appendToMenu(LauncherMenuButton(item, group, self))
             elif item.__class__.__name__ == "LauncherTitleItem":
-                self.appendToMenu(LauncherMenuTitle(item, self))
+                group = []
+                titleButton = LauncherMenuTitle(item, group, self)
+                self.appendToMenu(titleButton)
+                group.append(titleButton)
             elif item.__class__.__name__ == "LauncherItemSeparator":
                 self.addAction(LauncherSeparator(item, self))
 
@@ -173,8 +175,6 @@ class LauncherMenu(QtGui.QMenu):
 
         self.filterTerm = filterTerm
         _hasVisible = False
-        _visible_count = 0
-        _last_title = None
         # Skip first item since it is either search entry or detach button.
 
         for action in self.actions()[1:len(self.actions())]:
@@ -193,10 +193,7 @@ class LauncherMenu(QtGui.QMenu):
                 # show last title. Then reset counter and store current title
                 # as last.
 
-                if _last_title:
-                    _last_title.setVisibility(_visible_count != 0)
-                _visible_count = 0
-                _last_title = action
+                action.setVisibility(False)
 
             elif _type == "LauncherMenuButton":
                 # Recursively filter menus. Show only sub-menus that have
@@ -206,8 +203,8 @@ class LauncherMenu(QtGui.QMenu):
                 _subHasVisible = _subMenu.filterMenu(filterTerm)
                 action.setVisibility(_subHasVisible)
                 if _subHasVisible:
-                    _visible_count += 1
-                _hasVisible = _hasVisible or _subHasVisible
+                    for item in _widget.group:
+                        item._myAction.setVisibility(True)
 
             elif _widget.text().contains(filterTerm, Qt.CaseInsensitive):
                 # Filter term is found in the button text. For now filter only
@@ -215,13 +212,11 @@ class LauncherMenu(QtGui.QMenu):
 
                 action.setVisibility(True)
                 _hasVisible = True
-                _visible_count += 1
+                for item in _widget.group:
+                    item._myAction.setVisibility(True)
+
             else:
                 action.setVisibility(False)
-
-            if _last_title:  # Handle last title if exists
-                _last_title.setVisibility(_visible_count != 0)
-
         return _hasVisible
 
     def showEvent(self, showEvent):
@@ -273,7 +268,7 @@ class LauncherSubMenu(LauncherMenu):
 
     def __init__(self, menuModel, parent=None):
         LauncherMenu.__init__(self, menuModel, parent)
-        self.detachButton = LauncherDetachButton(self)
+        self.detachButton = LauncherDetachButton(None, self)
         self.insertToMenu(self.detachButton, 0)
 
     def detach(self):
@@ -347,27 +342,80 @@ class LauncherSearchMenuView(LauncherMenu):
 
     def buildMenu(self, menuModel):
         """Visualize menu
-        
+
         Override this method and build diffrent visualization.
         """
         cMenuItems = copy.copy(self.menuModel.menuItems)
         level = 0
         for item in cMenuItems:
+            for i in xrange(0, item.parent.level):
+                if item.__class__.__name__ != "LauncherItemSeparator":
+                    item.text = "> " + item.text
             if item.__class__.__name__ == "LauncherCmdItem":
-                self.appendToMenu(LauncherCmdButton(item, self))
+                self.appendToMenu(LauncherCmdButton(item, None, self))
             elif item.__class__.__name__ == "LauncherSubMenuItem":
-                self.appendToMenu(LauncherSubMenuAsTitle(item, self))
-                # Take subemnu model and build (visulaize) it below
-                print item.subMenu.menuItems
+                self.appendToMenu(LauncherSubMenuAsTitle(item, None, self))
+                # Take subemnu model and build (visualize) it below
+
                 cSubMenuItems = copy.copy(item.subMenu.menuItems)
-                for cItem in cSubMenuItems:
-                    if cItem.__class__.__name__ != "LauncherItemSeparator":
-                        cItem.text = "| " + cItem.text
-                cMenuItems[cMenuItems.index(item)+1:cMenuItems.index(item)+1] = cSubMenuItems
+                index = cMenuItems.index(item) + 1
+                cMenuItems[index:index] = cSubMenuItems
             elif item.__class__.__name__ == "LauncherTitleItem":
-                self.appendToMenu(LauncherMenuTitle(item, self))
+                self.appendToMenu(LauncherMenuTitle(item, None, self))
             elif item.__class__.__name__ == "LauncherItemSeparator":
                 self.addAction(LauncherSeparator(item, self))
+
+    def filterMenu(self, filterTerm=None):
+        """Filter menu items with filterTerm
+
+        Shows/hides action depending on filterTerm. Returns true if has
+        visible active (buttons) items.
+        """
+
+        self.filterTerm = filterTerm
+        _hasVisible = False
+        _visible_count = 0
+        _last_title = None
+        # Skip first item since it is either search entry or detach button.
+
+        for action in self.actions()[1:len(self.actions())]:
+            if action.__class__.__name__ == "LauncherMenuWidgetAction":
+                _widget = action.defaultWidget()
+                _type = _widget.__class__.__name__
+
+            if not filterTerm:
+                action.setVisibility(False)  # Hide all
+
+            elif _type == "LauncherMenuTitle":
+                # Visible actions below title are counted. If count > 0 then
+                # show last title. Then reset counter and store current title
+                # as last.
+
+                if _last_title:
+                    _last_title.setVisibility(_visible_count != 0)
+                _visible_count = 0
+                _last_title = action
+
+            elif _type == "LauncherSubMenuAsTitle":
+                # Visible actions form the submenu (are counted). The rest
+                # of logic is same as form LauncherMenuTitle
+
+                action.setVisibility(False)
+
+            elif _widget.text().contains(filterTerm, Qt.CaseInsensitive):
+                # Filter term is found in the button text. For now filter only
+                # cmd buttons.
+
+                action.setVisibility(True)
+                _hasVisible = True
+                _visible_count += 1
+            else:
+                action.setVisibility(False)
+
+            if _last_title:  # Handle last title if exists
+                _last_title.setVisibility(_visible_count != 0)
+
+        return _hasVisible
 
 
 class LauncherMenuWidgetAction(QtGui.QWidgetAction):
@@ -406,7 +454,8 @@ class LauncherSearchWidget(QtGui.QLineEdit):
         QtGui.QLineEdit.__init__(self, parent)
         self.textChanged.connect(lambda: menu.filterMenu(self.text()))
         self._myAction = None
-        self.setPlaceholderText("Enter filter term.") # Not supported on Qt 4.6.2
+        # Not supported on Qt 4.6.2
+        self.setPlaceholderText("Enter filter term.")
 
     def setMyAction(self, action):
         self._myAction = action
@@ -428,10 +477,15 @@ class LauncherMenuTitle(QtGui.QLabel):
 
     """Passive element with no action and no key focus."""
 
-    def __init__(self, itemModel, parent=None):
+    def __init__(self, itemModel, group=None, parent=None):
         QtGui.QLabel.__init__(self, itemModel.text, parent)
         self.setStyleSheet("QLabel { color: blue; }")
         self._myAction = None
+        # Group is list of "parent" items such as menu title and
+        # menu button. This list enables visualization when filtering
+        # or searching. TODO write better comment
+
+        self.group = group
 
     def setMyAction(self, action):
         self._myAction = action
@@ -444,10 +498,11 @@ class LauncherSubMenuAsTitle(QtGui.QLabel):
     Passive element with no action and no key focus.Used only in
     LauncherSearchMenuView"""
 
-    def __init__(self, itemModel, parent=None):
+    def __init__(self, itemModel, group=None, parent=None):
         QtGui.QLabel.__init__(self, itemModel.text, parent)
         self.setStyleSheet("QLabel { color: red; }")
         self._myAction = None
+        self.group = group
 
     def setMyAction(self, action):
         self._myAction = action
@@ -465,11 +520,12 @@ class LauncherButton(QtGui.QPushButton):
     a LauncherMenuWidgetAction.
     """
 
-    def __init__(self, parent=None):
+    def __init__(self, group=None, parent=None):
         QtGui.QPushButton.__init__(self, parent)
         self.setMouseTracking(True)
         self._parent = parent
         self._myAction = None
+        self.group = group
 
     def setMyAction(self, action):
         self._myAction = action
@@ -521,8 +577,8 @@ class LauncherDetachButton(LauncherButton):
     a new window.
     """
 
-    def __init__(self, parent=None):
-        LauncherButton.__init__(self, parent)
+    def __init__(self, group=None, parent=None):
+        LauncherButton.__init__(self, group, parent)
         self.setStyleSheet("""
             QPushButton{
                 height: 2px;
@@ -544,8 +600,8 @@ class LauncherMainButton(LauncherButton):
     with a different inputs.
     """
 
-    def __init__(self, menu, parent=None):
-        LauncherButton.__init__(self, parent)
+    def __init__(self, menu, group=None, parent=None):
+        LauncherButton.__init__(self, group, parent)
         self.setText(menu.menuModel.mainTitle)
         self.setMenu(menu)
 
@@ -566,12 +622,13 @@ class LauncherMainButton(LauncherButton):
         else:
             LauncherButton.keyPressEvent(self, event)
 
+
 class LauncherNamedButton(LauncherButton):
 
     """Parent class to all buttons with text."""
 
-    def __init__(self, itemModel, parent=None):
-        LauncherButton.__init__(self, parent)
+    def __init__(self, itemModel, group=None, parent=None):
+        LauncherButton.__init__(self, group, parent)
         self.setText(itemModel.text)
 
 
@@ -583,8 +640,8 @@ class LauncherFileChoiceButton(LauncherNamedButton):
     sets new view.
     """
 
-    def __init__(self, itemModel, parent=None):
-        LauncherNamedButton.__init__(self, itemModel, parent)
+    def __init__(self, itemModel, group=None, parent=None):
+        LauncherNamedButton.__init__(self, itemModel, group, parent)
         self._itemModel = itemModel
         self.clicked.connect(self._changeView)
 
@@ -603,8 +660,8 @@ class LauncherCmdButton(LauncherNamedButton):
 
     """LauncherCmdButton executes shell command. """
 
-    def __init__(self, itemModel, parent=None):
-        LauncherNamedButton.__init__(self, itemModel, parent)
+    def __init__(self, itemModel, group=None, parent=None):
+        LauncherNamedButton.__init__(self, itemModel, group, parent)
         self._cmd = itemModel.cmd
         self.clicked.connect(self._executeCmd)
 
@@ -622,8 +679,8 @@ class LauncherMenuButton(LauncherNamedButton):
     popped up.
     """
 
-    def __init__(self, itemModel, parent=None):
-        LauncherNamedButton.__init__(self, itemModel, parent)
+    def __init__(self, itemModel, group=None, parent=None):
+        LauncherNamedButton.__init__(self, itemModel, group, parent)
         _menu = LauncherSubMenu(itemModel.subMenu, self)
         self.setMenu(_menu)
 
