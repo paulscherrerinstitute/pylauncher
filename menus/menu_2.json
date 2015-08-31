@@ -7,6 +7,7 @@
         {"type": "title", "text": "Striptool"},
         {"type": "cmd", "text": "Strip Tool Generic", "param": "ls"},
         {"type": "separator"},
+        {"type": "menu", "text": "3rd sub menu", "file": "menu_3.json"},
         {"type": "cmd", "text": "RF Startup", "param": "ls"},
         {"type": "cmd", "text": "Conditioning", "param": "ls"}
     ]
