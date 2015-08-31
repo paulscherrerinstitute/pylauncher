@@ -16,6 +16,9 @@ from launcher_model import *
 
 
 class SearchOptions(enum.Enum):
+
+    """ Enum with all search/filter options """
+
     sensitivity = 0
     text = 1
     cmd = 2
@@ -134,10 +137,6 @@ class LauncherMenu(QtGui.QMenu):
         self.initFilterVisibility = True
         self.filterConditions = [False, True, False]
 
-    def setFilterCondition(self, condition, value):
-        self.filterConditions[condition.value] = value
-        self.filterMenu(self.filterTerm)
-
     def buildMenu(self, menuModel):
         """Visualize menu
 
@@ -179,6 +178,10 @@ class LauncherMenu(QtGui.QMenu):
         else:
             self.addAction(self._action)
 
+    def setFilterCondition(self, condition, value):
+        self.filterConditions[condition.value] = value
+        self.filterMenu(self.filterTerm)
+
     def filterMenu(self, filterTerm=None):
         """Filter menu items with filterTerm
 
@@ -213,7 +216,9 @@ class LauncherMenu(QtGui.QMenu):
                 subHasVisible = subMenu.filterMenu(filterTerm)
                 hasVisible = hasVisible or subHasVisible
                 action.setVisibility(subHasVisible)
-            elif self.filterConditions[SearchOptions.text.value] and widget.text().contains(filterTerm, self.filterConditions[SearchOptions.sensitivity.value]):
+            elif self.filterConditions[SearchOptions.text.value] and\
+                    widget.text().contains(filterTerm, self.filterConditions[
+                        SearchOptions.sensitivity.value]):
                 # Filter term is found in the button text. For now filter only
                 # cmd buttons.
 
@@ -466,7 +471,6 @@ class LauncherSearchWidget(QtGui.QWidget):
         self.myAction = None
         # Not supported on Qt 4.6.2
         searchField.setPlaceholderText("Enter search term.")
-
         caseSensitive.stateChanged.connect(lambda: menu.setFilterCondition(
             SearchOptions.sensitivity, caseSensitive.isChecked()))
         searchText.stateChanged.connect(
@@ -493,9 +497,7 @@ class LauncherFilterWidget(QtGui.QLineEdit):
         QtGui.QLineEdit.__init__(self, parent)
         self.textChanged.connect(lambda: menu.filterMenu(self.text()))
         self.myAction = None
-        # Not supported on Qt 4.6.2
         self.setPlaceholderText("Enter filter term.")
-
         self.menu = menu
 
     def setMyAction(self, action):
@@ -513,6 +515,8 @@ class LauncherFilterWidget(QtGui.QLineEdit):
             menu = mainButton.menu()
             searchMenu = LauncherSearchMenuView(menu.menuModel, launcherWindow)
             searchMenu.exposeMenu(self.text())
+        # TODO set other  cases
+
         # elif event.key() == Qt.Key_Left:
         #    self.parent().hide()
         # elif event.key() == Qt.Key_Right:
