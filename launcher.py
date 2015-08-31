@@ -371,7 +371,7 @@ class LauncherSearchMenuView(LauncherMenu):
     def buildMenu(self, menuModel):
         """Visualize menu
 
-        Override this method and build diffrent visualization.
+        Override this method and build different visualization.
         """
         cMenuItems = list(self.menuModel.menuItems)
         level = 0
@@ -408,8 +408,8 @@ class LauncherSearchMenuView(LauncherMenu):
         launcher is close or the root menu is changed.
         """
 
-        self.setWindowTitle(self.menuModel.mainTitle)
-        # self.searchInput.setText(self.filterTerm) TODO
+        self.setWindowTitle("Search")
+        self.searchWidget.setText(searchInput)
         self.filterMenu(searchInput)
         self.setWindowFlags(Qt.Window | Qt.Tool)
         self.setAttribute(Qt.WA_DeleteOnClose, True)
@@ -455,6 +455,7 @@ class LauncherSearchWidget(QtGui.QWidget):
     def __init__(self, menu, parent=None):
         QtGui.QWidget.__init__(self, parent)
         mainLayout = QtGui.QVBoxLayout(self)
+        mainLayout.setMargin(0)
         self.setLayout(mainLayout)
         # Prepare components and add them to layout:
         #    - search field
@@ -462,12 +463,12 @@ class LauncherSearchWidget(QtGui.QWidget):
         #    - filters (text, cmd)
         #    - menu
 
-        searchField = QtGui.QLineEdit(self)
+        self.searchInput = LauncherFilterLineEdit(menu, self)
         caseSensitive = QtGui.QCheckBox("Case sensitive", self)
         caseSensitive.setChecked(False)
         menu.setFilterCondition(SearchOptions.sensitivity,
                                 caseSensitive.isChecked())
-        mainLayout.addWidget(searchField)
+        mainLayout.addWidget(self.searchInput)
         mainLayout.addWidget(caseSensitive)
         options = QtGui.QWidget(self)
         optionsLayout = QtGui.QHBoxLayout(options)
@@ -482,11 +483,8 @@ class LauncherSearchWidget(QtGui.QWidget):
         options.setLayout(optionsLayout)
         mainLayout.addWidget(options)
 
-        searchField.textChanged.connect(
-            lambda: menu.filterMenu(searchField.text()))
         self.myAction = None
-        # Not supported on Qt 4.6.2
-        searchField.setPlaceholderText("Enter search term.")
+        self.searchInput.setPlaceholderText("Enter search term.")
         caseSensitive.stateChanged.connect(lambda: menu.setFilterCondition(
             SearchOptions.sensitivity, caseSensitive.isChecked()))
         searchText.stateChanged.connect(
@@ -496,17 +494,21 @@ class LauncherSearchWidget(QtGui.QWidget):
             lambda: menu.setFilterCondition(SearchOptions.cmd,
                                             searchCmd.isChecked()))
 
+    def setText(self, text):
+        self.searchInput.setText(text)
+
     def setMyAction(self, action):
         self.myAction = action
 
 
-class LauncherFilterWidget(QtGui.QLineEdit):
+class LauncherFilterLineEdit(QtGui.QLineEdit):
 
-    """Filter menu widget.
+    """Extended line edit tool.
 
-    LauncherFilterWidget is QLineEdit which does filtering of menu items
-    recursively by putting the filter  to child menus. When enter button is
-    pressed a search window with results is opened (TODO).
+    LauncherFilterLineEdit is QLineEdit which does filtering of menu items
+    recursively by putting the filter  to child menus. It has a button to clear
+    current input with one click. When enter button is pressed a search window
+    with results is opened.
     """
 
     def __init__(self, menu, parent=None):
@@ -515,9 +517,36 @@ class LauncherFilterWidget(QtGui.QLineEdit):
         self.myAction = None
         self.setPlaceholderText("Enter filter term.")
         self.menu = menu
+        # Create button to clear text and add it to the right edge of the
+        # input.
+
+        self.clearButton = QtGui.QToolButton(self)
+        self.clearButton.resize(30, 30)
+        self.setTextMargins(0, 0, 30, 0)
+        icon = QtGui.QIcon.fromTheme(
+            "edit-clear", QtGui.QIcon(":/images/icon"))
+        self.clearButton.setIcon(icon)
+        self.clearButton.setStyleSheet("background-color: transparent;")
+
+        position = QtCore.QPoint(self.pos().x()+self.width(), 0)
+        self.clearButton.move(position)
+        self.clearButton.setCursor(Qt.ArrowCursor)
+        self.clearButton.clicked.connect(lambda: self.clear())
 
     def setMyAction(self, action):
         self.myAction = action
+
+    def resizeEvent(self, event):
+        position = QtCore.QPoint(self.pos().x()+self.width() -
+                                 self.clearButton.width(), 0)
+        self.clearButton.move(position)
+
+
+class LauncherFilterWidget(LauncherFilterLineEdit):
+    """ Filter menu widget which opens search when return is pressed """
+
+    def __init__(self, menu, parent=None):
+        LauncherFilterLineEdit.__init__(self, menu, parent)
 
     def keyPressEvent(self, event):
         """Catch key pressed event.
@@ -798,7 +827,7 @@ if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
     # With no style applied detached menu does not get window frame on SL6
 
-    app.setStyle("cleanlooks")
+    # app.setStyle("cleanlooks")
     app.setStyleSheet("""
             QPushButton{
                 background-color: #e9e9e9;
