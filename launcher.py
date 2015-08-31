@@ -16,6 +16,9 @@ from launcher_model import *
 
 
 class SearchOptions(enum.Enum):
+
+    """ Enum with all search/filter options """
+
     sensitivity = 0
     text = 1
     cmd = 2
@@ -134,10 +137,6 @@ class LauncherMenu(QtGui.QMenu):
         self.initFilterVisibility = True
         self.filterConditions = [False, True, False]
 
-    def setFilterCondition(self, condition, value):
-        self.filterConditions[condition.value] = value
-        self.filterMenu(self.filterTerm)
-
     def buildMenu(self, menuModel):
         """Visualize menu
 
@@ -179,6 +178,10 @@ class LauncherMenu(QtGui.QMenu):
         else:
             self.addAction(self._action)
 
+    def setFilterCondition(self, condition, value):
+        self.filterConditions[condition.value] = value
+        self.filterMenu(self.filterTerm)
+
     def filterMenu(self, filterTerm=None):
         """Filter menu items with filterTerm
 
@@ -188,6 +191,12 @@ class LauncherMenu(QtGui.QMenu):
 
         self.filterTerm = filterTerm
         hasVisible = False
+        # Read filters
+        sensitivityFilter = self.filterConditions[
+            SearchOptions.sensitivity.value]
+        textFilter = self.filterConditions[SearchOptions.text.value]
+        cmdFilter = self.filterConditions[SearchOptions.cmd.value]
+
         # Skip first item since it is either search entry or detach button.
 
         for action in self.actions()[1:len(self.actions())]:
@@ -213,9 +222,21 @@ class LauncherMenu(QtGui.QMenu):
                 subHasVisible = subMenu.filterMenu(filterTerm)
                 hasVisible = hasVisible or subHasVisible
                 action.setVisibility(subHasVisible)
-            elif self.filterConditions[SearchOptions.text.value] and widget.text().contains(filterTerm, self.filterConditions[SearchOptions.sensitivity.value]):
+            elif self.filterConditions[SearchOptions.text.value] and\
+                    widget.text().contains(filterTerm, self.filterConditions[
+                        SearchOptions.sensitivity.value]):
                 # Filter term is found in the button text. For now filter only
                 # cmd buttons.
+
+                action.setVisibility(True)
+                hasVisible = True
+            elif textFilter and widget.text().contains(filterTerm,
+                                                       sensitivityFilter):
+                action.setVisibility(True)
+                hasVisible = True
+            elif widgetType == "LauncherCmdButton" and cmdFilter and\
+                QtCore.QString(widget.cmd).contains(filterTerm,
+                                                    sensitivityFilter):
 
                 action.setVisibility(True)
                 hasVisible = True
@@ -466,7 +487,6 @@ class LauncherSearchWidget(QtGui.QWidget):
         self.myAction = None
         # Not supported on Qt 4.6.2
         searchField.setPlaceholderText("Enter search term.")
-
         caseSensitive.stateChanged.connect(lambda: menu.setFilterCondition(
             SearchOptions.sensitivity, caseSensitive.isChecked()))
         searchText.stateChanged.connect(
@@ -493,9 +513,7 @@ class LauncherFilterWidget(QtGui.QLineEdit):
         QtGui.QLineEdit.__init__(self, parent)
         self.textChanged.connect(lambda: menu.filterMenu(self.text()))
         self.myAction = None
-        # Not supported on Qt 4.6.2
         self.setPlaceholderText("Enter filter term.")
-
         self.menu = menu
 
     def setMyAction(self, action):
@@ -513,6 +531,8 @@ class LauncherFilterWidget(QtGui.QLineEdit):
             menu = mainButton.menu()
             searchMenu = LauncherSearchMenuView(menu.menuModel, launcherWindow)
             searchMenu.exposeMenu(self.text())
+        # TODO set other  cases
+
         # elif event.key() == Qt.Key_Left:
         #    self.parent().hide()
         # elif event.key() == Qt.Key_Right:
@@ -733,12 +753,12 @@ class LauncherCmdButton(LauncherNamedButton):
 
     def __init__(self, itemModel, sectionTitle=None, parent=None):
         LauncherNamedButton.__init__(self, itemModel, sectionTitle, parent)
-        self._cmd = itemModel.cmd
-        self.clicked.connect(self._executeCmd)
+        self.cmd = itemModel.cmd
+        self.clicked.connect(self.executeCmd)
 
     @pyqtSlot()
-    def _executeCmd(self):
-        subprocess.Popen(self._cmd, stdout=subprocess.PIPE, shell=True)
+    def executeCmd(self):
+        subprocess.Popen(self.cmd, stdout=subprocess.PIPE, shell=True)
         self.parent().hide()  # When done hide popuped menu.
 
 
