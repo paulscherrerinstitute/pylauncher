@@ -131,8 +131,8 @@ class LauncherMenu(QtGui.QMenu):
         self.filterTerm = ""
         self.menuModel = menuModel
         self.buildMenu(self.menuModel.menuItems)
-
-        self.filterConditions = [False, False, False]
+        self.initFilterVisibility = True
+        self.filterConditions = [False, True, False]
 
     def setFilterCondition(self, condition, value):
         self.filterConditions[condition.value] = value
@@ -195,15 +195,15 @@ class LauncherMenu(QtGui.QMenu):
                 widget = action.defaultWidget()
                 widgetType = widget.__class__.__name__
             if not filterTerm:
-                # Empty filter. Show all. If submenu recursively empty  filter.
-                action.setVisibility(True)
+                # Empty filter. Show depending on type. If submenu recursively
+                # empty  filter.
+
+                action.setVisibility(self.initFilterVisibility)
                 if widgetType == "LauncherMenuButton":
                     action.defaultWidget().menu().filterMenu(filterTerm)
             elif widgetType == "LauncherMenuTitle":
-                # Visible actions below title are counted. If count > 0 then
-                # show last title. Then reset counter and store current title
-                # as last.
-
+                action.setVisibility(False)
+            elif widgetType == "LauncherSubMenuAsTitle":
                 action.setVisibility(False)
             elif widgetType == "LauncherMenuButton":
                 # Recursively filter menus. Show only sub-menus that have
@@ -345,6 +345,7 @@ class LauncherSearchMenuView(LauncherMenu):
         LauncherMenu.__init__(self, menuModel, parent)
         self.searchWidget = LauncherSearchWidget(self)  # TODO add parent
         self.insertToMenu(self.searchWidget, 0)
+        self.initFilterVisibility = False
 
     def buildMenu(self, menuModel):
         """Visualize menu
@@ -366,6 +367,7 @@ class LauncherSearchMenuView(LauncherMenu):
                     item, sectionTitle, self)
                 self.appendToMenu(subMenuTitleButton)
                 # Take subemnu model and build (visualize) it below
+
                 levelTitle = subMenuTitleButton
                 cSubMenuItems = copy.copy(item.subMenu.menuItems)
                 index = cMenuItems.index(item) + 1
@@ -386,49 +388,14 @@ class LauncherSearchMenuView(LauncherMenu):
         """
 
         self.setWindowTitle(self.menuModel.mainTitle)
-        # self.searchInput.setText(self.filterTerm)
+        # self.searchInput.setText(self.filterTerm) TODO
         self.filterMenu(searchInput)
         self.setWindowFlags(Qt.Window | Qt.Tool)
         self.setAttribute(Qt.WA_DeleteOnClose, True)
         self.setAttribute(Qt.WA_X11NetWmWindowTypeMenu, True)
         self.setEnabled(True)
         self.show()
-        # self.move(self.pos().x(), self.pos().y())
-
-    def filterMenu(self, filterTerm=None):
-        """Filter menu items with filterTerm
-
-        Shows/hides action depending on filterTerm. Returns true if has
-        visible active (buttons) items.
-        """
-
-        self.filterTerm = filterTerm
-        hasVisible = False
-        # Skip first item since it is search widget.
-
-        for action in self.actions()[1:len(self.actions())]:
-            if action.__class__.__name__ == "LauncherMenuWidgetAction":
-                widget = action.defaultWidget()
-                widgetType = widget.__class__.__name__
-            if not filterTerm:
-                # Empty filter. Hide all.
-                action.setVisibility(False)
-                if widgetType == "LauncherMenuButton":
-                    action.defaultWidget().menu().filterMenu(filterTerm)
-            elif widgetType == "LauncherMenuTitle":
-                action.setVisibility(False)
-            elif widgetType == "LauncherSubMenuAsTitle":
-                action.setVisibility(False)
-            elif self.filterConditions[SearchOptions.text.value] and
-                 widget.text().contains(filterTerm, self.filterConditions[SearchOptions.sensitivity.value]):
-                # Filter term is found in the button text. For now filter only
-                # cmd buttons.
-
-                action.setVisibility(True)
-                hasVisible = True
-            else:
-                action.setVisibility(False)
-        return hasVisible
+        # self.move(self.pos().x(), self.pos().y()) TODO
 
 
 class LauncherMenuWidgetAction(QtGui.QWidgetAction):
