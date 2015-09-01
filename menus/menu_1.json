@@ -5,7 +5,7 @@
     ],
     "menu": [
         {"type": "title", "text": "General"},
-        {"type": "cmd", "text": "Who is online", "param": "ls"},
+        {"type": "cmd", "text": "Who is online", "param": "ls", "tip": "List of currently connected users."},
         {"type": "title", "text": "HighLevel Applications"},
         {"type": "cmd", "text": "ScreenMonitorTool", "param": "ls"},
         {"type": "cmd", "text": "QE Measurement", "param": "ls -l"},
