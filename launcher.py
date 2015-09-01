@@ -308,7 +308,7 @@ class LauncherSubMenu(LauncherMenu):
                                             self.getRootAncestor())
         # Put an existing filter to it and set property to open it as new
         # window.
-        
+
         detachedMenu.setWindowTitle(self.menuModel.mainTitle)
         detachedMenu.searchInput.setText(self.filterTerm)
         detachedMenu.setWindowFlags(Qt.Window | Qt.Tool)
@@ -649,6 +649,14 @@ class LauncherButton(QtGui.QPushButton):
         self.myAction = None
         self.sectionTitle = sectionTitle
 
+        self.contextMenu = QtGui.QMenu(self)
+
+    def contextMenuEvent(self, event):
+        """ Show context menu if context exists"""
+
+        if self.contextMenu.actions():
+            self.contextMenu.exec_(QtGui.QCursor.pos())
+
     def setMyAction(self, action):
         self.myAction = action
 
@@ -753,6 +761,17 @@ class LauncherNamedButton(LauncherButton):
         LauncherButton.__init__(self, sectionTitle, parent)
         self.setText(itemModel.text)
 
+        if itemModel.help_link:
+            helpAction = QtGui.QAction("&Help", self)
+            helpAction.setData(itemModel.help_link)
+            self.contextMenu.addAction(helpAction)
+            helpAction.triggered.connect(self.todo)
+
+    def todo(self):
+        
+        url = QtCore.QUrl(self.sender().data().toString(), QtCore.QUrl.TolerantMode)
+        QtGui.QDesktopServices.openUrl(url)
+
 
 class LauncherFileChoiceButton(LauncherNamedButton):
 
@@ -765,10 +784,10 @@ class LauncherFileChoiceButton(LauncherNamedButton):
     def __init__(self, itemModel, parent=None):
         LauncherNamedButton.__init__(self, itemModel, None, parent)
         self._itemModel = itemModel
-        self.clicked.connect(self._changeView)
+        self.clicked.connect(self.changeView)
 
     @pyqtSlot()
-    def _changeView(self):
+    def changeView(self):
         """Find LauncherWindow and set new view."""
 
         _candidate = self
