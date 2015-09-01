@@ -264,7 +264,7 @@ class LauncherMenu(QtGui.QMenu):
         self.actions()[i].defaultWidget().setFocus()
         self.setActiveAction(self.actions()[i])
 
-    def _getRootAncestor(self):
+    def getRootAncestor(self):
         """Return mainButton from which all menus expand.
 
         All LauncherMenu menus visualized from the same root menu model
@@ -300,22 +300,23 @@ class LauncherSubMenu(LauncherMenu):
         """Open menu in new window.
 
         Creates  new menu and opens it as new window. Menu parent should be
-        mainButton on launcherWindow. This way it will be closed only if the
+        mainButton on main window. This way it will be closed only if the
         launcher is close or the root menu is changed.
         """
 
-        _launcherWindow = self._getRootAncestor()
-        _detachedMenu = LauncherDetachedMenu(self.menuModel, _launcherWindow)
+        detachedMenu = LauncherDetachedMenu(self.menuModel,
+                                            self.getRootAncestor())
         # Put an existing filter to it and set property to open it as new
         # window.
-        _detachedMenu.setWindowTitle(self.menuModel.mainTitle)
-        _detachedMenu.searchInput.setText(self.filterTerm)
-        _detachedMenu.setWindowFlags(Qt.Window | Qt.Tool)
-        _detachedMenu.setAttribute(Qt.WA_DeleteOnClose, True)
-        _detachedMenu.setAttribute(Qt.WA_X11NetWmWindowTypeMenu, True)
-        _detachedMenu.setEnabled(True)
-        _detachedMenu.show()
-        _detachedMenu.move(self.pos().x(), self.pos().y())
+        
+        detachedMenu.setWindowTitle(self.menuModel.mainTitle)
+        detachedMenu.searchInput.setText(self.filterTerm)
+        detachedMenu.setWindowFlags(Qt.Window | Qt.Tool)
+        detachedMenu.setAttribute(Qt.WA_DeleteOnClose, True)
+        detachedMenu.setAttribute(Qt.WA_X11NetWmWindowTypeMenu, True)
+        detachedMenu.setEnabled(True)
+        detachedMenu.show()
+        detachedMenu.move(self.pos().x(), self.pos().y())
         self.hide()
 
 
@@ -557,7 +558,7 @@ class LauncherFilterWidget(LauncherFilterLineEdit):
         if (event.key() == Qt.Key_Return) or (event.key() == Qt.Key_Enter):
             # Do a search on full menu (root menu).
 
-            mainButton = self.menu._getRootAncestor()
+            mainButton = self.menu.getRootAncestor()
             menu = mainButton.menu()
             searchMenu = LauncherSearchMenuView(menu.menuModel, launcherWindow)
             searchMenu.exposeMenu(self.text())
