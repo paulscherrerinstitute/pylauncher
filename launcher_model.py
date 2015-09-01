@@ -195,7 +195,7 @@ class LauncherFileChoiceItem(LauncherMenuModelItem):
                  style=None, tip=None, help_link=None, key=None):
         LauncherMenuModelItem.__init__(self, parent, text, style, tip,
                                        help_link, key)
-        self.rootMenuFile = launcherCfg.get("launcher_base") + rootMenuFile
+        self.rootMenuFile = rootMenuFile
 
 
 class LauncherTitleItem(LauncherMenuModelItem):

@@ -379,27 +379,31 @@ class LauncherSearchMenuView(LauncherMenu):
         sectionTitle = None
         levelTitle = None
         for item in cMenuItems:
+            levelPrefix = ""
             for i in xrange(0, item.parent.level):
-                if item.__class__.__name__ != "LauncherItemSeparator":
-                    item.text = "> " + item.text
+                levelPrefix = "> " + levelPrefix
             if item.__class__.__name__ == "LauncherCmdItem":
-                self.appendToMenu(LauncherCmdButton(item, sectionTitle, self))
+                button = LauncherCmdButton(item, sectionTitle, self)
+                self.appendToMenu(button)
             elif item.__class__.__name__ == "LauncherSubMenuItem":
-                subMenuTitleButton = LauncherSubMenuAsTitle(
+                button = LauncherSubMenuAsTitle(
                     item, sectionTitle, self)
-                self.appendToMenu(subMenuTitleButton)
+                self.appendToMenu(button)
                 # Take subemnu model and build (visualize) it below
 
-                levelTitle = subMenuTitleButton
+                levelTitle = button
                 cSubMenuItems = copy.copy(item.subMenu.menuItems)
                 index = cMenuItems.index(item) + 1
                 cMenuItems[index:index] = cSubMenuItems
             elif item.__class__.__name__ == "LauncherTitleItem":
-                titleButton = LauncherMenuTitle(item, levelTitle, self)
-                self.appendToMenu(titleButton)
-                sectionTitle = titleButton
-            elif item.__class__.__name__ == "LauncherItemSeparator":
+                button = LauncherMenuTitle(item, levelTitle, self)
+                self.appendToMenu(button)
+                sectionTitle = button
+
+            if item.__class__.__name__ == "LauncherItemSeparator":
                 self.addAction(LauncherSeparator(item, self))
+            else:  # Add level prefix
+                button.setText(levelPrefix + button.text())
 
     def exposeMenu(self, searchInput=None):
         """Open menu in new window.
@@ -768,8 +772,9 @@ class LauncherNamedButton(LauncherButton):
             helpAction.triggered.connect(self.todo)
 
     def todo(self):
-        
-        url = QtCore.QUrl(self.sender().data().toString(), QtCore.QUrl.TolerantMode)
+
+        url = QtCore.QUrl(
+            self.sender().data().toString(), QtCore.QUrl.TolerantMode)
         QtGui.QDesktopServices.openUrl(url)
 
 
