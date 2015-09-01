@@ -115,7 +115,7 @@ class LauncherWindow(QtGui.QMainWindow):
         except IOError:
             _errMsg = "Err: File \"" + rootMenuPath + "\" not found."
             sys.exit(_errMsg)
-        _rootMenu = LauncherMenuModel(_rootMenuFile, 0, self.launcherCfg)
+        _rootMenu = LauncherMenuModel(None, _rootMenuFile, 0, self.launcherCfg)
         _rootMenuFile.close()
         return _rootMenu
 
@@ -380,11 +380,17 @@ class LauncherSearchMenuView(LauncherMenu):
         levelTitle = None
         for item in cMenuItems:
             levelPrefix = ""
-            for i in xrange(0, item.parent.level):
-                levelPrefix = "> " + levelPrefix
+            addPrefix = False
+            for traceItem in item.trace:
+                levelPrefix = levelPrefix + traceItem.text + " > "
+
+
+            #for i in xrange(0, item.parent.level):
+            #    levelPrefix = "> " + levelPrefix
             if item.__class__.__name__ == "LauncherCmdItem":
                 button = LauncherCmdButton(item, sectionTitle, self)
                 self.appendToMenu(button)
+                addPrefix = True
             elif item.__class__.__name__ == "LauncherSubMenuItem":
                 button = LauncherSubMenuAsTitle(
                     item, sectionTitle, self)
@@ -399,10 +405,10 @@ class LauncherSearchMenuView(LauncherMenu):
                 button = LauncherMenuTitle(item, levelTitle, self)
                 self.appendToMenu(button)
                 sectionTitle = button
-
-            if item.__class__.__name__ == "LauncherItemSeparator":
+            elif item.__class__.__name__ == "LauncherItemSeparator":
                 self.addAction(LauncherSeparator(item, self))
-            else:  # Add level prefix
+            
+            if addPrefix:  # Add level prefix
                 button.setText(levelPrefix + button.text())
 
     def exposeMenu(self, searchInput=None):
@@ -769,9 +775,9 @@ class LauncherNamedButton(LauncherButton):
             helpAction = QtGui.QAction("&Help", self)
             helpAction.setData(itemModel.help_link)
             self.contextMenu.addAction(helpAction)
-            helpAction.triggered.connect(self.todo)
+            helpAction.triggered.connect(self.openHelp)
 
-    def todo(self):
+    def openHelp(self):
 
         url = QtCore.QUrl(
             self.sender().data().toString(), QtCore.QUrl.TolerantMode)

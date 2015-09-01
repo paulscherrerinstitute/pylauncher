@@ -23,8 +23,9 @@ class LauncherMenuModel:
         possible pictures on the buttons
     """
 
-    def __init__(self, menuFile, level, launcherCfg):
+    def __init__(self, parent, menuFile, level, launcherCfg):
         self.menuItems = list()
+        self.parent = parent
         self.level = level
         self._parseMenuJson(menuFile, launcherCfg)
 
@@ -143,6 +144,19 @@ class LauncherMenuModelItem:
         self.key = key
         self.tip = tip
 
+        # Track history of menus to reach this item in the tree. Every item has
+        # a parent which is menu, and each menu that is not root menu, has a
+        # parent which is submenu item. This list contains trace of submenu
+        # items to reach this item.
+        if parent.__class__.__name__ == "LauncherMenuModel" and\
+                parent.parent.__class__.__name__ == "LauncherSubMenuItem":
+            self.trace = list(parent.parent.trace)
+            self.trace.append(parent.parent)
+        else:
+            self.trace = list()
+
+        print self.trace
+
 
 class LauncherItemSeparator(LauncherMenuModelItem):
 
@@ -179,7 +193,7 @@ class LauncherSubMenuItem(LauncherMenuModelItem):
                  style=None, tip=None, help_link=None, detach=False, key=None):
         LauncherMenuModelItem.__init__(self, parent, text, style, tip,
                                        help_link, key)
-        self.subMenu = LauncherMenuModel(subMenuFile, parent.level+1,
+        self.subMenu = LauncherMenuModel(self, subMenuFile, parent.level+1,
                                          launcherCfg)
 
 
