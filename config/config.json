@@ -1,6 +1,7 @@
 {
     "Linux": {
         "launcher_base": "./menus/",
+        "theme_base": "./qss/",
         "cmd": {
             "command": "bash -c"
         },
@@ -11,6 +12,7 @@
     },
     "Windows": {
         "launcher_base": "./menus/",
+        "theme_base": "./qss/",
         "cmd": {
             "command": ""
         },
@@ -21,6 +23,7 @@
     },
     "OS_X": {
         "launcher_base": "./menus/",
+        "theme_base": "./qss/",
         "cmd": {
             "command": ""
         },

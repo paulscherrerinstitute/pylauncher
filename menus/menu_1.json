@@ -6,11 +6,11 @@
     "menu": [
         {"type": "title", "text": "General"},
         {"type": "cmd", "text": "Who is online", "param": "ls", "tip": "List of currently connected users.", "help-link": "http://www.google.com"},
-        {"type": "title", "text": "HighLevel Applications"},
-        {"type": "cmd", "text": "ScreenMonitorTool", "param": "ls"},
-        {"type": "cmd", "text": "QE Measurement", "param": "ls -l"},
+        {"type": "title", "text": "HighLevel Applications", "theme": "green"},
+        {"type": "cmd", "text": "ScreenMonitorTool", "param": "ls", "theme": "green", "style": "color: #FF3388"},
+        {"type": "cmd", "text": "QE Measurement", "param": "ls -l", "theme": "green"},
         {"type": "separator"},
-        {"type": "title", "text": "Utilities"},
+        {"type": "title", "text": "Utilities", "theme": "green"},
         {"type": "cmd", "text": "Remote network access control by control room", "param": "ls"},
         {"type": "menu", "text": "Strip-tool", "file": "menu_2.json"}
     ]

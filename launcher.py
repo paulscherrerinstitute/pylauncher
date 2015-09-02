@@ -33,6 +33,7 @@ class LauncherWindow(QtGui.QMainWindow):
     """
 
     def __init__(self, rootFilePath, cfgFilePath, parent=None):
+
         QtGui.QMainWindow.__init__(self, parent)
         try:
             _cfgFile = open(cfgFilePath)
@@ -51,6 +52,13 @@ class LauncherWindow(QtGui.QMainWindow):
         if systemType == "Darwin":
             systemType = "OS_X"
         self.launcherCfg = _cfg.get(systemType)
+
+        style_file = QtCore.QFile(self.launcherCfg.get("theme_base") +
+                                  "default.qss")
+        style_file.open(QtCore.QFile.ReadOnly)
+        styleSheet = QtCore.QLatin1String(style_file.readAll())
+        style_file.close()
+        self.setStyleSheet(styleSheet)
         # Build menu model from rootMenuFile and set general parameters.
 
         self.menuModel = self._buildMenuModel(rootFilePath)
@@ -66,7 +74,6 @@ class LauncherWindow(QtGui.QMainWindow):
         # pops up the root menu. Create a layout and add the items.
 
         self._launcherMenu = LauncherSubMenu(self.menuModel, self)
-        # self._launcherMenu = LauncherSearchMenuView(self.menuModel, self)
         self.mainButton = LauncherMainButton(self._launcherMenu, self)
         # Create Filter/search item. Add it and main button to the layout.
 
@@ -264,6 +271,15 @@ class LauncherMenu(QtGui.QMenu):
         self.actions()[i].defaultWidget().setFocus()
         self.setActiveAction(self.actions()[i])
 
+    def getLauncherWindow(self):
+        """ Search and return application main window"""
+
+        candidate = self
+        while type(candidate) is not LauncherWindow:
+            candidate = candidate.parent()
+
+        return candidate
+
     def getRootAncestor(self):
         """Return mainButton from which all menus expand.
 
@@ -275,10 +291,7 @@ class LauncherMenu(QtGui.QMenu):
         recursively determined.
         """
 
-        _object = self
-        while type(_object) is not LauncherWindow:
-            _object = _object.parent()
-        return _object.mainButton
+        return getLauncherWindow().mainButton
 
 
 class LauncherSubMenu(LauncherMenu):
@@ -383,10 +396,6 @@ class LauncherSearchMenuView(LauncherMenu):
             addPrefix = False
             for traceItem in item.trace:
                 levelPrefix = levelPrefix + traceItem.text + " > "
-
-
-            #for i in xrange(0, item.parent.level):
-            #    levelPrefix = "> " + levelPrefix
             if item.__class__.__name__ == "LauncherCmdItem":
                 button = LauncherCmdButton(item, sectionTitle, self)
                 self.appendToMenu(button)
@@ -407,7 +416,7 @@ class LauncherSearchMenuView(LauncherMenu):
                 sectionTitle = button
             elif item.__class__.__name__ == "LauncherItemSeparator":
                 self.addAction(LauncherSeparator(item, self))
-            
+
             if addPrefix:  # Add level prefix
                 button.setText(levelPrefix + button.text())
 
@@ -612,12 +621,14 @@ class LauncherMenuTitle(QtGui.QLabel):
 
     def __init__(self, itemModel, sectionTitle=None, parent=None):
         QtGui.QLabel.__init__(self, itemModel.text, parent)
-        self.setStyleSheet("QLabel { color: blue; }")
         self.myAction = None
         # For title element sectionTitle is menu button that owns menu with
         # this element.
 
         self.sectionTitle = sectionTitle
+
+        style = LauncherStyle(self, itemModel.theme, itemModel.style)
+        self.setStyleSheet(style.style)
 
     def setMyAction(self, action):
         self.myAction = action
@@ -635,6 +646,8 @@ class LauncherSubMenuAsTitle(QtGui.QLabel):
         self.setStyleSheet("QLabel { color: red; }")
         self.myAction = None
         self.sectionTitle = sectionTitle
+        style = LauncherStyle(self, itemModel.theme, itemModel.style)
+        self.setStyleSheet(style.style)
 
     def setMyAction(self, action):
         self.myAction = action
@@ -655,7 +668,6 @@ class LauncherButton(QtGui.QPushButton):
     def __init__(self, sectionTitle=None, parent=None):
         QtGui.QPushButton.__init__(self, parent)
         self.setMouseTracking(True)
-        self._parent = parent
         self.myAction = None
         self.sectionTitle = sectionTitle
 
@@ -705,7 +717,7 @@ class LauncherButton(QtGui.QPushButton):
 
     def mouseMoveEvent(self, event):
         self.setFocus()
-        self._parent.setActiveAction(self.myAction)
+        self.parent().setActiveAction(self.myAction)
 
 
 class LauncherDetachButton(LauncherButton):
@@ -719,16 +731,6 @@ class LauncherDetachButton(LauncherButton):
 
     def __init__(self, parent=None):
         LauncherButton.__init__(self, None, parent)
-        self.setStyleSheet("""
-            QPushButton{
-                height: 2px;
-                background-color: #666666
-            }
-            QPushButton:focus {
-                background-color: #bdbdbd;
-                outline: none
-            }
-        """)
         self.clicked.connect(parent.detach)
 
 
@@ -770,6 +772,8 @@ class LauncherNamedButton(LauncherButton):
     def __init__(self, itemModel, sectionTitle=None, parent=None):
         LauncherButton.__init__(self, sectionTitle, parent)
         self.setText(itemModel.text)
+        style = LauncherStyle(self, itemModel.theme, itemModel.style)
+        self.setStyleSheet(style.style)
 
         if itemModel.help_link:
             helpAction = QtGui.QAction("&Help", self)
@@ -838,7 +842,7 @@ class LauncherMenuButton(LauncherNamedButton):
 
     def __init__(self, itemModel, sectionTitle=None, parent=None):
         LauncherNamedButton.__init__(self, itemModel, sectionTitle, parent)
-        menu = LauncherSubMenu(itemModel.subMenu, self)
+        menu = LauncherSubMenu(itemModel.subMenu, self.parent())
         self.setMenu(menu)
         if itemModel.tip == None:
             toolTip = "Menu: " + menu.menuModel.mainTitle
@@ -855,6 +859,33 @@ class LauncherMenuButton(LauncherNamedButton):
             LauncherNamedButton.keyPressEvent(self, event)
 
 
+class LauncherStyle:
+
+    def __init__(self, item, theme=None, style=None):
+        self.item = item
+        self.styleString = ""
+        self.style = QtCore.QLatin1String(self.styleString)
+        if theme:
+            self.appendThemeStyle(theme)
+        if style and item:
+            self.appendStyle(style, item)
+
+    def appendThemeStyle(self, theme):
+        mainWindow = self.item.parent().getLauncherWindow()
+        theme_file = QtCore.QFile(mainWindow.launcherCfg.get("theme_base") +
+                                  theme + ".qss")
+        #theme_file = QtCore.QFile("./qss/" + theme + ".qss")
+        theme_file.open(QtCore.QFile.ReadOnly)
+        self.styleString = self.styleString + theme_file.readAll()
+        theme_file.close()
+        self.style = QtCore.QLatin1String(self.styleString)
+
+    def appendStyle(self, style, item):
+        self.styleString = self.styleString + item.__class__.__name__ +\
+            "{" + style + "}"
+        self.style = QtCore.QLatin1String(self.styleString)
+
+
 if __name__ == '__main__':
 
     # Usage: launcher.py menu config
@@ -868,37 +899,7 @@ if __name__ == '__main__':
 
     app = QtGui.QApplication(sys.argv)
     # With no style applied detached menu does not get window frame on SL6
-
     # app.setStyle("cleanlooks")
-    app.setStyleSheet("""
-            QPushButton{
-                background-color: #e9e9e9;
-                border-image: none;
-                border: none;
-                padding: 4px;
-                text-align:left;
-            }
-            QPushButton:focus {
-                background-color: #bdbdbd;
-                outline: none
-            }
-            QPushButton:menu-indicator {
-                image: url(images/caret-right.png);
-                subcontrol-position: right center;
-            }
-            QLabel{
-                background-color: #e9e9e9;
-                padding: 4px;
-                text-align:left;
-            }
-            QMenu {
-                background-color: #e9e9e9
-            }
-            QMenu::separator {
-                height: 1px;
-                background: #b0b0b0;
-            }
-        """)
 
     rootMenuFile = sys.argv[1]
     cfgFile = os.path.normpath(sys.argv[2])

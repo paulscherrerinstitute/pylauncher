@@ -72,6 +72,10 @@ class LauncherMenuModel:
             item_type = item.get("type", "")
             # For each check mandatory parameters and exit if not all.
 
+            #TODO make error prone:
+            theme = item.get("theme")
+            style = item.get("style")
+
             if item_type == "cmd":
                 self._checkItemFormatJson(item, ["text", "param"])
                 text = item.get("text").strip()
@@ -79,7 +83,7 @@ class LauncherMenuModel:
                 tip = item.get("tip")
                 help_link = item.get("help-link")
                 _menuItem = LauncherCmdItem(self, launcherCfg, text, param,
-                                            None, tip, help_link, None)
+                                            theme, style, tip, help_link, None)
             elif item_type == "menu":
                 self._checkItemFormatJson(item, ["text", "file"])
                 text = item.get("text").strip()
@@ -93,16 +97,16 @@ class LauncherMenuModel:
                               fileName + "\" not found."
                     sys.exit(_errMsg)
                 _menuItem = LauncherSubMenuItem(self, launcherCfg, text,
-                                                sub_file, None, tip, None,
-                                                None, None)
+                                                sub_file, theme, style, tip,
+                                                None, None, None)
                 sub_file.close()
             elif item_type == "title":
                 self._checkItemFormatJson(item, ["text"])
                 text = item.get("text").strip()
-                _menuItem = LauncherTitleItem(self, text)
+                _menuItem = LauncherTitleItem(self, text, theme, style)
 
             elif item_type == "separator":
-                _menuItem = LauncherItemSeparator(self)
+                _menuItem = LauncherItemSeparator(self, theme, style)
 
             else:
                 _errMsg = "ParseErr:" + menuFile.name + " (line " + \
@@ -135,10 +139,11 @@ class LauncherMenuModelItem:
     methods and parameters common to many subclasses.
     """
 
-    def __init__(self, parent, text=None, style=None, tip=None, help_link=None,
-                 key=None):
+    def __init__(self, parent, text=None, theme=None, style=None, tip=None,
+                 help_link=None, key=None):
         self.text = text
         self.parent = parent
+        self.theme = theme
         self.style = style
         self.help_link = help_link
         self.key = key
@@ -155,25 +160,23 @@ class LauncherMenuModelItem:
         else:
             self.trace = list()
 
-        print self.trace
-
 
 class LauncherItemSeparator(LauncherMenuModelItem):
 
     """Special LauncherMenuModelItem, with no text, style or help."""
 
-    def __init__(self, parent, key=None):
-        LauncherMenuModelItem.__init__(self, parent, None, None, None, None,
-                                       key)
+    def __init__(self, parent, theme=None, style=None, key=None):
+        LauncherMenuModelItem.__init__(self, parent, None, theme, style, None,
+                                       None, key)
 
 
 class LauncherCmdItem(LauncherMenuModelItem):
 
     """LauncherCmdItem holds the whole shell command."""
 
-    def __init__(self, parent, launcherCfg, text=None, cmd=None, style=None,
-                 tip=None, help_link=None, key=None):
-        LauncherMenuModelItem.__init__(self, parent, text, style, tip,
+    def __init__(self, parent, launcherCfg, text=None, cmd=None, theme=None,
+                 style=None, tip=None, help_link=None, key=None):
+        LauncherMenuModelItem.__init__(self, parent, text, theme, style, tip,
                                        help_link, key)
         _itemCfg = launcherCfg.get("cmd")
         _prefix = _itemCfg.get("command")
@@ -190,8 +193,9 @@ class LauncherSubMenuItem(LauncherMenuModelItem):
     """
 
     def __init__(self, parent, launcherCfg, text=None, subMenuFile=None,
-                 style=None, tip=None, help_link=None, detach=False, key=None):
-        LauncherMenuModelItem.__init__(self, parent, text, style, tip,
+                 theme=None, style=None, tip=None, help_link=None,
+                 detach=False, key=None):
+        LauncherMenuModelItem.__init__(self, parent, text, style, theme, tip,
                                        help_link, key)
         self.subMenu = LauncherMenuModel(self, subMenuFile, parent.level+1,
                                          launcherCfg)
@@ -207,7 +211,7 @@ class LauncherFileChoiceItem(LauncherMenuModelItem):
 
     def __init__(self, parent, launcherCfg, text=None, rootMenuFile=None,
                  style=None, tip=None, help_link=None, key=None):
-        LauncherMenuModelItem.__init__(self, parent, text, style, tip,
+        LauncherMenuModelItem.__init__(self, parent, text, None, style, tip,
                                        help_link, key)
         self.rootMenuFile = rootMenuFile
 
@@ -216,7 +220,7 @@ class LauncherTitleItem(LauncherMenuModelItem):
 
     """Text menu separator."""
 
-    def __init__(self, parent, text=None, style=None, tip=None, help_link=None,
-                 key=None):
-        LauncherMenuModelItem.__init__(self, parent, text, style, tip,
+    def __init__(self, parent, text=None, theme=None, style=None, tip=None,
+                 help_link=None, key=None):
+        LauncherMenuModelItem.__init__(self, parent, text, theme, style, tip,
                                        help_link, key)
