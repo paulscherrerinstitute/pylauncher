@@ -16,7 +16,7 @@ class LauncherMenuModel:
     calling object list menuItems.
 
     Each menu has:
-        _items
+        items
         mainTitle: holding the title of the menu
         list of menuItems: list of all LauncherMenuModelItems
         TODO: in future it will also hold the styles, levels and list of
