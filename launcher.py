@@ -104,6 +104,8 @@ class LauncherWindow(QtGui.QMainWindow):
         self.menuModel = self.buildMenuModel(rootMenuFile)
         self.setWindowTitle(self.menuModel.mainTitle)
         self.mainButton.setText(self.menuModel.mainTitle)
+        # TODO restyle main Button
+        del self.LauncherMenu
         self.launcherMenu = LauncherSubMenu(self.menuModel, self.mainButton)
         self.mainButton.setMenu(self.launcherMenu)
 
