@@ -105,7 +105,7 @@ class LauncherWindow(QtGui.QMainWindow):
         self.setWindowTitle(self.menuModel.mainTitle)
         self.mainButton.setText(self.menuModel.mainTitle)
         # TODO restyle main Button
-        del self.LauncherMenu
+        del self.launcherMenu
         self.launcherMenu = LauncherSubMenu(self.menuModel, self.mainButton)
         self.mainButton.setMenu(self.launcherMenu)
 
@@ -295,18 +295,17 @@ class LauncherMenu(QtGui.QMenu):
 
         return candidate
 
-    def getMainButton(self):
-        """Return mainButton from which all menus expand.
+    def getMainMenu(self):
+        """Return menu of mainButton from which all menus expand.
 
         All LauncherMenu menus visualized from the same root menu model
-        have lowest common ancestor which is a mainButton of the
-        LauncherWindow. If this button is destroyed all menus are also
-        destroyed, and all detached menus are closed. Because each Qt element
-        holds reference to its parent, mainButton of LauncherWindow can be
-        recursively determined.
+        have lowest common ancestor which is a menu of mainButton. If this menu
+        is destroyed all other are also destroyed, and all detached menus are
+        closed. Because each Qt element holds reference to its parent, this
+        menu can be recursively determined.
         """
 
-        return self.getLauncherWindow().mainButton
+        return self.getLauncherWindow().mainButton.menu()
 
 
 class LauncherSubMenu(LauncherMenu):
@@ -333,7 +332,7 @@ class LauncherSubMenu(LauncherMenu):
         """
 
         detachedMenu = LauncherDetachedMenu(self.menuModel,
-                                            self.getMainButton())
+                                            self.getMainMenu())
         # Put an existing filter to it and set property to open it as new
         # window.
 
@@ -394,7 +393,7 @@ class LauncherSearchMenuView(LauncherMenu):
 
     def __init__(self, menuModel, parent=None):
         LauncherMenu.__init__(self, menuModel, parent)
-        self.searchWidget = LauncherSearchWidget(self, self.getMainButton())
+        self.searchWidget = LauncherSearchWidget(self, self.getMainMenu())
         self.insertToMenu(self.searchWidget, 0)
         self.initFilterVisibility = False
 
@@ -593,8 +592,7 @@ class LauncherFilterWidget(LauncherFilterLineEdit):
         if (event.key() == Qt.Key_Return) or (event.key() == Qt.Key_Enter):
             # Do a search on full menu (root menu).
 
-            mainButton = self.menu.getMainButton()
-            menu = mainButton.menu()
+            menu = self.menu.getMainMenu()
             searchMenu = LauncherSearchMenuView(menu.menuModel, launcherWindow)
             searchMenu.exposeMenu(self.text())
         # TODO set other  cases
