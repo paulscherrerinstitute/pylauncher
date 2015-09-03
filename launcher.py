@@ -86,8 +86,9 @@ class LauncherWindow(QtGui.QMainWindow):
         # Main window consist of filter/serach entry and a main button which
         # pops up the root menu. Create a layout and add the items.
 
-        self.launcherMenu = LauncherSubMenu(self.menuModel, self)
+        self.launcherMenu = LauncherSubMenu(self.menuModel, None, self)
         self.mainButton = LauncherMainButton(self.launcherMenu, self)
+        self.launcherMenu.button = self.mainButton
         # Create Filter/search item. Add it and main button to the layout.
 
         self.searchInput = LauncherFilterWidget(self.launcherMenu, self)
@@ -114,7 +115,8 @@ class LauncherWindow(QtGui.QMainWindow):
         self.mainButton.setText(self.menuModel.mainTitle)
         # TODO restyle main Button
         del self.launcherMenu
-        self.launcherMenu = LauncherSubMenu(self.menuModel, self.mainButton)
+        self.launcherMenu = LauncherSubMenu(self.menuModel, self.mainButton,
+                                            self)
         self.mainButton.setMenu(self.launcherMenu)
         self.viewMenu.buildViewMenu(self.menuModel)
 
@@ -149,13 +151,14 @@ class LauncherMenu(QtGui.QMenu):
     manipulation.
     """
 
-    def __init__(self, menuModel, parent=None):
+    def __init__(self, menuModel, button=None, parent=None):
         QtGui.QMenu.__init__(self, parent)
         self.filterTerm = ""
         self.menuModel = menuModel
         self.buildMenu(self.menuModel.menu_items)
         self.initFilterVisibility = True
         self.filterConditions = [False, True, False]
+        self.button = button
 
     def buildMenu(self, menuModel):
         """Visualize menu
@@ -274,7 +277,7 @@ class LauncherMenu(QtGui.QMenu):
         return hasVisible
 
     def showEvent(self, showEvent):
-        """Catch event when menu is shown and move it by side of parent.
+        """Catch event when menu is shown and move it by side.
 
         Whenever show(), popup(), exec() are called this method is called.
         Move the menu to the left side of the button (default is bellow)
@@ -282,9 +285,17 @@ class LauncherMenu(QtGui.QMenu):
         # TODO handle cases when to close to the edge of screen.
         # TODO bug: not on right position. Because of styles inheritance, the
         # "parent button cannot be a parent. It must be e.g a parent menu"
+
+
+        if self.button:
+            width = self.button.width()
+            height = self.button.height()
+        else:
+            width = self.parent().width()
+            height = self.parent().height()
         position = self.pos()
-        position.setX(position.x()+self.parent().width())
-        position.setY(position.y()-self.parent().height())
+        position.setX(position.x()+width)
+        position.setY(position.y()-height)
         self.move(position)
 
         # Set focus on first button (skip detach button and titles)
@@ -327,8 +338,8 @@ class LauncherSubMenu(LauncherMenu):
     Creates detach button and adds it to the menu.
     """
 
-    def __init__(self, menuModel, parent=None):
-        LauncherMenu.__init__(self, menuModel, parent)
+    def __init__(self, menuModel, button, parent=None):
+        LauncherMenu.__init__(self, menuModel, button, parent)
         self.detachButton = LauncherDetachButton(self)
         self.insertToMenu(self.detachButton, 0)
 
@@ -369,7 +380,7 @@ class LauncherDetachedMenu(LauncherMenu):
     """
 
     def __init__(self, menuModel, parent=None):
-        LauncherMenu.__init__(self, menuModel, parent)
+        LauncherMenu.__init__(self, menuModel, None, parent)
         self.searchInput = LauncherFilterWidget(self, self)
         self.insertToMenu(self.searchInput, 0)
 
@@ -401,7 +412,7 @@ class LauncherSearchMenuView(LauncherMenu):
     """
 
     def __init__(self, menuModel, parent=None):
-        LauncherMenu.__init__(self, menuModel, parent)
+        LauncherMenu.__init__(self, menuModel, None, parent)
         self.searchWidget = LauncherSearchWidget(self, self.getMainMenu())
         self.insertToMenu(self.searchWidget, 0)
         self.initFilterVisibility = False
@@ -874,7 +885,7 @@ class LauncherMenuButton(LauncherNamedButton):
 
     def __init__(self, itemModel, sectionTitle=None, parent=None):
         LauncherNamedButton.__init__(self, itemModel, sectionTitle, parent)
-        menu = LauncherSubMenu(itemModel.sub_menu, self.parent())
+        menu = LauncherSubMenu(itemModel.sub_menu, self, self.parent())
         self.setMenu(menu)
         if not itemModel.tip:
             toolTip = "Menu: " + menu.menuModel.mainTitle
