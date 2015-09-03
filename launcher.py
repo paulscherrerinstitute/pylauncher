@@ -8,6 +8,7 @@ import subprocess
 import json
 import copy
 import enum
+import urllib2
 
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import pyqtSlot, Qt
@@ -25,16 +26,12 @@ class SearchOptions(enum.Enum):
 
 
 class LauncherViewMenu(QtGui.QMenu):
+
     def __int__(self, text, parent=None):
         QtGui.QMenu.__init__(self, text, parent)
 
     def buildViewMenu(self, menuModel):
         self.clear()
-        #updateConfig = QtGui.QAction("Update Config")
-        #self.addAction(updateConfig)
-        #self.addSeparator()
-
-        #self.history = QtGui.QMenu("Recent")
         for view in menuModel.fileChoices:
             button = LauncherFileChoiceButton(view, self)
             buttonAction = QtGui.QWidgetAction(self)
@@ -53,7 +50,7 @@ class LauncherWindow(QtGui.QMainWindow):
     def __init__(self, rootFilePath, cfgFilePath, parent=None):
         QtGui.QMainWindow.__init__(self, parent)
         try:
-            cfgFile = open(cfgFilePath)
+            cfgFile = open_launcher_file(cfgFilePath)
         except IOError:
             errMsg = "Err: Configuration file \"" + cfgFilePath + \
                 "\" not found."
@@ -70,13 +67,11 @@ class LauncherWindow(QtGui.QMainWindow):
             systemType = "OS_X"
         self.launcherCfg = cfg.get(systemType)
         # Load default theme
-
-        style_file = QtCore.QFile(self.launcherCfg.get("theme_base") +
-                                  "default.qss")
-        style_file.open(QtCore.QFile.ReadOnly)
-        styleSheet = QtCore.QLatin1String(style_file.readAll())
+        
+        style_file = open_launcher_file(
+            self.launcherCfg.get("theme_base") + "default.qss")
+        self.setStyleSheet(style_file.read())
         style_file.close()
-        self.setStyleSheet(styleSheet)
         # Build menu model from rootMenuFile and set general parameters.
 
         self.menuModel = self.buildMenuModel(rootFilePath)
@@ -136,7 +131,7 @@ class LauncherWindow(QtGui.QMainWindow):
         rootMeniFullPath = os.path.join(self.launcherCfg.get("launcher_base"),
                                         rootMenuPath)
         try:
-            rootMenuFile = open(rootMeniFullPath)
+            rootMenuFile = open_launcher_file(rootMeniFullPath)
         except IOError:
             errMsg = "Err: File \"" + rootMenuPath + "\" not found."
             sys.exit(errMsg)
@@ -909,10 +904,9 @@ class LauncherStyle:
 
     def appendThemeStyle(self, theme):
         mainWindow = self.item.parent().getLauncherWindow()
-        theme_file = QtCore.QFile(mainWindow.launcherCfg.get("theme_base") +
-                                  theme + ".qss")
-        theme_file.open(QtCore.QFile.ReadOnly)
-        self.styleString = self.styleString + theme_file.readAll()
+        theme_file = open_launcher_file(
+            mainWindow.launcherCfg.get("theme_base") + theme + ".qss")
+        self.styleString = self.styleString + theme_file.read()
         theme_file.close()
         self.style = QtCore.QLatin1String(self.styleString)
 
@@ -937,10 +931,7 @@ if __name__ == '__main__':
     # With no style applied detached menu does not get window frame on SL6
     # app.setStyle("cleanlooks")
 
-    rootMenuFile = sys.argv[1]
-    cfgFile = os.path.normpath(sys.argv[2])
-
-    launcherWindow = LauncherWindow(rootMenuFile, cfgFile)
+    launcherWindow = LauncherWindow(sys.argv[1], sys.argv[2])
     launcherWindow.setGeometry(0, 0, 150, 0)
     launcherWindow.show()
     sys.exit(app.exec_())

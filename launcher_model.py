@@ -3,7 +3,26 @@
 import sys
 import os
 import json
+import urllib2
 
+
+def open_launcher_file(file_path):
+    launcher_file = None
+    try:
+        launcher_file = urllib2.urlopen(file_path)
+    except ValueError:
+        try:
+            launcher_file_path = os.path.normpath(file_path)
+            launcher_file_path = os.path.abspath(launcher_file_path)
+            launcher_file_path = 'file://' + urllib2.quote(launcher_file_path)
+            launcher_file = urllib2.urlopen(launcher_file_path)
+        except IOError:
+            raise IOError
+    except IOError:
+        raise IOError
+
+    return launcher_file
+    
 
 class LauncherMenuModel:
 
@@ -37,10 +56,9 @@ class LauncherMenuModel:
 
     def _parseMenuJson(self, menuFile, launcherCfg):
         """Parse JSON type menu config file."""
-
-        _menu = json.load(menuFile)
+        _menu = json.loads(menuFile.read())
         self.mainTitle = _menu.get("menu-title",
-                                   os.path.basename(menuFile.name))
+                                   os.path.basename(menuFile.geturl()))
         # Get list of possible views (e.g. expert, user)
 
         _listOfViews = _menu.get("file-choice", list())
@@ -54,20 +72,20 @@ class LauncherMenuModel:
 
             _filePath = os.path.join(launcherCfg.get("launcher_base"),
                                      _fileName)
-            _filePath = os.path.normpath(_filePath)
-            if not os.path.isfile(_filePath):
-                _errMsg = "ParseErr: " + menuFile.name + ": File \"" +\
+            try:
+                open_launcher_file(_filePath)
+            except IOError:
+                errMsg = "ParseErr: " + menuFile.geturl() + ": File \"" +\
                     _fileName + "\" not found."
-                sys.exit(_errMsg)
+                sys.exit(errMsg)
             self.fileChoices.append(LauncherFileChoiceItem(self, launcherCfg,
                                                            _text, _fileName))
         # Build menu model. Report error if menu is not defined.
-
         _listOfMenuItems = _menu.get("menu", list())
         if not _listOfMenuItems:
-            errMsg = "ParseErr: " + menuFile.name + ": Launcher menu is not "\
+            errMsg = "ParseErr: " + menuFile.geturl() + ": Launcher menu is not "\
                 "defined."
-            sys.exit(_errMsg)
+            sys.exit(errMsg)
         for item in _listOfMenuItems:
             item_type = item.get("type", "")
             # For each check mandatory parameters and exit if not all.
@@ -90,12 +108,12 @@ class LauncherMenuModel:
                 fileName = item.get("file").strip()
                 tip = item.get("tip")
                 try:
-                    sub_file = open(
-                        launcherCfg.get("launcher_base") + fileName)
+                    sub_file_path = launcherCfg.get("launcher_base") + fileName
+                    sub_file = open_launcher_file(sub_file_path)
                 except IOError:
-                    _errMsg = "ParseErr: " + menuFile.name + ": File \"" + \
+                    errMsg = "ParseErr: " + menuFile.geturl() + ": File \"" + \
                               fileName + "\" not found."
-                    sys.exit(_errMsg)
+                    sys.exit(errMsg)
                 _menuItem = LauncherSubMenuItem(self, launcherCfg, text,
                                                 sub_file, theme, style, tip,
                                                 None, None, None)
@@ -109,10 +127,10 @@ class LauncherMenuModel:
                 _menuItem = LauncherItemSeparator(self, theme, style)
 
             else:
-                _errMsg = "ParseErr:" + menuFile.name + " (line " + \
+                errMsg = "ParseErr:" + menuFile.geturl() + " (line " + \
                     str(_i) + "): Unknown type \"" + item[0].strip() + \
                     "\"."
-                sys.exit(_errMsg)
+                sys.exit(errMsg)
 
             self.menuItems.append(_menuItem)
 
@@ -125,9 +143,9 @@ class LauncherMenuModel:
 
         for _param in mandatoryParam:
             if not item.get(_param):
-                _errMsg = "ParseErr: Parameter \"" + _param + \
+                errMsg = "ParseErr: Parameter \"" + _param + \
                     "\" is mandatory in configuration \"" + item + "\"."
-                sys.exit(_errMsg)
+                sys.exit(errMsg)
 
 
 class LauncherMenuModelItem:
