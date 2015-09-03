@@ -7,15 +7,17 @@ import enum
 import codecs
 import argparse
 
+
 class LauncherMenuType(enum.Enum):
     unknown = 0,
-    mainTitle = 1,
-    fileChoice = 2,
+    main_title = 1,
+    file_choice = 2,
     separator = 3,
     title = 4,
     command = 5,
     menu = 6,
     empty = 7,
+
 
 class LauncherMenuModelItem(object):
     """ TODO: Docs
@@ -26,15 +28,15 @@ class LauncherMenuModelItem(object):
         self._command = command
         self._params = params
 
-    def toJson(self):
+    def to_json(self):
         pass
 
     @staticmethod
-    def getType(command):
+    def get_type(command):
         if command == '@main-title':
-            return LauncherMenuType.mainTitle
+            return LauncherMenuType.main_title
         elif command == '@FileChoice':
-            return LauncherMenuType.fileChoice
+            return LauncherMenuType.file_choice
         elif command == '@separator':
             return LauncherMenuType.separator
         elif command == '@title':
@@ -46,10 +48,11 @@ class LauncherMenuModelItem(object):
         else:
             return LauncherMenuType.command
 
+
 class LauncherMenuModelItemFileChoice(LauncherMenuModelItem):
 
     def __init__(self, command, param):
-        super(LauncherMenuModelItemFileChoice,self).__init__(command, param)
+        super(LauncherMenuModelItemFileChoice, self).__init__(command, param)
 
         if len(param) == 0:
             self._text = 'None'
@@ -57,28 +60,30 @@ class LauncherMenuModelItemFileChoice(LauncherMenuModelItem):
             self._text = param[0]
         self._file = command[1] + '.json'
 
-    def toJson(self):
+    def to_json(self):
         return '''"file-choice": [
         {"text": "%s", "file": "%s"}
     ],\n''' % (self._text, self._file)
 
+
 class LauncherMenuModelItemTitle(LauncherMenuModelItem):
 
     def __init__(self, command, param):
-        super(LauncherMenuModelItemTitle,self).__init__(command, param)
+        super(LauncherMenuModelItemTitle, self).__init__(command, param)
 
         if len(param) == 0:
             self._text = 'None'
         else:
             self._text = param[0]
 
-    def toJson(self):
+    def to_json(self):
         return '{"type": "title", "text": "%s"}' % self._text
+
 
 class LauncherMenuModelItemCommand(LauncherMenuModelItem):
 
     def __init__(self, command, param):
-        super(LauncherMenuModelItemCommand,self).__init__(command, param)
+        super(LauncherMenuModelItemCommand, self).__init__(command, param)
 
         if len(param) == 0:
             self._text = 'None'
@@ -86,31 +91,33 @@ class LauncherMenuModelItemCommand(LauncherMenuModelItem):
             self._text = param[0]
             self._text = self._text.replace('"', r'\"')
 
-        self._cmdText = ''.join('%s ' % item for item in self._command)
-        self._cmdText = self._cmdText.rstrip()
-        
-        # Escape possible double quotes in the command string
-        self._cmdText = self._cmdText.replace('"', r'\"')
-        self._cmdText = self._cmdText.replace('\t', ' ')
+        self._cmd_text = ''.join('%s ' % item for item in self._command)
+        self._cmd_text = self._cmd_text.rstrip()
 
-    def toJson(self):
+        # Escape possible double quotes in the command string
+        self._cmd_text = self._cmd_text.replace('"', r'\"')
+        self._cmd_text = self._cmd_text.replace('\t', ' ')
+
+    def to_json(self):
         return '{"type": "cmd", "text": "%s", "param": "%s"}' \
-            % (self._text, self._cmdText)
+            % (self._text, self._cmd_text)
+
 
 class LauncherMenuModelItemMenu(LauncherMenuModelItem):
 
     def __init__(self, command, param):
-        super(LauncherMenuModelItemMenu,self).__init__(command, param)
+        super(LauncherMenuModelItemMenu, self).__init__(command, param)
 
         if len(param) == 0:
             self._text = 'None'
         else:
             self._text = param[0]
         self._file = command[1] + '.json'
-        
-    def toJson(self):
+
+    def to_json(self):
         return '{"type": "menu", "text": "%s", "file": "%s"}' \
             % (self._text, self._file)
+
 
 class LauncherMenuModel(object):
     """ TODO: Docs
@@ -118,38 +125,38 @@ class LauncherMenuModel(object):
 
     # Regular expression to split the tcl configuration
     # lines into individual parameters
-    regexSplit = re.compile('{([^\}]+)}[ \t]*')
-    regexType = re.compile('([^ ]+)[ \t]*')
-    
+    regex_split = re.compile('{([^\}]+)}[ \t]*')
+    regex_type = re.compile('([^ ]+)[ \t]*')
+
     # Translation table for character replacement
-    translateTable = dict((ord(char), u'') for char in u'\\\n')
+    translate_table = dict((ord(char), u'') for char in u'\\\n')
 
-    def __init__(self, dirPath, filePath, outputPath, overwrite):
+    def __init__(self, dir_path, file_path, output_path, overwrite):
 
-        self._dirPath = dirPath
-        self._filePath = filePath
-        self._outPath = outputPath 
-        self._path = os.path.join(self._dirPath, self._filePath)
+        self._dir_path = dir_path
+        self._file_path = file_path
+        self._out_path = output_path
+        self._path = os.path.join(self._dir_path, self._file_path)
         self._overwrite = overwrite
 
         self._title = None
-        self._fileChoice = None
+        self._file_choice = None
 
-        self._menuItems = list()
+        self._menu_items = list()
 
-        self._lineNumber = 0
+        self._line_number = 0
         self._parse()
 
     def _parse(self):
-        with codecs.open(self._path, encoding='ISO-8859-1') as tickleFile:
-            parseLine = ''
+        with codecs.open(self._path, encoding='ISO-8859-1') as tickle_file:
+            parse_line = ''
 
-            for line in tickleFile:
+            for line in tickle_file:
                 line = line.lstrip()
                 line = line.rstrip('\n')
-            
+
                 # Track the current line number for logging output
-                self._lineNumber += 1
+                self._line_number += 1
 
                 # Skip over empty lines
                 if not line:
@@ -159,24 +166,24 @@ class LauncherMenuModel(object):
                 # configuration lines using \ character
                 if '\\' in line:
                     # Remove '\' character and newlines
-                    line = line.translate(LauncherMenuModel.translateTable)
-                    parseLine += line
+                    line = line.translate(LauncherMenuModel.translate_table)
+                    parse_line += line
                 else:
-                    parseLine += line
+                    parse_line += line
                     # Skip over comment lines
                     if line[0] != '#':
-                        self._parseLine(parseLine)
-                    parseLine = ''
+                        self._parse_line(parse_line)
+                    parse_line = ''
 
-    def _parseLine(self, line):
-        params = re.split(LauncherMenuModel.regexSplit, line)
+    def _parse_line(self, line):
+        params = re.split(LauncherMenuModel.regex_split, line)
 
         # Remove empty strings in the parameter list
         for element in params:
             if not element:
                 params.remove(element)
 
-        command = re.split(LauncherMenuModel.regexType, params[0], 2)
+        command = re.split(LauncherMenuModel.regex_type, params[0], 2)
 
         # Remove empty strings in the parameter list
         for element in command:
@@ -184,110 +191,118 @@ class LauncherMenuModel(object):
                 command.remove(element)
 
         # Get type of configuration line
-        itemType = LauncherMenuModelItem.getType(command[0])
+        item_type = LauncherMenuModelItem.get_type(command[0])
 
-        element = None;
+        element = None
 
         # Remove first parameter since it is parsed
         # and stored in the command variable
         params.remove(params[0])
-        
+
         if len(params) == 0:
             print "WARNING: No parameters passed in file %s, line %d" \
-                % (self._filePath, self._lineNumber)
+                % (self._file_path, self._line_number)
 
         # Process line parameters depending on type
-        if itemType == LauncherMenuType.mainTitle:
+        if item_type == LauncherMenuType.main_title:
             self._title = params[0]
-        elif itemType == LauncherMenuType.fileChoice:
-            self._fileChoice = LauncherMenuModelItemFileChoice(command, params)
-        elif itemType == LauncherMenuType.title:
+        elif item_type == LauncherMenuType.file_choice:
+            self._file_Choice = LauncherMenuModelItemFileChoice(command,
+                                                                params)
+        elif item_type == LauncherMenuType.title:
             element = LauncherMenuModelItemTitle(command, params)
-        elif itemType == LauncherMenuType.command:
+        elif item_type == LauncherMenuType.command:
             element = LauncherMenuModelItemCommand(command, params)
-        elif itemType == LauncherMenuType.menu:
+        elif item_type == LauncherMenuType.menu:
             element = LauncherMenuModelItemMenu(command, params)
         else:
             print 'INFO: Skipping over line with command: %s' % command[0]
 
         if element:
-            self._menuItems.append(element)
-            
-    def toJson(self):
-        split = os.path.splitext(self._filePath)
+            self._menu_items.append(element)
+
+    def to_json(self):
+        split = os.path.splitext(self._file_path)
         if not split[1]:
-            print 'ERROR: Unable to parse extension from file name: %s' % self._filePath
+            print 'ERROR: Unable to parse extension from file name: %s' \
+                % self._file_path
             return
 
-        outFilePath = os.path.join(self._outPath, split[0] + '.json') 
-        print 'INFO: Writing file: %s' % outFilePath
+        out_file_path = os.path.join(self._out_path, split[0] + '.json')
+        print 'INFO: Writing file: %s' % out_file_path
 
-        if os.path.isdir(outFilePath):
-            print 'ERROR: Output file "%s" is a directory!' % outFilePath
+        if os.path.isdir(out_file_path):
+            print 'ERROR: Output file "%s" is a directory!' % out_file_path
             return
 
-        if os.path.isfile(outFilePath):
+        if os.path.isfile(out_file_path):
             if not self._overwrite:
-                print 'WARNING: Output file "%s" already exists!' % outFilePath
-                
-                userInput = ''
+                print 'WARNING: Output file "%s" already exists!' \
+                    % out_file_path
+
+                user_input = ''
                 while True:
                     userInput = raw_input('Overwrite? [y/N]:')
-                    if userInput == 'y' or userInput == 'Y':
+                    if user_input == 'y' or user_input == 'Y':
                         break
-                    elif userInput == 'n' or userInput == 'N' or not userInput:
+                    elif (user_input == 'n' or
+                          user_input == 'N' or
+                          not user_input):
                         return
 
-        with codecs.open(outFilePath, mode='w', encoding='utf-8') as outFile:
+        with codecs.open(out_file_path, mode='w', encoding='utf-8') \
+                as out_file:
 
-            outFile.write('{\n')
+            out_file.write('{\n')
             if self._title:
-                outFile.write('    "menu-title": "%s",\n' % self._title)
+                out_file.write('    "menu-title": "%s",\n' % self._title)
 
-            if self._fileChoice:
-                outFile.write('    ' + self._fileChoice.toJson())
+            if self._file_choice:
+                out_file.write('    ' + self._file_choice.to_json())
 
-            outFile.write('    "menu": [\n')
+            out_file.write('    "menu": [\n')
 
-            for item in menuModel._menuItems:
+            for item in self._menu_items:
 
-                if menuModel._menuItems[-1] is not item:
-                    outFile.write('        %s,\n' % item.toJson());
+                if menuModel._menu_items[-1] is not item:
+                    out_file.write('        %s,\n' % item.to_json())
                 else:
-                    outFile.write('        %s\n' % item.toJson());
+                    out_file.write('        %s\n' % item.to_json())
 
-            outFile.write('    ]\n}')
-            outFile.close()
+            out_file.write('    ]\n}')
+            out_file.close()
 
 if __name__ == '__main__':
 
     # Usage: launcher.py menu config
-    argsPars = argparse.ArgumentParser()
-    argsPars.add_argument('inputfile',
-                          help='Tickle configuration script to be converted.')
-    argsPars.add_argument('outputfolder',
-                          help='Folder where the converted json file will be stored.')
-    argsPars.add_argument('-y', '--yes', action='store_true',
-                          help='Overwrite the output file.')
+    args_pars = argparse.ArgumentParser()
+    args_pars.add_argument('inputfile',
+                           help='Tickle configuration script to be converted.')
+    args_pars.add_argument('outputfolder',
+                           help='Folder where the converted json file \
+                           will be stored.')
+    args_pars.add_argument('-y', '--yes', action='store_true',
+                           help='Overwrite the output file.')
 
-    args = argsPars.parse_args()
+    args = args_pars.parse_args()
 
-    ticklePath = os.path.normpath(args.inputfile)
-    outputPath = os.path.normpath(args.outputfolder)
+    tickle_path = os.path.normpath(args.inputfile)
+    output_path = os.path.normpath(args.outputfolder)
 
-    if not os.path.isfile(ticklePath):
-        print 'Tickle path "' + ticklePath + '" is not a regular file!'
+    if not os.path.isfile(tickle_path):
+        print 'Tickle path "' + tickle_path + '" is not a regular file!'
         sys.exit(-1)
 
-    if not os.path.isdir(outputPath):
-        print 'Output path "' + outputPath + '" is not a directory!'
+    if not os.path.isdir(output_path):
+        print 'Output path "' + output_path + '" is not a directory!'
         sys.exit(-1)
 
     # Split path into filename and directory path
-    tickleSplitPath = os.path.split(ticklePath);
-    ticklePathDir = tickleSplitPath[0]
-    ticklePathFile = tickleSplitPath[1]
+    tickle_split_path = os.path.split(tickle_path)
+    tickle_path_dir = tickle_split_path[0]
+    tickle_path_file = tickle_split_path[1]
 
     # Parse requested files
-    menuModel = LauncherMenuModel(ticklePathDir, ticklePathFile, outputPath, args.yes)
-    menuModel.toJson()
+    menuModel = LauncherMenuModel(tickle_path_dir, tickle_path_file,
+                                  output_path, args.yes)
+    menuModel.to_json()
