@@ -22,137 +22,135 @@ def open_launcher_file(file_path):
         raise IOError
 
     return launcher_file
-    
 
-class LauncherMenuModel:
+
+class launcher_menu_model:
 
     """Parse configuration and build menu model.
 
-    LauncherMenuModel parses the configuration file and builds the list of
-    menu items. Each LauncherMenuModel object holds only a list of items
+    launcher_menu_model parses the configuration file and builds the list of
+    menu items. Each launcher_menu_model object holds only a list of items
     defined in its configuration file. If submenu is needed, new
-    LauncherMenuModel object is created and its reference is stored on the
-    calling object list menuItems.
+    launcher_menu_model object is created and its reference is stored on the
+    calling object list menu_item.
 
     Each menu has:
-        items
-        mainTitle: holding the title of the menu
-        list of menuItems: list of all LauncherMenuModelItems
-        TODO: in future it will also hold the styles, levels and list of
-        possible pictures on the buttons
+        items: list of menu items
+        main_title: holding the title of the menu
+        level: holding the level of the menu (main = 0, sub of main = 1, ...)
+        list of menu_items: list of all launcher_menu_model_items
     """
 
-    def __init__(self, parent, menuFile, level, launcherCfg):
-        self.menuItems = list()
+    def __init__(self, parent, menu_file, level, launcher_cfg):
+        self.menu_items = list()
         self.parent = parent
         self.level = level
-        self._parseMenuJson(menuFile, launcherCfg)
+        self.parse_menu_json(menu_file, launcher_cfg)
 
-    def getItemsOfType(self, itemsType):
-        """Returns a list of all items of specified type."""
-
-        return filter(lambda x: x.__class__.__name__ ==
-                      itemsType, self.menuItems)
-
-    def _parseMenuJson(self, menuFile, launcherCfg):
+    def parse_menu_json(self, menu_file, launcher_cfg):
         """Parse JSON type menu config file."""
-        _menu = json.loads(menuFile.read())
-        self.mainTitle = _menu.get("menu-title",
-                                   os.path.basename(menuFile.geturl()))
+
+        menu = json.loads(menu_file.read())
+        self.mainTitle = menu.get("menu-title", os.path.basename(
+            menu_file.geturl()))
         # Get list of possible views (e.g. expert, user)
 
-        _listOfViews = _menu.get("file-choice", list())
-        self.fileChoices = list()
-        for _view in _listOfViews:
-            self._checkItemFormatJson(_view, ["text", "file"])  # exits if not
-            _text = _view.get("text").strip()
-            _fileName = _view.get("file").strip()
+        list_of_views = menu.get("file-choice", list())
+        self.file_choices = list()
+        for view in list_of_views:
+            self.check_item_format_json(view, ["text", "file"])  # exits if not
+            text = view.get("text").strip()
+            file_name = view.get("file").strip()
             # Do not open file just check if exists. Will be opened, in
             # LauncherWindow._buildMenuModel
 
-            _filePath = os.path.join(launcherCfg.get("launcher_base"),
-                                     _fileName)
+            file_path = os.path.join(launcher_cfg.get("launcher_base"),
+                                     file_name)
             try:
-                open_launcher_file(_filePath)
+                open_launcher_file(file_path)
             except IOError:
-                errMsg = "ParseErr: " + menuFile.geturl() + ": File \"" +\
-                    _fileName + "\" not found."
-                sys.exit(errMsg)
-            self.fileChoices.append(LauncherFileChoiceItem(self, launcherCfg,
-                                                           _text, _fileName))
+                err_msg = "ParseErr: " + menu_file.geturl() + ": File \"" +\
+                    file_name + "\" not found."
+                sys.exit(err_msg)
+            self.file_choices.append(launcher_file_choice_item(self,
+                                                               launcher_cfg,
+                                                               text,
+                                                               file_name))
         # Build menu model. Report error if menu is not defined.
-        _listOfMenuItems = _menu.get("menu", list())
-        if not _listOfMenuItems:
-            errMsg = "ParseErr: " + menuFile.geturl() + ": Launcher menu is not "\
-                "defined."
-            sys.exit(errMsg)
-        for item in _listOfMenuItems:
+
+        list_of_menu_items = menu.get("menu", list())
+        if not list_of_menu_items:
+            err_msg = "ParseErr: " + menu_file.geturl() +\
+                ": Launcher menu is not defined."
+            sys.exit(err_msg)
+        for item in list_of_menu_items:
             item_type = item.get("type", "")
             # For each check mandatory parameters and exit if not all.
 
-            #TODO make error prone:
-            theme = item.get("theme")
-            style = item.get("style")
+            theme = item.get("theme", None)
+            style = item.get("style", None)
 
             if item_type == "cmd":
-                self._checkItemFormatJson(item, ["text", "param"])
+                self.check_item_format_json(item, ["text", "param"])
                 text = item.get("text").strip()
                 param = item.get("param").strip()
                 tip = item.get("tip")
                 help_link = item.get("help-link")
-                _menuItem = LauncherCmdItem(self, launcherCfg, text, param,
-                                            theme, style, tip, help_link, None)
+                menu_item = launcher_cmd_item(self, launcher_cfg, text, param,
+                                              theme, style, tip, help_link,
+                                              None)
             elif item_type == "menu":
-                self._checkItemFormatJson(item, ["text", "file"])
+                self.check_item_format_json(item, ["text", "file"])
                 text = item.get("text").strip()
-                fileName = item.get("file").strip()
+                file_name = item.get("file").strip()
                 tip = item.get("tip")
                 try:
-                    sub_file_path = launcherCfg.get("launcher_base") + fileName
+                    sub_file_path = launcher_cfg.get(
+                        "launcher_base") + file_name
                     sub_file = open_launcher_file(sub_file_path)
                 except IOError:
-                    errMsg = "ParseErr: " + menuFile.geturl() + ": File \"" + \
-                              fileName + "\" not found."
-                    sys.exit(errMsg)
-                _menuItem = LauncherSubMenuItem(self, launcherCfg, text,
-                                                sub_file, theme, style, tip,
-                                                None, None, None)
+                    err_msg = "ParseErr: " + menu_file.geturl() + \
+                        ": File \"" + file_name + "\" not found."
+                    sys.exit(err_msg)
+                menu_item = launcher_sub_menu_item(self, launcher_cfg, text,
+                                                   sub_file, theme, style, tip,
+                                                   None, None, None)
                 sub_file.close()
             elif item_type == "title":
-                self._checkItemFormatJson(item, ["text"])
+                self.check_item_format_json(item, ["text"])
                 text = item.get("text").strip()
-                _menuItem = LauncherTitleItem(self, text, theme, style)
+                menu_item = launcher_title_item(self, text, theme, style)
 
             elif item_type == "separator":
-                _menuItem = LauncherItemSeparator(self, theme, style)
+                menu_item = launcher_item_separator(self, theme, style)
 
             else:
-                errMsg = "ParseErr:" + menuFile.geturl() + " (line " + \
+                err_msg = "ParseErr:" + menu_file.geturl() + " (line " + \
                     str(_i) + "): Unknown type \"" + item[0].strip() + \
                     "\"."
-                sys.exit(errMsg)
+                sys.exit(err_msg)
 
-            self.menuItems.append(_menuItem)
+            self.menu_items.append(menu_item)
 
-    def _checkItemFormatJson(self, item, mandatoryParam):
+    def check_item_format_json(self, item, mandatory_param):
         """Check dictionary for mandatory keys.
 
         Check item (dictionary) if it holds all mandatory keys. If any key is
         missing, exit the program and report error.
         """
 
-        for _param in mandatoryParam:
-            if not item.get(_param):
-                errMsg = "ParseErr: Parameter \"" + _param + \
+        for param in mandatory_param:
+            if not item.get(param):
+                err_msg = "ParseErr: Parameter \"" + param + \
                     "\" is mandatory in configuration \"" + item + "\"."
-                sys.exit(errMsg)
+                sys.exit(err_msg)
 
 
-class LauncherMenuModelItem:
+class launcher_menu_model_item:
 
     """Super class for all items in menu model.
 
-    LauncherMenuModelItem is a parent super class for menu items that needs
+    launcher_menu_model_item is a parent super class for menu items that needs
     to be visualized, such as menu buttons, separators, titles. It implements
     methods and parameters common to many subclasses.
     """
@@ -171,74 +169,75 @@ class LauncherMenuModelItem:
         # a parent which is menu, and each menu that is not root menu, has a
         # parent which is submenu item. This list contains trace of submenu
         # items to reach this item.
-        if parent.__class__.__name__ == "LauncherMenuModel" and\
-                parent.parent.__class__.__name__ == "LauncherSubMenuItem":
+        if parent.__class__.__name__ == "launcher_menu_model" and\
+                parent.parent.__class__.__name__ == "launcher_sub_menu_item":
             self.trace = list(parent.parent.trace)
             self.trace.append(parent.parent)
         else:
             self.trace = list()
 
 
-class LauncherItemSeparator(LauncherMenuModelItem):
+class launcher_item_separator(launcher_menu_model_item):
 
-    """Special LauncherMenuModelItem, with no text, style or help."""
+    """Special launcher_menu_model_item, with no text, style or help."""
 
     def __init__(self, parent, theme=None, style=None, key=None):
-        LauncherMenuModelItem.__init__(self, parent, None, theme, style, None,
-                                       None, key)
+        launcher_menu_model_item.__init__(self, parent, None, theme, style,
+                                          None, None, key)
 
 
-class LauncherCmdItem(LauncherMenuModelItem):
+class launcher_cmd_item(launcher_menu_model_item):
 
-    """LauncherCmdItem holds the whole shell command."""
+    """launcher_cmd_item holds the whole shell command."""
 
-    def __init__(self, parent, launcherCfg, text=None, cmd=None, theme=None,
+    def __init__(self, parent, launcher_cfg, text=None, cmd=None, theme=None,
                  style=None, tip=None, help_link=None, key=None):
-        LauncherMenuModelItem.__init__(self, parent, text, theme, style, tip,
-                                       help_link, key)
-        _itemCfg = launcherCfg.get("cmd")
-        _prefix = _itemCfg.get("command")
-        self.cmd = _prefix + " " + cmd
+        launcher_menu_model_item.__init__(self, parent, text, theme, style,
+                                          tip, help_link, key)
+        item_cfg = launcher_cfg.get("cmd")
+        prefix = item_cfg.get("command")
+        self.cmd = prefix + " " + cmd
 
 
-class LauncherSubMenuItem(LauncherMenuModelItem):
+class launcher_sub_menu_item(launcher_menu_model_item):
 
     """Menu item with reference to submenu model.
 
-    LauncherSubMenuItem builds new menu which is defined in subMenuFile.
+    launcher_sub_menu_item builds new menu which is defined in sub_menu_file.
     If detach == True this sub-menu should be automatically detached if
     detachment is supported in view.
     """
 
-    def __init__(self, parent, launcherCfg, text=None, subMenuFile=None,
+    def __init__(self, parent, launcher_cfg, text=None, sub_menu_file=None,
                  theme=None, style=None, tip=None, help_link=None,
                  detach=False, key=None):
-        LauncherMenuModelItem.__init__(self, parent, text, style, theme, tip,
-                                       help_link, key)
-        self.subMenu = LauncherMenuModel(self, subMenuFile, parent.level+1,
-                                         launcherCfg)
+        launcher_menu_model_item.__init__(self, parent, text, style, theme,
+                                          tip, help_link, key)
+        self.sub_menu = launcher_menu_model(self, sub_menu_file,
+                                            parent.level+1, launcher_cfg)
 
 
-class LauncherFileChoiceItem(LauncherMenuModelItem):
+class launcher_file_choice_item(launcher_menu_model_item):
 
     """Holds new root menu config file.
 
-    Launcher can be "rebuild" from new root menu file. LauncherFileChoiceItem
-    holds the file of the new root menu (rootMenuFile).
+    Launcher can be "rebuild" from new root menu file.
+    launcher_file_choice_item holds the file of the new root menu
+    (root_menu_file).
     """
 
-    def __init__(self, parent, launcherCfg, text=None, rootMenuFile=None,
+    def __init__(self, parent, launcher_cfg, text=None, root_menu_file=None,
                  style=None, tip=None, help_link=None, key=None):
-        LauncherMenuModelItem.__init__(self, parent, text, None, style, tip,
-                                       help_link, key)
-        self.rootMenuFile = rootMenuFile
+        launcher_menu_model_item.__init__(self, parent, text, None, style, tip,
+                                          help_link, key)
+        self.root_menu_file = root_menu_file
 
 
-class LauncherTitleItem(LauncherMenuModelItem):
+class launcher_title_item(launcher_menu_model_item):
 
     """Text menu separator."""
 
     def __init__(self, parent, text=None, theme=None, style=None, tip=None,
                  help_link=None, key=None):
-        LauncherMenuModelItem.__init__(self, parent, text, theme, style, tip,
-                                       help_link, key)
+        launcher_menu_model_item.__init__(self, parent, text, theme, style,
+                                          tip, help_link, key)

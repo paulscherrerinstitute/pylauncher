@@ -32,7 +32,7 @@ class LauncherViewMenu(QtGui.QMenu):
 
     def buildViewMenu(self, menuModel):
         self.clear()
-        for view in menuModel.fileChoices:
+        for view in menuModel.file_choices:
             button = LauncherFileChoiceButton(view, self)
             buttonAction = QtGui.QWidgetAction(self)
             buttonAction.setDefaultWidget(button)
@@ -67,7 +67,7 @@ class LauncherWindow(QtGui.QMainWindow):
             systemType = "OS_X"
         self.launcherCfg = cfg.get(systemType)
         # Load default theme
-        
+
         style_file = open_launcher_file(
             self.launcherCfg.get("theme_base") + "default.qss")
         self.setStyleSheet(style_file.read())
@@ -135,7 +135,7 @@ class LauncherWindow(QtGui.QMainWindow):
         except IOError:
             errMsg = "Err: File \"" + rootMenuPath + "\" not found."
             sys.exit(errMsg)
-        rootMenu = LauncherMenuModel(None, rootMenuFile, 0, self.launcherCfg)
+        rootMenu = launcher_menu_model(None, rootMenuFile, 0, self.launcherCfg)
         rootMenuFile.close()
         return rootMenu
 
@@ -153,28 +153,28 @@ class LauncherMenu(QtGui.QMenu):
         QtGui.QMenu.__init__(self, parent)
         self.filterTerm = ""
         self.menuModel = menuModel
-        self.buildMenu(self.menuModel.menuItems)
+        self.buildMenu(self.menuModel.menu_items)
         self.initFilterVisibility = True
         self.filterConditions = [False, True, False]
 
     def buildMenu(self, menuModel):
         """Visualize menu
 
-        menuModel has a list of menuItems with models of items. Build buttons
+        menuModel has a list of menu_items with models of items. Build buttons
         from it and add them to the menu.
         """
         sectionTitle = None
-        for item in self.menuModel.menuItems:
-            if item.__class__.__name__ == "LauncherCmdItem":
+        for item in self.menuModel.menu_items:
+            if item.__class__.__name__ == "launcher_cmd_item":
                 self.appendToMenu(LauncherCmdButton(item, sectionTitle, self))
-            elif item.__class__.__name__ == "LauncherSubMenuItem":
+            elif item.__class__.__name__ == "launcher_sub_menu_item":
                 self.appendToMenu(LauncherMenuButton(item, sectionTitle, self))
-            elif item.__class__.__name__ == "LauncherTitleItem":
+            elif item.__class__.__name__ == "launcher_title_item":
                 sectionTitle = None
                 titleButton = LauncherMenuTitle(item, sectionTitle, self)
                 self.appendToMenu(titleButton)
                 sectionTitle = titleButton
-            elif item.__class__.__name__ == "LauncherItemSeparator":
+            elif item.__class__.__name__ == "launcher_item_separator":
                 self.addAction(LauncherSeparator(item, self))
 
     def appendToMenu(self, widget):
@@ -411,7 +411,7 @@ class LauncherSearchMenuView(LauncherMenu):
 
         Override this method and build different visualization.
         """
-        cMenuItems = list(self.menuModel.menuItems)
+        cMenuItems = list(self.menuModel.menu_items)
         level = 0
         sectionTitle = None
         levelTitle = None
@@ -420,25 +420,25 @@ class LauncherSearchMenuView(LauncherMenu):
             addPrefix = False
             for traceItem in item.trace:
                 levelPrefix = levelPrefix + traceItem.text + " > "
-            if item.__class__.__name__ == "LauncherCmdItem":
+            if item.__class__.__name__ == "launcher_cmd_item":
                 button = LauncherCmdButton(item, sectionTitle, self)
                 self.appendToMenu(button)
                 addPrefix = True
-            elif item.__class__.__name__ == "LauncherSubMenuItem":
+            elif item.__class__.__name__ == "launcher_sub_menu_item":
                 button = LauncherSubMenuAsTitle(
                     item, sectionTitle, self)
                 self.appendToMenu(button)
                 # Take subemnu model and build (visualize) it below
 
                 levelTitle = button
-                cSubMenuItems = copy.copy(item.subMenu.menuItems)
+                cSubMenuItems = copy.copy(item.sub_menu.menu_items)
                 index = cMenuItems.index(item) + 1
                 cMenuItems[index:index] = cSubMenuItems
-            elif item.__class__.__name__ == "LauncherTitleItem":
+            elif item.__class__.__name__ == "launcher_title_item":
                 button = LauncherMenuTitle(item, levelTitle, self)
                 self.appendToMenu(button)
                 sectionTitle = button
-            elif item.__class__.__name__ == "LauncherItemSeparator":
+            elif item.__class__.__name__ == "launcher_item_separator":
                 self.addAction(LauncherSeparator(item, self))
 
             if addPrefix:  # Add level prefix
@@ -874,7 +874,7 @@ class LauncherMenuButton(LauncherNamedButton):
 
     def __init__(self, itemModel, sectionTitle=None, parent=None):
         LauncherNamedButton.__init__(self, itemModel, sectionTitle, parent)
-        menu = LauncherSubMenu(itemModel.subMenu, self.parent())
+        menu = LauncherSubMenu(itemModel.sub_menu, self.parent())
         self.setMenu(menu)
         if not itemModel.tip:
             toolTip = "Menu: " + menu.menuModel.mainTitle
