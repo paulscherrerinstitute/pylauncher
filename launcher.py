@@ -24,6 +24,24 @@ class SearchOptions(enum.Enum):
     cmd = 2
 
 
+class LauncherViewMenu(QtGui.QMenu):
+    def __int__(self, text, parent=None):
+        QtGui.QMenu.__init__(self, text, parent)
+
+    def buildViewMenu(self, menuModel):
+        self.clear()
+        #updateConfig = QtGui.QAction("Update Config")
+        #self.addAction(updateConfig)
+        #self.addSeparator()
+
+        #self.history = QtGui.QMenu("Recent")
+        for view in menuModel.fileChoices:
+            button = LauncherFileChoiceButton(view, self)
+            buttonAction = QtGui.QWidgetAction(self)
+            buttonAction.setDefaultWidget(button)
+            self.addAction(buttonAction)
+
+
 class LauncherWindow(QtGui.QMainWindow):
 
     """Launcher main window.
@@ -33,7 +51,6 @@ class LauncherWindow(QtGui.QMainWindow):
     """
 
     def __init__(self, rootFilePath, cfgFilePath, parent=None):
-
         QtGui.QMainWindow.__init__(self, parent)
         try:
             cfgFile = open(cfgFilePath)
@@ -86,13 +103,9 @@ class LauncherWindow(QtGui.QMainWindow):
         # File menu.
 
         menuBar = self.menuBar()
-        self.fileMenu = QtGui.QMenu("&File", menuBar)
-        for item in self.menuModel.fileChoices:
-            button = LauncherFileChoiceButton(item, self.fileMenu)
-            buttonAction = QtGui.QWidgetAction(self.fileMenu)
-            buttonAction.setDefaultWidget(button)
-            self.fileMenu.addAction(buttonAction)
-        menuBar.addMenu(self.fileMenu)
+        self.viewMenu = LauncherViewMenu("&View", menuBar)
+        self.viewMenu.buildViewMenu(self.menuModel)
+        menuBar.addMenu(self.viewMenu)
 
     def setNewView(self, rootMenuFile):
         """Rebuild launcher from new config file.
@@ -108,6 +121,7 @@ class LauncherWindow(QtGui.QMainWindow):
         del self.launcherMenu
         self.launcherMenu = LauncherSubMenu(self.menuModel, self.mainButton)
         self.mainButton.setMenu(self.launcherMenu)
+        self.viewMenu.buildViewMenu(self.menuModel)
 
     def changeEvent(self, changeEvent):
         """Catch when main window is selected and set focus to search."""
@@ -832,8 +846,8 @@ class LauncherFileChoiceButton(LauncherNamedButton):
         candidate = self
         while candidate.__class__.__name__ is not "LauncherWindow":
             candidate = candidate.parent()
-        candidate.setNewView(self.itemModel.rootMenuFile)
         self.parent().hide()  # When done hide popuped menu.
+        candidate.setNewView(self.itemModel.rootMenuFile)
 
 
 class LauncherCmdButton(LauncherNamedButton):
