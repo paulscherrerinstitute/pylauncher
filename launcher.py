@@ -245,6 +245,13 @@ class LauncherMenu(QtGui.QMenu):
         for action in self.actions()[1:len(self.actions())]:
             if action.__class__.__name__ == "LauncherMenuWidgetAction":
                 widget = action.defaultWidget()
+                # Search is always only on NamedButtons. Get text from their
+                # models to avoid searching also the prefixes added later (in
+                # search view).
+
+                if isinstance(widget, LauncherNamedButton):
+                    text = QtCore.QString(widget.itemModel.text)
+
                 widgetType = widget.__class__.__name__
 
             if not filterTerm:
@@ -270,14 +277,8 @@ class LauncherMenu(QtGui.QMenu):
                 hasVisible = hasVisible or subHasVisible
                 action.setVisibility(subHasVisible)
 
-            elif self.filterConditions[SearchOptions.text.value] and\
-                    widget.text().contains(filterTerm, self.filterConditions[
-                        SearchOptions.sensitivity.value]):
-                action.setVisibility(True)
-                hasVisible = True
-
-            elif textFilter and widget.text().contains(filterTerm,
-                                                       sensitivityFilter):
+            elif textFilter and text.contains(filterTerm,
+                                              sensitivityFilter):
                 action.setVisibility(True)
                 hasVisible = True
 
@@ -439,7 +440,6 @@ class LauncherSearchMenuView(LauncherMenu):
         cMenuItems = list(self.menuModel.menu_items)
         level = 0
         sectionTitle = None
-        levelTitle = None
         for item in cMenuItems:
             levelPrefix = ""
             addPrefix = False
@@ -450,19 +450,14 @@ class LauncherSearchMenuView(LauncherMenu):
                 self.appendToMenu(button)
                 addPrefix = True
             elif item.__class__.__name__ == "launcher_sub_menu_item":
-                button = LauncherSubMenuAsTitle(
-                    item, sectionTitle, self)
-                self.appendToMenu(button)
                 # Take subemnu model and build (visualize) it below
-
-                levelTitle = button
                 cSubMenuItems = copy.copy(item.sub_menu.menu_items)
-                index = cMenuItems.index(item) + 1
-                cMenuItems[index:index] = cSubMenuItems
+                cMenuItems.extend(cSubMenuItems)
             elif item.__class__.__name__ == "launcher_title_item":
-                button = LauncherMenuTitle(item, levelTitle, self)
+                button = LauncherMenuTitle(item, None, self)
                 self.appendToMenu(button)
                 sectionTitle = button
+                addPrefix = True
             elif item.__class__.__name__ == "launcher_item_separator":
                 self.addAction(LauncherSeparator(item, self))
 
@@ -486,6 +481,9 @@ class LauncherSearchMenuView(LauncherMenu):
         self.setEnabled(True)
         self.show()
         # self.move(self.pos().x(), self.pos().y()) TODO
+
+    def hide(self):
+        pass  # Search menu should not be hidden at any action (left key).
 
 
 class LauncherMenuWidgetAction(QtGui.QWidgetAction):
@@ -684,27 +682,6 @@ class LauncherMenuTitle(QtGui.QLabel):
         self.myAction = action
 
 
-class LauncherSubMenuAsTitle(QtGui.QLabel):
-
-    """Menu button as title
-
-    Passive element with no action and no key focus.Used only in
-    LauncherSearchMenuView"""
-
-    def __init__(self, itemModel, sectionTitle=None, parent=None):
-        QtGui.QLabel.__init__(self, itemModel.text, parent)
-        self.setStyleSheet("QLabel { color: red; }")
-        self.myAction = None
-        self.sectionTitle = sectionTitle
-        # Apply custom styles
-
-        style = LauncherStyle(self, itemModel.theme, itemModel.style)
-        self.setStyleSheet(style.style)
-
-    def setMyAction(self, action):
-        self.myAction = action
-
-
 class LauncherButton(QtGui.QPushButton):
 
     """Super class for active menu items (buttons).
@@ -830,6 +807,7 @@ class LauncherNamedButton(LauncherButton):
 
     def __init__(self, itemModel, sectionTitle=None, parent=None):
         LauncherButton.__init__(self, sectionTitle, parent)
+        self.itemModel = itemModel
         self.setText(itemModel.text)
         style = LauncherStyle(self, itemModel.theme, itemModel.style)
         self.setStyleSheet(style.style)
