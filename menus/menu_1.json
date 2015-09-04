@@ -12,6 +12,6 @@
         {"type": "separator"},
         {"type": "title", "text": "Utilities", "theme": "green"},
         {"type": "cmd", "text": "Remote network access control by control room", "param": "ls"},
-        {"type": "menu", "text": "Strip-tool", "file": "menu_2.json"},
+        {"type": "menu", "text": "Strip-tool", "file": "menu_2.json"}
     ]
 }

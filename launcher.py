@@ -292,6 +292,9 @@ class LauncherMenu(QtGui.QMenu):
             else:
                 action.setVisibility(False)
 
+
+
+
         return hasVisible
 
     def showEvent(self, showEvent):
@@ -473,13 +476,14 @@ class LauncherSearchMenuView(LauncherMenu):
         """
 
         self.setWindowTitle("Search")
-        self.searchWidget.setText(searchInput)
+        #self.searchWidget.setText(searchInput)
         self.filterMenu(searchInput)
         self.setWindowFlags(Qt.Window | Qt.Tool)
         self.setAttribute(Qt.WA_DeleteOnClose, True)
         self.setAttribute(Qt.WA_X11NetWmWindowTypeMenu, True)
         self.setEnabled(True)
         self.show()
+        #self.searchWidget.searchInput.setFocus()
         # self.move(self.pos().x(), self.pos().y()) TODO
 
     def hide(self):
@@ -570,7 +574,7 @@ class LauncherSearchWidget(QtGui.QWidget):
 
 class LauncherFilterLineEdit(QtGui.QLineEdit):
 
-    """Imput field with an option to clear it.
+    """Input field with an option to clear it.
 
     LauncherFilterLineEdit is QLineEdit which does filtering of menu items
     recursively by putting the filter  to child menus. It has a button to clear
@@ -593,6 +597,7 @@ class LauncherFilterLineEdit(QtGui.QLineEdit):
         icon = QtGui.QIcon("./images/delete-2x.png")  # add  icon
         self.clearButton.setIcon(icon)
         self.clearButton.setStyleSheet("background-color: transparent;")
+        self.clearButton.setFocusPolicy(Qt.NoFocus)
 
         position = QtCore.QPoint(self.pos().x()+self.width(), 0)
         self.clearButton.move(position)
@@ -628,24 +633,17 @@ class LauncherFilterWidget(LauncherFilterLineEdit):
             searchMenu = LauncherSearchMenuView(menu.menuModel, menu.button,
                                                 menu)
             searchMenu.exposeMenu(self.text())
-        # TODO set other  cases
 
-        # elif event.key() == Qt.Key_Left:
-        #    self.parent().hide()
-        # elif event.key() == Qt.Key_Right:
-        #    pass
-        # elif event.key() == Qt.Key_Down:
-        #    candidate = self.nextInFocusChain()
-        #    while isinstance(candidate, LauncherMenuTitle):
-        #        candidate.focusNextChild()
-        #        candidate = candidate.nextInFocusChain()
-        #    candidate.focusNextChild()
-        # elif event.key() == Qt.Key_Up:
-        #    candidate = self.previousInFocusChain()
-        #    while isinstance(candidate, LauncherMenuTitle):
-        #        candidate.focusPreviousChild()
-        #        candidate = candidate.previousInFocusChain()
-        #    candidate.focusPreviousChild()
+        elif event.key() == Qt.Key_Down:
+            candidate = self.nextInFocusChain()
+            #while not isinstance(candidate, (LauncherFilterLineEdit, LauncherNamedButton, LauncherDetachButton, LauncherMainButton)):
+            #    candidate = candidate.nextInFocusChain()
+            candidate.setFocus()
+        elif event.key() == Qt.Key_Up:
+            candidate = self.previousInFocusChain()
+            #while not isinstance(candidate, (LauncherFilterLineEdit, LauncherNamedButton, LauncherDetachButton, LauncherMainButton)):
+             #   candidate = candidate.previousInFocusChain()
+            candidate.setFocus()
         else:
             QtGui.QLineEdit.keyPressEvent(self, event)
 
@@ -669,6 +667,7 @@ class LauncherMenuTitle(QtGui.QLabel):
     def __init__(self, itemModel, sectionTitle=None, parent=None):
         QtGui.QLabel.__init__(self, itemModel.text, parent)
         self.myAction = None
+        self.setFocusPolicy(Qt.NoFocus)
         # For title element sectionTitle is menu button that owns menu with
         # this element.
 
@@ -680,6 +679,7 @@ class LauncherMenuTitle(QtGui.QLabel):
 
     def setMyAction(self, action):
         self.myAction = action
+        action.setSeparator(True)  # TODO check if is ok on all systems
 
 
 class LauncherButton(QtGui.QPushButton):
@@ -734,17 +734,15 @@ class LauncherButton(QtGui.QPushButton):
 
         elif event.key() == Qt.Key_Down:
             candidate = self.nextInFocusChain()
-            while isinstance(candidate, LauncherMenuTitle):
-                candidate.focusNextChild()
-                candidate = candidate.nextInFocusChain()
-            candidate.focusNextChild()
+            #while not isinstance(candidate, (LauncherFilterLineEdit, LauncherSearchWidget, LauncherNamedButton, LauncherDetachButton)):
+            #    candidate = candidate.nextInFocusChain()
+            candidate.setFocus()
 
         elif event.key() == Qt.Key_Up:
             candidate = self.previousInFocusChain()
-            while isinstance(candidate, LauncherMenuTitle):
-                candidate.focusPreviousChild()
-                candidate = candidate.previousInFocusChain()
-            candidate.focusPreviousChild()
+            #while not isinstance(candidate, (LauncherFilterLineEdit, LauncherNamedButton, LauncherDetachButton)):
+            #    candidate = candidate.previousInFocusChain()
+            candidate.setFocus()
 
         else:
             QtGui.QPushButton.keyPressEvent(self, event)
