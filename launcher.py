@@ -31,12 +31,26 @@ class LauncherViewMenu(QtGui.QMenu):
         QtGui.QMenu.__init__(self, text, parent)
 
     def buildViewMenu(self, menuModel):
+        self.menuModel = menuModel
         self.clear()
         for view in menuModel.file_choices:
             button = LauncherFileChoiceButton(view, self)
             buttonAction = QtGui.QWidgetAction(self)
             buttonAction.setDefaultWidget(button)
             self.addAction(buttonAction)
+        self.addSeparator()
+        searchAction = QtGui.QAction("Search", self)
+        # searchAction.setShortcuts(QKeySequence::Open);
+        searchAction.setStatusTip("Search launcher items")
+        searchAction.triggered.connect(self.openSearch)
+        self.addAction(searchAction)
+
+    def openSearch(self):
+        searchMenu = LauncherSearchMenuView(self.menuModel,
+                                            self.parent().parent().mainButton,
+                                            self.parent().parent().launcherMenu
+                                            )
+        searchMenu.exposeMenu("")
 
 
 class LauncherWindow(QtGui.QMainWindow):
@@ -91,7 +105,8 @@ class LauncherWindow(QtGui.QMainWindow):
         self.launcherMenu.button = self.mainButton
         # Create Filter/search item. Add it and main button to the layout.
 
-        self.searchInput = LauncherFilterWidget(self.launcherMenu, self)
+        self.searchInput = LauncherFilterWidget(self.launcherMenu,
+                                                self)
         self.mainLayout.addWidget(self.searchInput)
         self.mainLayout.addWidget(self.mainButton)
         # Create menu bar. In current visualization menu bar exposes all
@@ -99,6 +114,7 @@ class LauncherWindow(QtGui.QMainWindow):
         # File menu.
 
         menuBar = self.menuBar()
+
         self.viewMenu = LauncherViewMenu("&View", menuBar)
         self.viewMenu.buildViewMenu(self.menuModel)
         menuBar.addMenu(self.viewMenu)
@@ -113,12 +129,13 @@ class LauncherWindow(QtGui.QMainWindow):
         self.menuModel = self.buildMenuModel(rootMenuFile)
         self.setWindowTitle(self.menuModel.mainTitle)
         self.mainButton.setText(self.menuModel.mainTitle)
-        # TODO restyle main Button
-        del self.launcherMenu
+        # TODO restyle main Button and reload model for search
+        self.launcherMenu.deleteLater()
         self.launcherMenu = LauncherSubMenu(self.menuModel, self.mainButton,
                                             self)
         self.mainButton.setMenu(self.launcherMenu)
         self.viewMenu.buildViewMenu(self.menuModel)
+        self.searchInput.menu = self.launcherMenu
 
     def changeEvent(self, changeEvent):
         """Catch when main window is selected and set focus to search."""
@@ -283,9 +300,6 @@ class LauncherMenu(QtGui.QMenu):
         Move the menu to the left side of the button (default is bellow)
         """
         # TODO handle cases when to close to the edge of screen.
-        # TODO bug: not on right position. Because of styles inheritance, the
-        # "parent button cannot be a parent. It must be e.g a parent menu"
-
 
         if self.button:
             width = self.button.width()
@@ -411,8 +425,8 @@ class LauncherSearchMenuView(LauncherMenu):
     expand, but are rather included at the bottom of the list.
     """
 
-    def __init__(self, menuModel, parent=None):
-        LauncherMenu.__init__(self, menuModel, None, parent)
+    def __init__(self, menuModel, button=None, parent=None):
+        LauncherMenu.__init__(self, menuModel, button, parent)
         self.searchWidget = LauncherSearchWidget(self, self.getMainMenu())
         self.insertToMenu(self.searchWidget, 0)
         self.initFilterVisibility = False
@@ -598,7 +612,7 @@ class LauncherFilterLineEdit(QtGui.QLineEdit):
 
 class LauncherFilterWidget(LauncherFilterLineEdit):
 
-    """ Filter menu widget which opens search when return is pressed """
+    """ Filter menu widget which opens search when return is pressed"""
 
     def __init__(self, menu, parent=None):
         LauncherFilterLineEdit.__init__(self, menu, parent)
@@ -613,7 +627,8 @@ class LauncherFilterWidget(LauncherFilterLineEdit):
             # Do a search on full menu (root menu).
 
             menu = self.menu.getMainMenu()
-            searchMenu = LauncherSearchMenuView(menu.menuModel, launcherWindow)
+            searchMenu = LauncherSearchMenuView(menu.menuModel, menu.button,
+                                                menu)
             searchMenu.exposeMenu(self.text())
         # TODO set other  cases
 
@@ -853,7 +868,7 @@ class LauncherFileChoiceButton(LauncherNamedButton):
         while candidate.__class__.__name__ is not "LauncherWindow":
             candidate = candidate.parent()
         self.parent().hide()  # When done hide popuped menu.
-        candidate.setNewView(self.itemModel.rootMenuFile)
+        candidate.setNewView(self.itemModel.root_menu_file)
 
 
 class LauncherCmdButton(LauncherNamedButton):
