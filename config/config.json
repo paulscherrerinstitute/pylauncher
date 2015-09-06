@@ -3,10 +3,14 @@
         "launcher_base": "./menus/",
         "theme_base": "./qss/",
         "cmd": {
-            "command": "bash -c"
+            "command": ""
         },
         "caqtdm":{
             "command": "caqtdm",
+            "macro_flag": "-macro"
+        },
+        "medm":{
+            "command": "medm",
             "macro_flag": "-macro"
         }
     },
@@ -19,6 +23,10 @@
         "caqtdm":{
             "command": "caqtdm",
             "macro_flag": "-macro"
+        },
+        "medm":{
+            "command": "medm",
+            "macro_flag": "-macro"
         }
     },
     "OS_X": {
@@ -29,6 +37,10 @@
         },
         "caqtdm":{
             "command": "caqtdm",
+            "macro_flag": "-macro"
+        },
+        "medm":{
+            "command": "medm",
             "macro_flag": "-macro"
         }
     }

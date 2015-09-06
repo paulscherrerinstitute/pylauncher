@@ -99,6 +99,26 @@ class launcher_menu_model:
                 menu_item = launcher_cmd_item(self, launcher_cfg, text, param,
                                               theme, style, tip, help_link,
                                               None)
+            elif item_type == "caqtdm":
+                self.check_item_format_json(item, ["text", "file"])
+                text = item.get("text").strip()
+                file_name = item.get("file").strip()
+                param = item.get("param")
+                tip = item.get("tip")
+                help_link = item.get("help-link")
+                menu_item = launcher_caqtdm_item(self, launcher_cfg, text,
+                                                 file_name, param, theme,
+                                                 style, tip, help_link, None)
+            elif item_type == "medm":
+                self.check_item_format_json(item, ["text", "file"])
+                text = item.get("text").strip()
+                file_name = item.get("file").strip()
+                param = item.get("param")
+                tip = item.get("tip")
+                help_link = item.get("help-link")
+                menu_item = launcher_medm_item(self, launcher_cfg, text,
+                                               file_name, param, theme,
+                                               style, tip, help_link, None)
             elif item_type == "menu":
                 self.check_item_format_json(item, ["text", "file"])
                 text = item.get("text").strip()
@@ -125,9 +145,8 @@ class launcher_menu_model:
                 menu_item = launcher_item_separator(self, theme, style)
 
             else:
-                err_msg = "ParseErr:" + menu_file.geturl() + " (line " + \
-                    str(_i) + "): Unknown type \"" + item[0].strip() + \
-                    "\"."
+                err_msg = "ParseErr:" + menu_file.geturl() + \
+                          ": Unknown type \"" + item_type + "\"."
                 sys.exit(err_msg)
 
             self.menu_items.append(menu_item)
@@ -199,6 +218,46 @@ class launcher_cmd_item(launcher_menu_model_item):
         self.cmd = prefix + " " + cmd
 
 
+class launcher_caqtdm_item(launcher_menu_model_item):
+
+    """launcher_caqtdm_item holds the call for caqtdm screen."""
+
+    def __init__(self, parent, launcher_cfg, text=None, caqtdm_file=None,
+                 macro=None, theme=None, style=None, tip=None, help_link=None,
+                 key=None):
+        launcher_menu_model_item.__init__(self, parent, text, theme, style,
+                                          tip, help_link, key)
+        item_cfg = launcher_cfg.get("caqtdm")
+        prefix = item_cfg.get("command")
+        macro_flag = item_cfg.get("macro_flag")
+
+        if macro:
+            self.cmd = prefix + " " + macro_flag + "\"" + macro + "\" " + \
+                       caqtdm_file
+        else:
+            self.cmd = prefix + caqtdm_file
+
+
+class launcher_medm_item(launcher_menu_model_item):
+
+    """launcher_med_item holds the call for medm screen."""
+
+    def __init__(self, parent, launcher_cfg, text=None, medm_file=None,
+                 macro=None, theme=None, style=None, tip=None, help_link=None,
+                 key=None):
+        launcher_menu_model_item.__init__(self, parent, text, theme, style,
+                                          tip, help_link, key)
+        item_cfg = launcher_cfg.get("medm")
+        prefix = item_cfg.get("command")
+        macro_flag = item_cfg.get("macro_flag")
+
+        if macro:
+            self.cmd = prefix + " " + macro_flag + " \"" + macro + "\" " + \
+                       medm_file
+        else:
+            self.cmd = prefix + medm_file
+
+
 class launcher_sub_menu_item(launcher_menu_model_item):
 
     """Menu item with reference to submenu model.
@@ -227,8 +286,8 @@ class launcher_file_choice_item(launcher_menu_model_item):
     """
 
     def __init__(self, parent, launcher_cfg, text=None, root_menu_file=None,
-                 style=None, tip=None, help_link=None, key=None):
-        launcher_menu_model_item.__init__(self, parent, text, None, style, tip,
+                 tip=None, help_link=None, key=None):
+        launcher_menu_model_item.__init__(self, parent, text, None, None, tip,
                                           help_link, key)
         self.root_menu_file = root_menu_file
 
