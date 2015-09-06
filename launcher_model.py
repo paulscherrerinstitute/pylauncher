@@ -227,8 +227,8 @@ class launcher_file_choice_item(launcher_menu_model_item):
     """
 
     def __init__(self, parent, launcher_cfg, text=None, root_menu_file=None,
-                 style=None, tip=None, help_link=None, key=None):
-        launcher_menu_model_item.__init__(self, parent, text, None, style, tip,
+                 tip=None, help_link=None, key=None):
+        launcher_menu_model_item.__init__(self, parent, text, None, None, tip,
                                           help_link, key)
         self.root_menu_file = root_menu_file
 

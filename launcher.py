@@ -25,34 +25,6 @@ class SearchOptions(enum.Enum):
     cmd = 2
 
 
-class LauncherViewMenu(QtGui.QMenu):
-
-    def __int__(self, text, parent=None):
-        QtGui.QMenu.__init__(self, text, parent)
-
-    def buildViewMenu(self, menuModel):
-        self.menuModel = menuModel
-        self.clear()
-        for view in menuModel.file_choices:
-            button = LauncherFileChoiceButton(view, self)
-            buttonAction = QtGui.QWidgetAction(self)
-            buttonAction.setDefaultWidget(button)
-            self.addAction(buttonAction)
-        self.addSeparator()
-        searchAction = QtGui.QAction("Search", self)
-        searchAction.setShortcuts(QtGui.QKeySequence("Ctrl+F"));
-        searchAction.setStatusTip("Search launcher items")
-        searchAction.triggered.connect(self.openSearch)
-        self.addAction(searchAction)
-
-    def openSearch(self):
-        searchMenu = LauncherSearchMenuView(self.menuModel,
-                                            self.parent().parent().mainButton,
-                                            self.parent().parent().launcherMenu
-                                            )
-        searchMenu.exposeMenu("")
-
-
 class LauncherWindow(QtGui.QMainWindow):
 
     """Launcher main window.
@@ -370,6 +342,22 @@ class LauncherSubMenu(LauncherMenu):
                                             self.getMainMenu())
         # Put an existing filter to it and set property to open it as new
         # window.
+#
+#                Q_D(QTornOffMenu);
+#        // make the torn-off menu a sibling of p (instead of a child)
+#        QWidget *parentWidget = d->causedStack.isEmpty() ? p : d->causedStack.last();
+#        if (parentWidget->parentWidget())
+#            parentWidget = parentWidget->parentWidget();
+#        setParent(parentWidget, Qt::Window | Qt::Tool);
+#        setAttribute(Qt::WA_DeleteOnClose, true);
+#        setAttribute(Qt::WA_X11NetWmWindowTypeMenu, true);
+#        setWindowTitle(p->windowTitle());
+#        setEnabled(p->isEnabled());
+#        //QObject::connect(this, SIGNAL(triggered(QAction*)), this, SLOT(onTrigger(QAction*)));
+#        //QObject::connect(this, SIGNAL(hovered(QAction*)), this, SLOT(onHovered(QAction*)));
+#        QList<QAction*> items = p->actions();
+#        for(int i = 0; i < items.count(); i++)
+#            addAction(items.at(i));
 
         detachedMenu.setWindowTitle(self.menuModel.mainTitle)
         detachedMenu.searchInput.setText(self.filterTerm)
@@ -546,6 +534,7 @@ class LauncherFilterLineEdit(QtGui.QLineEdit):
         self.clearButton.setStyleSheet("background-color: transparent;")
         self.clearButton.setFocusPolicy(Qt.NoFocus)
 
+        self.setMinimumWidth(200)
         position = QtCore.QPoint(self.pos().x()+self.width(), 0)
         self.clearButton.move(position)
         self.clearButton.setCursor(Qt.ArrowCursor)
@@ -858,30 +847,6 @@ class LauncherNamedButton(LauncherButton):
         QtGui.QDesktopServices.openUrl(url)
 
 
-class LauncherFileChoiceButton(LauncherNamedButton):
-    # TODO reorganize to normal menu
-
-    """Button to change the root menu of the launcher.
-
-    LauncherFileChoiceButton causes the launcher to change the root menu and
-    sets new view.
-    """
-
-    def __init__(self, itemModel, parent=None):
-        LauncherNamedButton.__init__(self, itemModel, None, parent)
-        self.itemModel = itemModel
-        self.clicked.connect(self.changeView)
-
-    def changeView(self):
-        """Find LauncherWindow and set new view."""
-
-        candidate = self
-        while candidate.__class__.__name__ is not "LauncherWindow":
-            candidate = candidate.parent()
-        self.parent().hide()  # When done hide popuped menu.
-        candidate.setNewView(self.itemModel.root_menu_file)
-
-
 class LauncherCmdButton(LauncherNamedButton):
 
     """LauncherCmdButton executes shell command. """
@@ -926,6 +891,56 @@ class LauncherMenuButton(LauncherNamedButton):
             self.click()
         else:
             LauncherNamedButton.keyPressEvent(self, event)
+
+
+class LauncherViewMenu(QtGui.QMenu):
+
+    def __int__(self, text, parent=None):
+        QtGui.QMenu.__init__(self, text, parent)
+
+    def buildViewMenu(self, menuModel):
+        self.menuModel = menuModel
+        self.clear()
+        for view in menuModel.file_choices:
+            #button = LauncherFileChoiceButton(view, self)
+            buttonAction = LauncherFileChoiceAction(view, self)
+            #buttonAction.setDefaultWidget(button)
+            self.addAction(buttonAction)
+        self.addSeparator()
+        searchAction = QtGui.QAction("Search", self)
+        searchAction.setShortcuts(QtGui.QKeySequence("Ctrl+F"));
+        searchAction.setStatusTip("Search launcher items")
+        searchAction.triggered.connect(self.openSearch)
+        self.addAction(searchAction)
+
+    def openSearch(self):
+        searchMenu = LauncherSearchMenuView(self.menuModel,
+                                            self.parent().parent().mainButton,
+                                            self.parent().parent().launcherMenu
+                                            )
+        searchMenu.exposeMenu("")
+
+
+class LauncherFileChoiceAction(QtGui.QAction):
+
+    """Action to change the root menu of the launcher.
+
+    LauncherFileChoiceAction causes the launcher to change the root menu and
+    sets new view. It is placed in a View menu.
+    """
+
+    def __init__(self, itemModel, parent=None):
+        QtGui.QAction.__init__(self, itemModel.text, parent)
+        self.itemModel = itemModel
+        self.triggered.connect(self.changeView)
+
+    def changeView(self):
+        """Find LauncherWindow and set new view."""
+
+        candidate = self
+        while candidate.__class__.__name__ is not "LauncherWindow":
+            candidate = candidate.parent()
+        candidate.setNewView(self.itemModel.root_menu_file)
 
 
 class LauncherStyle:

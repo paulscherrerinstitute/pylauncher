@@ -3,7 +3,7 @@
         "launcher_base": "./menus/",
         "theme_base": "./qss/",
         "cmd": {
-            "command": "bash -c"
+            "command": ""
         },
         "caqtdm":{
             "command": "caqtdm",
