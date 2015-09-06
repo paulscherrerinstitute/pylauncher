@@ -40,7 +40,7 @@ class LauncherViewMenu(QtGui.QMenu):
             self.addAction(buttonAction)
         self.addSeparator()
         searchAction = QtGui.QAction("Search", self)
-        # searchAction.setShortcuts(QKeySequence::Open);
+        searchAction.setShortcuts(QtGui.QKeySequence("Ctrl+F"));
         searchAction.setStatusTip("Search launcher items")
         searchAction.triggered.connect(self.openSearch)
         self.addAction(searchAction)
@@ -292,9 +292,6 @@ class LauncherMenu(QtGui.QMenu):
             else:
                 action.setVisibility(False)
 
-
-
-
         return hasVisible
 
     def showEvent(self, showEvent):
@@ -476,15 +473,22 @@ class LauncherSearchMenuView(LauncherMenu):
         """
 
         self.setWindowTitle("Search")
-        #self.searchWidget.setText(searchInput)
+        self.searchWidget.setText(searchInput)
         self.filterMenu(searchInput)
         self.setWindowFlags(Qt.Window | Qt.Tool)
         self.setAttribute(Qt.WA_DeleteOnClose, True)
         self.setAttribute(Qt.WA_X11NetWmWindowTypeMenu, True)
         self.setEnabled(True)
         self.show()
-        #self.searchWidget.searchInput.setFocus()
+        self.searchWidget.setFocus()
         # self.move(self.pos().x(), self.pos().y()) TODO
+
+    def changeEvent(self, changeEvent):
+        """Catch when menu window is selected and focus to search."""
+
+        if changeEvent.type() == QtCore.QEvent.ActivationChange and \
+                self.isActiveWindow():
+            self.searchWidget.setFocus()
 
     def hide(self):
         pass  # Search menu should not be hidden at any action (left key).
@@ -513,6 +517,114 @@ class LauncherMenuWidgetAction(QtGui.QWidgetAction):
         self.widget.setVisible(visibility)
         if self.widget.sectionTitle and visibility:
             self.widget.sectionTitle.myAction.setVisibility(True)
+
+
+class LauncherFilterLineEdit(QtGui.QLineEdit):
+
+    """Input field with an option to clear it.
+
+    LauncherFilterLineEdit is QLineEdit which does filtering of menu items
+    recursively by putting the filter  to child menus. It has a button to clear
+    current input with one click. When enter button is pressed a search window
+    with results is opened.
+    """
+
+    def __init__(self, menu, parent=None):
+        QtGui.QLineEdit.__init__(self, parent)
+        self.textChanged.connect(lambda: menu.filterMenu(self.text()))
+        self.myAction = None
+        self.setPlaceholderText("Enter filter term.")
+        self.menu = menu
+        # Create button to clear text and add it to the right edge of the
+        # input.
+
+        self.clearButton = QtGui.QToolButton(self)
+        self.clearButton.setFixedSize(27, 27)
+        self.setTextMargins(0, 0, 30, 0)
+        icon = QtGui.QIcon("./images/delete-2x.png")  # add  icon
+        self.clearButton.setIcon(icon)
+        self.clearButton.setStyleSheet("background-color: transparent;")
+        self.clearButton.setFocusPolicy(Qt.NoFocus)
+
+        position = QtCore.QPoint(self.pos().x()+self.width(), 0)
+        self.clearButton.move(position)
+        self.clearButton.setCursor(Qt.ArrowCursor)
+        self.clearButton.clicked.connect(lambda: self.clear())
+        # Set search policy (default False). If True it opens search when
+        # Enter is pressed
+
+        self.searchPolicy = False
+
+    def setMyAction(self, action):
+        self.myAction = action
+
+    def resizeEvent(self, event):
+        position = QtCore.QPoint(self.pos().x()+self.width() -
+                                 self.clearButton.width(), 0)
+        self.clearButton.move(position)
+
+    def keyPressEvent(self, event):
+        """Catch key pressed event.
+
+        Catch return and enter key pressed and open search in new window.
+        """
+
+        if self.searchPolicy is True and \
+                ((event.key() == Qt.Key_Return) or
+                    (event.key() == Qt.Key_Enter)):
+            self.openSearch()
+
+        elif event.key() == Qt.Key_Down:
+            self.focusNextPrevChild(True)
+
+        elif event.key() == Qt.Key_Up:
+
+            self.focusNextPrevChild(False)
+        else:
+            QtGui.QLineEdit.keyPressEvent(self, event)
+
+    def openSearch(self):
+        """ Do a search on full menu (root menu)."""
+        menu = self.menu.getMainMenu()
+        searchMenu = LauncherSearchMenuView(menu.menuModel, menu.button,
+                                            menu)
+        searchMenu.exposeMenu(self.text())
+
+
+class LauncherFilterWidget(QtGui.QWidget):
+
+    """ Filter menu widget which opens search when return is pressed"""
+
+    def __init__(self, menu, parent=None):
+        QtGui.QWidget.__init__(self, parent)
+        mainLayout = QtGui.QHBoxLayout(self)
+        mainLayout.setMargin(0)
+        mainLayout.setSpacing(0)
+        self.setLayout(mainLayout)
+
+        self.searchInput = LauncherFilterLineEdit(menu, self)
+        self.searchInput.searchPolicy = True
+        self.searchButton = QtGui.QToolButton(self)
+
+        self.searchButton.setFixedSize(27, 27)
+        icon = QtGui.QIcon("./images/magnifying-glass-2x.png")  # add  icon
+        self.searchButton.setIcon(icon)
+        self.searchButton.setFocusPolicy(Qt.ClickFocus)
+
+        self.searchButton.clicked.connect(lambda: self.searchInput.openSearch())
+        mainLayout.addWidget(self.searchInput)
+        mainLayout.addWidget(self.searchButton)
+        # Focus policy: get focus when tabing/arrow key and pass it to
+        # search input
+
+        self.setFocusPolicy(Qt.TabFocus)
+        self.setFocusProxy(self.searchInput)
+
+    def setMyAction(self, action):
+        self.myAction = action
+
+    def setText(self, text):
+        self.searchInput.setText(text)
 
 
 class LauncherSearchWidget(QtGui.QWidget):
@@ -564,88 +676,17 @@ class LauncherSearchWidget(QtGui.QWidget):
 
         self.searchInput.setPlaceholderText("Enter search term.")
         self.myAction = None
+        # Focus policy: get focus when tabing/arrow key and pass it to
+        # search input
+
+        self.setFocusPolicy(Qt.TabFocus)
+        self.setFocusProxy(self.searchInput)
 
     def setText(self, text):
         self.searchInput.setText(text)
 
     def setMyAction(self, action):
         self.myAction = action
-
-
-class LauncherFilterLineEdit(QtGui.QLineEdit):
-
-    """Input field with an option to clear it.
-
-    LauncherFilterLineEdit is QLineEdit which does filtering of menu items
-    recursively by putting the filter  to child menus. It has a button to clear
-    current input with one click. When enter button is pressed a search window
-    with results is opened.
-    """
-
-    def __init__(self, menu, parent=None):
-        QtGui.QLineEdit.__init__(self, parent)
-        self.textChanged.connect(lambda: menu.filterMenu(self.text()))
-        self.myAction = None
-        self.setPlaceholderText("Enter filter term.")
-        self.menu = menu
-        # Create button to clear text and add it to the right edge of the
-        # input.
-
-        self.clearButton = QtGui.QToolButton(self)
-        self.clearButton.resize(30, 30)
-        self.setTextMargins(0, 0, 30, 0)
-        icon = QtGui.QIcon("./images/delete-2x.png")  # add  icon
-        self.clearButton.setIcon(icon)
-        self.clearButton.setStyleSheet("background-color: transparent;")
-        self.clearButton.setFocusPolicy(Qt.NoFocus)
-
-        position = QtCore.QPoint(self.pos().x()+self.width(), 0)
-        self.clearButton.move(position)
-        self.clearButton.setCursor(Qt.ArrowCursor)
-        self.clearButton.clicked.connect(lambda: self.clear())
-
-    def setMyAction(self, action):
-        self.myAction = action
-
-    def resizeEvent(self, event):
-        position = QtCore.QPoint(self.pos().x()+self.width() -
-                                 self.clearButton.width(), 0)
-        self.clearButton.move(position)
-
-
-class LauncherFilterWidget(LauncherFilterLineEdit):
-
-    """ Filter menu widget which opens search when return is pressed"""
-
-    def __init__(self, menu, parent=None):
-        LauncherFilterLineEdit.__init__(self, menu, parent)
-
-    def keyPressEvent(self, event):
-        """Catch key pressed event.
-
-        Catch return and enter key pressed and open search in new window.
-        """
-
-        if (event.key() == Qt.Key_Return) or (event.key() == Qt.Key_Enter):
-            # Do a search on full menu (root menu).
-
-            menu = self.menu.getMainMenu()
-            searchMenu = LauncherSearchMenuView(menu.menuModel, menu.button,
-                                                menu)
-            searchMenu.exposeMenu(self.text())
-
-        elif event.key() == Qt.Key_Down:
-            candidate = self.nextInFocusChain()
-            #while not isinstance(candidate, (LauncherFilterLineEdit, LauncherNamedButton, LauncherDetachButton, LauncherMainButton)):
-            #    candidate = candidate.nextInFocusChain()
-            candidate.setFocus()
-        elif event.key() == Qt.Key_Up:
-            candidate = self.previousInFocusChain()
-            #while not isinstance(candidate, (LauncherFilterLineEdit, LauncherNamedButton, LauncherDetachButton, LauncherMainButton)):
-             #   candidate = candidate.previousInFocusChain()
-            candidate.setFocus()
-        else:
-            QtGui.QLineEdit.keyPressEvent(self, event)
 
 
 class LauncherSeparator(QtGui.QAction):
@@ -679,7 +720,7 @@ class LauncherMenuTitle(QtGui.QLabel):
 
     def setMyAction(self, action):
         self.myAction = action
-        action.setSeparator(True)  # TODO check if is ok on all systems
+        self.myAction.setSeparator(True)  # TODO check if is ok on all systems
 
 
 class LauncherButton(QtGui.QPushButton):
@@ -733,16 +774,10 @@ class LauncherButton(QtGui.QPushButton):
             pass
 
         elif event.key() == Qt.Key_Down:
-            candidate = self.nextInFocusChain()
-            #while not isinstance(candidate, (LauncherFilterLineEdit, LauncherSearchWidget, LauncherNamedButton, LauncherDetachButton)):
-            #    candidate = candidate.nextInFocusChain()
-            candidate.setFocus()
+            self.focusNextPrevChild(True)
 
         elif event.key() == Qt.Key_Up:
-            candidate = self.previousInFocusChain()
-            #while not isinstance(candidate, (LauncherFilterLineEdit, LauncherNamedButton, LauncherDetachButton)):
-            #    candidate = candidate.previousInFocusChain()
-            candidate.setFocus()
+            self.focusNextPrevChild(False)
 
         else:
             QtGui.QPushButton.keyPressEvent(self, event)
