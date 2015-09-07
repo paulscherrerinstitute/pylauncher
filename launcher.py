@@ -908,21 +908,11 @@ class LauncherViewMenu(QtGui.QMenu):
         self.menuModel = menuModel
         self.clear()
         for view in menuModel.file_choices:
-            #button = LauncherFileChoiceButton(view, self)
             buttonAction = LauncherFileChoiceAction(view, self)
-<<<<<<< HEAD
-            # buttonAction.setDefaultWidget(button)
             self.addAction(buttonAction)
         self.addSeparator()
         searchAction = QtGui.QAction("Search", self)
         searchAction.setShortcuts(QtGui.QKeySequence("Ctrl+F"))
-=======
-            #buttonAction.setDefaultWidget(button)
-            self.addAction(buttonAction)
-        self.addSeparator()
-        searchAction = QtGui.QAction("Search", self)
-        searchAction.setShortcuts(QtGui.QKeySequence("Ctrl+F"));
->>>>>>> 593c2a387c41e47b91fc83027f52f625fe86d8cb
         searchAction.setStatusTip("Search launcher items")
         searchAction.triggered.connect(self.openSearch)
         self.addAction(searchAction)
