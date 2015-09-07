@@ -345,6 +345,22 @@ class LauncherSubMenu(LauncherMenu):
                                             self.getMainMenu())
         # Put an existing filter to it and set property to open it as new
         # window.
+#
+#                Q_D(QTornOffMenu);
+#        // make the torn-off menu a sibling of p (instead of a child)
+#        QWidget *parentWidget = d->causedStack.isEmpty() ? p : d->causedStack.last();
+#        if (parentWidget->parentWidget())
+#            parentWidget = parentWidget->parentWidget();
+#        setParent(parentWidget, Qt::Window | Qt::Tool);
+#        setAttribute(Qt::WA_DeleteOnClose, true);
+#        setAttribute(Qt::WA_X11NetWmWindowTypeMenu, true);
+#        setWindowTitle(p->windowTitle());
+#        setEnabled(p->isEnabled());
+#        //QObject::connect(this, SIGNAL(triggered(QAction*)), this, SLOT(onTrigger(QAction*)));
+#        //QObject::connect(this, SIGNAL(hovered(QAction*)), this, SLOT(onHovered(QAction*)));
+#        QList<QAction*> items = p->actions();
+#        for(int i = 0; i < items.count(); i++)
+#            addAction(items.at(i));
 
         detachedMenu.setWindowTitle(self.menuModel.mainTitle)
         detachedMenu.searchInput.setText(self.filterTerm)
@@ -894,11 +910,19 @@ class LauncherViewMenu(QtGui.QMenu):
         for view in menuModel.file_choices:
             #button = LauncherFileChoiceButton(view, self)
             buttonAction = LauncherFileChoiceAction(view, self)
+<<<<<<< HEAD
             # buttonAction.setDefaultWidget(button)
             self.addAction(buttonAction)
         self.addSeparator()
         searchAction = QtGui.QAction("Search", self)
         searchAction.setShortcuts(QtGui.QKeySequence("Ctrl+F"))
+=======
+            #buttonAction.setDefaultWidget(button)
+            self.addAction(buttonAction)
+        self.addSeparator()
+        searchAction = QtGui.QAction("Search", self)
+        searchAction.setShortcuts(QtGui.QKeySequence("Ctrl+F"));
+>>>>>>> 593c2a387c41e47b91fc83027f52f625fe86d8cb
         searchAction.setStatusTip("Search launcher items")
         searchAction.triggered.connect(self.openSearch)
         self.addAction(searchAction)
