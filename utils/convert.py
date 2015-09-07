@@ -3,120 +3,10 @@
 import sys
 import os
 import re
+import json
 import enum
 import codecs
 import argparse
-
-
-class LauncherMenuType(enum.Enum):
-    unknown = 0,
-    main_title = 1,
-    file_choice = 2,
-    separator = 3,
-    title = 4,
-    command = 5,
-    menu = 6,
-    empty = 7,
-
-
-class LauncherMenuModelItem(object):
-    """ TODO: Docs
-    """
-
-    def __init__(self, command, params):
-
-        self._command = command
-        self._params = params
-
-    def to_json(self):
-        pass
-
-    @staticmethod
-    def get_type(command):
-        if command == '@main-title':
-            return LauncherMenuType.main_title
-        elif command == '@FileChoice':
-            return LauncherMenuType.file_choice
-        elif command == '@separator':
-            return LauncherMenuType.separator
-        elif command == '@title':
-            return LauncherMenuType.title
-        elif command == '>launcher':
-            return LauncherMenuType.menu
-        elif command[0] == '#':
-            return LauncherMenuType.empty
-        else:
-            return LauncherMenuType.command
-
-
-class LauncherMenuModelItemFileChoice(LauncherMenuModelItem):
-
-    def __init__(self, command, param):
-        super(LauncherMenuModelItemFileChoice, self).__init__(command, param)
-
-        if len(param) == 0:
-            self._text = 'None'
-        else:
-            self._text = param[0]
-        self._file = command[1] + '.json'
-
-    def to_json(self):
-        return '''"file-choice": [
-        {"text": "%s", "file": "%s"}
-    ],\n''' % (self._text, self._file)
-
-
-class LauncherMenuModelItemTitle(LauncherMenuModelItem):
-
-    def __init__(self, command, param):
-        super(LauncherMenuModelItemTitle, self).__init__(command, param)
-
-        if len(param) == 0:
-            self._text = 'None'
-        else:
-            self._text = param[0]
-
-    def to_json(self):
-        return '{"type": "title", "text": "%s"}' % self._text
-
-
-class LauncherMenuModelItemCommand(LauncherMenuModelItem):
-
-    def __init__(self, command, param):
-        super(LauncherMenuModelItemCommand, self).__init__(command, param)
-
-        if len(param) == 0:
-            self._text = 'None'
-        else:
-            self._text = param[0]
-            self._text = self._text.replace('"', r'\"')
-
-        self._cmd_text = ''.join('%s ' % item for item in self._command)
-        self._cmd_text = self._cmd_text.rstrip()
-
-        # Escape possible double quotes in the command string
-        self._cmd_text = self._cmd_text.replace('"', r'\"')
-        self._cmd_text = self._cmd_text.replace('\t', ' ')
-
-    def to_json(self):
-        return '{"type": "cmd", "text": "%s", "param": "%s"}' \
-            % (self._text, self._cmd_text)
-
-
-class LauncherMenuModelItemMenu(LauncherMenuModelItem):
-
-    def __init__(self, command, param):
-        super(LauncherMenuModelItemMenu, self).__init__(command, param)
-
-        if len(param) == 0:
-            self._text = 'None'
-        else:
-            self._text = param[0]
-        self._file = command[1] + '.json'
-
-    def to_json(self):
-        return '{"type": "menu", "text": "%s", "file": "%s"}' \
-            % (self._text, self._file)
 
 
 class LauncherMenuModel(object):
@@ -143,6 +33,7 @@ class LauncherMenuModel(object):
         self._file_choice = None
 
         self._menu_items = list()
+        self._json_config = dict()
 
         self._line_number = 0
         self._parse()
@@ -190,59 +81,82 @@ class LauncherMenuModel(object):
             if not element:
                 command.remove(element)
 
-        # Get type of configuration line
-        item_type = LauncherMenuModelItem.get_type(command[0])
-
-        element = None
+        element = dict()
 
         # Remove first parameter since it is parsed
         # and stored in the command variable
         params.remove(params[0])
 
-        if len(params) == 0:
-            print "WARNING: No parameters passed in file %s, line %d" \
-                % (self._file_path, self._line_number)
+#         if len(params) == 0:
+#             print 'Wrn: No parameters passed in file "%s", line %d' \
+#                 % (self._file_path, self._line_number)
 
-        # Process line parameters depending on type
-        if item_type == LauncherMenuType.main_title:
-            self._title = params[0]
-        elif item_type == LauncherMenuType.file_choice:
-            self._file_Choice = LauncherMenuModelItemFileChoice(command,
-                                                                params)
-        elif item_type == LauncherMenuType.title:
-            element = LauncherMenuModelItemTitle(command, params)
-        elif item_type == LauncherMenuType.command:
-            element = LauncherMenuModelItemCommand(command, params)
-        elif item_type == LauncherMenuType.menu:
-            element = LauncherMenuModelItemMenu(command, params)
+        # Configure the title of the main menu
+        if command[0] == '@main-title':
+            self._json_config['menu-title'] = params[0]
+
+        # Add the file choice element to the configuration list
+        elif command[0] == '@FileChoice':
+            file_choice = list()
+            file_choice.append(dict([('text', params[0]),
+                                    ('file', command[1]+'.json')]))
+            self._json_config['file-choice'] = file_choice
+
+        # The command dictates that a separator is added
+        elif command[0] == '@separator':
+            element['type'] = 'separator'
+
+        # The commands translates into the title element
+        elif command[0] == '@title':
+            element['type'] = 'title'
+            element['text'] = params[0]
+
+        # The command loads a new menu from another file
+        elif command[0] == '>launcher':
+            element['type'] = 'title'
+            element['text'] = params[0]
+            element['file'] = command[1] + '.json'
+
+        # Skip over lines where the command starts with a hash (comment) 
+        elif command[0] == '#':
+            print 'Inf: Skipping line %d in file "%s" - comment' \
+                % (self._line_number, self._file_path)
+
+        # If nothing else this is a command
         else:
-            print 'INFO: Skipping over line with command: %s' % command[0]
-
-        if element:
+            cmd_text = ''.join('%s ' % item for item in command).rstrip()
+            # Escape possible double quotes in the command string
+            cmd_text = cmd_text.replace('"', r'\"').replace('\t', ' ')
+            
+            element['type'] = 'cmd'
+            element['text'] = params[0].replace('"', r'\"')
+            element['param'] = cmd_text
+            
+        if len(element) > 0:
             self._menu_items.append(element)
 
     def to_json(self):
         split = os.path.splitext(self._file_path)
         if not split[1]:
-            print 'ERROR: Unable to parse extension from file name: %s' \
+            print 'Err: Unable to parse extension from file name: %s' \
                 % self._file_path
             return
 
         out_file_path = os.path.join(self._out_path, split[0] + '.json')
-        print 'INFO: Writing file: %s' % out_file_path
+        print 'Inf: Writing file: %s' % out_file_path
 
         if os.path.isdir(out_file_path):
-            print 'ERROR: Output file "%s" is a directory!' % out_file_path
+            print 'Err: Output file "%s" is a directory!' % out_file_path
             return
 
         if os.path.isfile(out_file_path):
             if not self._overwrite:
-                print 'WARNING: Output file "%s" already exists!' \
+                print 'Wrn: Output file "%s" already exists!' \
                     % out_file_path
 
                 user_input = ''
                 while True:
-                    userInput = raw_input('Overwrite? [y/N]:')
+                    user_input = raw_input('Overwrite? [y/N]:')
                     if user_input == 'y' or user_input == 'Y':
                         break
                     elif (user_input == 'n' or
@@ -250,26 +164,13 @@ class LauncherMenuModel(object):
                           not user_input):
                         return
 
+        # Set the item list to the menu key in the top dictionary
+        self._json_config['menu'] = self._menu_items
+
         with codecs.open(out_file_path, mode='w', encoding='utf-8') \
                 as out_file:
 
-            out_file.write('{\n')
-            if self._title:
-                out_file.write('    "menu-title": "%s",\n' % self._title)
-
-            if self._file_choice:
-                out_file.write('    ' + self._file_choice.to_json())
-
-            out_file.write('    "menu": [\n')
-
-            for item in self._menu_items:
-
-                if menuModel._menu_items[-1] is not item:
-                    out_file.write('        %s,\n' % item.to_json())
-                else:
-                    out_file.write('        %s\n' % item.to_json())
-
-            out_file.write('    ]\n}')
+            json.dump(self._json_config, out_file, indent=4)
             out_file.close()
 
 if __name__ == '__main__':
@@ -283,6 +184,8 @@ if __name__ == '__main__':
                            will be stored.')
     args_pars.add_argument('-y', '--yes', action='store_true',
                            help='Overwrite the output file.')
+    args_pars.add_argument('-r', '--recursive', action='store_true',
+                           help='Convert all files recursively.')
 
     args = args_pars.parse_args()
 
