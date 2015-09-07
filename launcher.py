@@ -52,6 +52,11 @@ class LauncherWindow(QtGui.QMainWindow):
         if systemType == "Darwin":
             systemType = "OS_X"
         self.launcherCfg = cfg.get(systemType)
+        # From menu file define root directory (launcher_base)
+
+        path_tuple = os.path.split(rootFilePath)
+        self.launcherCfg["launcher_base"] = path_tuple[0]
+        rootFilePath = path_tuple[1]
         # Load default theme
 
         style_file = open_launcher_file(
@@ -142,6 +147,7 @@ class LauncherMenu(QtGui.QMenu):
 
     def __init__(self, menuModel, button=None, parent=None):
         QtGui.QMenu.__init__(self, parent)
+        self.setSeparatorsCollapsible(False)
         self.filterTerm = ""
         self.menuModel = menuModel
         self.buildMenu(self.menuModel.menu_items)
@@ -536,7 +542,8 @@ class LauncherFilterLineEdit(QtGui.QLineEdit):
         self.setTextMargins(0, 0, 30, 0)
         icon = QtGui.QIcon("./images/delete-2x.png")  # add  icon
         self.clearButton.setIcon(icon)
-        self.clearButton.setStyleSheet("background-color: transparent;")
+        self.clearButton.setStyleSheet("background-color: transparent; \
+                                        border: none")
         self.clearButton.setFocusPolicy(Qt.NoFocus)
 
         self.setMinimumWidth(200)
@@ -976,18 +983,16 @@ if __name__ == '__main__':
 
     # Usage: launcher.py menu config
     argsPars = argparse.ArgumentParser()
-    argsPars.add_argument('launcher',
-                          help="Launcher menu file.")
     argsPars.add_argument('config',
                           help='Launcher configuration file')
+    argsPars.add_argument('launcher',
+                          help="Launcher menu file.")
 
     args = argsPars.parse_args()
 
     app = QtGui.QApplication(sys.argv)
-    # With no style applied detached menu does not get window frame on SL6
-    # app.setStyle("cleanlooks")
-
-    launcherWindow = LauncherWindow(sys.argv[1], sys.argv[2])
+    app.setStyle("cleanlooks")
+    launcherWindow = LauncherWindow(sys.argv[2], sys.argv[1])
     launcherWindow.setGeometry(0, 0, 150, 0)
     launcherWindow.show()
     sys.exit(app.exec_())

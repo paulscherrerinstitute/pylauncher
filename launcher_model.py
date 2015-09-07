@@ -125,9 +125,10 @@ class launcher_menu_model:
                 file_name = item.get("file").strip()
                 tip = item.get("tip")
                 try:
-                    sub_file_path = launcher_cfg.get(
-                        "launcher_base") + file_name
-                    sub_file = open_launcher_file(sub_file_path)
+                    file_path = os.path.join(launcher_cfg.get("launcher_base"),
+                                             file_name)
+
+                    sub_file = open_launcher_file(file_path)
                 except IOError:
                     err_msg = "ParseErr: " + menu_file.geturl() + \
                         ": File \"" + file_name + "\" not found."
@@ -232,10 +233,10 @@ class launcher_caqtdm_item(launcher_menu_model_item):
         macro_flag = item_cfg.get("macro_flag")
 
         if macro:
-            self.cmd = prefix + " " + macro_flag + "\"" + macro + "\" " + \
-                       caqtdm_file
+            self.cmd = prefix + " " + macro_flag + " \"" + macro + "\" " + \
+                caqtdm_file
         else:
-            self.cmd = prefix + caqtdm_file
+            self.cmd = prefix + " " + caqtdm_file
 
 
 class launcher_medm_item(launcher_menu_model_item):
@@ -253,9 +254,9 @@ class launcher_medm_item(launcher_menu_model_item):
 
         if macro:
             self.cmd = prefix + " " + macro_flag + " \"" + macro + "\" " + \
-                       medm_file
+                medm_file
         else:
-            self.cmd = prefix + medm_file
+            self.cmd = prefix + " " + medm_file
 
 
 class launcher_sub_menu_item(launcher_menu_model_item):

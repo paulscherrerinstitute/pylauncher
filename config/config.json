@@ -1,6 +1,5 @@
 {
     "Linux": {
-        "launcher_base": "./menus/",
         "theme_base": "./qss/",
         "cmd": {
             "command": ""
@@ -10,12 +9,11 @@
             "macro_flag": "-macro"
         },
         "medm":{
-            "command": "medm",
+            "command": "medm -x",
             "macro_flag": "-macro"
         }
     },
     "Windows": {
-        "launcher_base": "./menus/",
         "theme_base": "./qss/",
         "cmd": {
             "command": ""
@@ -25,12 +23,11 @@
             "macro_flag": "-macro"
         },
         "medm":{
-            "command": "medm",
+            "command": "medm -x",
             "macro_flag": "-macro"
         }
     },
     "OS_X": {
-        "launcher_base": "./menus/",
         "theme_base": "./qss/",
         "cmd": {
             "command": ""
@@ -40,7 +37,7 @@
             "macro_flag": "-macro"
         },
         "medm":{
-            "command": "medm",
+            "command": "medm -x",
             "macro_flag": "-macro"
         }
     }
