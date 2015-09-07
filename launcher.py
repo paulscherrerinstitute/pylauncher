@@ -8,6 +8,7 @@ import subprocess
 import json
 import copy
 import enum
+import urllib2
 
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import pyqtSlot, Qt
@@ -35,13 +36,13 @@ class LauncherWindow(QtGui.QMainWindow):
     def __init__(self, rootFilePath, cfgFilePath, parent=None):
         QtGui.QMainWindow.__init__(self, parent)
         try:
-            _cfgFile = open(cfgFilePath)
+            cfgFile = open_launcher_file(cfgFilePath)
         except IOError:
-            _errMsg = "Err: Configuration file \"" + cfgFilePath + \
+            errMsg = "Err: Configuration file \"" + cfgFilePath + \
                 "\" not found."
-            sys.exit(_errMsg)
-        _cfg = json.load(_cfgFile)
-        _cfgFile.close()
+            sys.exit(errMsg)
+        cfg = json.load(cfgFile)
+        cfgFile.close()
         # Get configuration for current system. platform.system() returns:
         #     - "Darwin" when OS X
         #     - "Linux" when Linux
@@ -50,41 +51,50 @@ class LauncherWindow(QtGui.QMainWindow):
         systemType = platform.system()
         if systemType == "Darwin":
             systemType = "OS_X"
-        self.launcherCfg = _cfg.get(systemType)
+        self.launcherCfg = cfg.get(systemType)
+        # From menu file define root directory (launcher_base)
+
+        path_tuple = os.path.split(rootFilePath)
+        self.launcherCfg["launcher_base"] = path_tuple[0]
+        rootFilePath = path_tuple[1]
+        # Load default theme
+
+        style_file = open_launcher_file(
+            self.launcherCfg.get("theme_base") + "default.qss")
+        self.setStyleSheet(style_file.read())
+        style_file.close()
         # Build menu model from rootMenuFile and set general parameters.
 
-        self._menuModel = self._buildMenuModel(rootFilePath)
-        self.setWindowTitle(self._menuModel.mainTitle)
+        self.menuModel = self.buildMenuModel(rootFilePath)
+        self.setWindowTitle(self.menuModel.mainTitle)
         # QMainWindow has predefined layout. Content should be in the central
         # widget. Create widget with a QVBoxLayout and set it as central.
 
-        _mainWidget = QtGui.QWidget(self)
-        self._mainLayout = QtGui.QVBoxLayout(_mainWidget)
-        self._mainLayout.setContentsMargins(0, 0, 0, 0)
-        self.setCentralWidget(_mainWidget)
+        mainWidget = QtGui.QWidget(self)
+        self.mainLayout = QtGui.QVBoxLayout(mainWidget)
+        self.mainLayout.setContentsMargins(0, 0, 0, 0)
+        self.setCentralWidget(mainWidget)
         # Main window consist of filter/serach entry and a main button which
         # pops up the root menu. Create a layout and add the items.
 
-        self._launcherMenu = LauncherSubMenu(self._menuModel, self)
-        # self._launcherMenu = LauncherSearchMenuView(self._menuModel, self)
-        self.mainButton = LauncherMainButton(self._launcherMenu, self)
+        self.launcherMenu = LauncherSubMenu(self.menuModel, None, self)
+        self.mainButton = LauncherMainButton(self.launcherMenu, self)
+        self.launcherMenu.button = self.mainButton
         # Create Filter/search item. Add it and main button to the layout.
 
-        self._searchInput = LauncherFilterWidget(self._launcherMenu, self)
-        self._mainLayout.addWidget(self._searchInput)
-        self._mainLayout.addWidget(self.mainButton)
+        self.searchInput = LauncherFilterWidget(self.launcherMenu,
+                                                self)
+        self.mainLayout.addWidget(self.searchInput)
+        self.mainLayout.addWidget(self.mainButton)
         # Create menu bar. In current visualization menu bar exposes all
         # LauncherFileChoiceItem items from the model. They are exposed in
         # File menu.
 
-        _menuBar = self.menuBar()
-        self._fileMenu = QtGui.QMenu("&File", _menuBar)
-        for item in self._menuModel.fileChoices:
-            _button = LauncherFileChoiceButton(item, self._fileMenu)
-            _buttonAction = QtGui.QWidgetAction(self._fileMenu)
-            _buttonAction.setDefaultWidget(_button)
-            self._fileMenu.addAction(_buttonAction)
-        _menuBar.addMenu(self._fileMenu)
+        menuBar = self.menuBar()
+
+        self.viewMenu = LauncherViewMenu("&View", menuBar)
+        self.viewMenu.buildViewMenu(self.menuModel)
+        menuBar.addMenu(self.viewMenu)
 
     def setNewView(self, rootMenuFile):
         """Rebuild launcher from new config file.
@@ -92,32 +102,38 @@ class LauncherWindow(QtGui.QMainWindow):
         Destroy previous model and create new one. Build menus and edit main
         window elements.
         """
-        del self._menuModel
-        self._menuModel = self._buildMenuModel(rootMenuFile)
-        self.setWindowTitle(self._menuModel.mainTitle)
-        self.mainButton.setText(self._menuModel.mainTitle)
-        self._launcherMenu = LauncherSubMenu(self._menuModel, self.mainButton)
-        self.mainButton.setMenu(self._launcherMenu)
+        del self.menuModel
+        self.menuModel = self.buildMenuModel(rootMenuFile)
+        self.setWindowTitle(self.menuModel.mainTitle)
+        self.mainButton.setText(self.menuModel.mainTitle)
+        # TODO restyle main Button and reload model for search
+        self.launcherMenu.deleteLater()
+        self.launcherMenu = LauncherSubMenu(self.menuModel, self.mainButton,
+                                            self)
+        self.mainButton.setMenu(self.launcherMenu)
+        self.viewMenu.buildViewMenu(self.menuModel)
+        self.searchInput.menu = self.launcherMenu
 
     def changeEvent(self, changeEvent):
         """Catch when main window is selected and set focus to search."""
 
         if changeEvent.type() == QtCore.QEvent.ActivationChange and \
                 self.isActiveWindow():
-            self._searchInput.setFocus()
+            self.searchInput.setFocus()
 
-    def _buildMenuModel(self, rootMenuPath):
+    def buildMenuModel(self, rootMenuPath):
         """Return model of a menu defined in rootMenuFile."""
-        _rootMeniFullPath = os.path.join(self.launcherCfg.get("launcher_base"),
-                                         rootMenuPath)
+
+        rootMeniFullPath = os.path.join(self.launcherCfg.get("launcher_base"),
+                                        rootMenuPath)
         try:
-            _rootMenuFile = open(_rootMeniFullPath)
+            rootMenuFile = open_launcher_file(rootMeniFullPath)
         except IOError:
-            _errMsg = "Err: File \"" + rootMenuPath + "\" not found."
-            sys.exit(_errMsg)
-        _rootMenu = LauncherMenuModel(_rootMenuFile, 0, self.launcherCfg)
-        _rootMenuFile.close()
-        return _rootMenu
+            errMsg = "Err: File \"" + rootMenuPath + "\" not found."
+            sys.exit(errMsg)
+        rootMenu = launcher_menu_model(None, rootMenuFile, 0, self.launcherCfg)
+        rootMenuFile.close()
+        return rootMenu
 
 
 class LauncherMenu(QtGui.QMenu):
@@ -129,41 +145,47 @@ class LauncherMenu(QtGui.QMenu):
     manipulation.
     """
 
-    def __init__(self, menuModel, parent=None):
+    def __init__(self, menuModel, button=None, parent=None):
         QtGui.QMenu.__init__(self, parent)
+        self.setSeparatorsCollapsible(False)
         self.filterTerm = ""
         self.menuModel = menuModel
-        self.buildMenu(self.menuModel.menuItems)
+        self.buildMenu(self.menuModel.menu_items)
         self.initFilterVisibility = True
         self.filterConditions = [False, True, False]
+        self.button = button
 
     def buildMenu(self, menuModel):
         """Visualize menu
 
-        menuModel has a list of menuItems with models of items. Build buttons
+        menuModel has a list of menu_items with models of items. Build buttons
         from it and add them to the menu.
         """
+
         sectionTitle = None
-        for item in self.menuModel.menuItems:
-            if item.__class__.__name__ == "LauncherCmdItem":
+        for item in self.menuModel.menu_items:
+            if item.__class__.__name__ == "launcher_cmd_item" or\
+               item.__class__.__name__ == "launcher_caqtdm_item" or \
+               item.__class__.__name__ == "launcher_medm_item":
                 self.appendToMenu(LauncherCmdButton(item, sectionTitle, self))
-            elif item.__class__.__name__ == "LauncherSubMenuItem":
+            elif item.__class__.__name__ == "launcher_sub_menu_item":
                 self.appendToMenu(LauncherMenuButton(item, sectionTitle, self))
-            elif item.__class__.__name__ == "LauncherTitleItem":
+            elif item.__class__.__name__ == "launcher_title_item":
                 sectionTitle = None
                 titleButton = LauncherMenuTitle(item, sectionTitle, self)
                 self.appendToMenu(titleButton)
                 sectionTitle = titleButton
-            elif item.__class__.__name__ == "LauncherItemSeparator":
+            elif item.__class__.__name__ == "launcher_item_separator":
                 self.addAction(LauncherSeparator(item, self))
 
     def appendToMenu(self, widget):
         """Append action to menu.
 
-        Create widget action for widget. Pair them and add to the menu."""
+        Create widget action for widget. Pair them and add to the menu.
+        """
 
-        self._action = LauncherMenuWidgetAction(widget, self)
-        self.addAction(self._action)
+        self.action = LauncherMenuWidgetAction(widget, self)
+        self.addAction(self.action)
 
     def insertToMenu(self, widget, index):
         """Insert action to specified position in menu.
@@ -172,31 +194,47 @@ class LauncherMenu(QtGui.QMenu):
         specified position in menu.
         """
 
-        self._action = LauncherMenuWidgetAction(widget, self)
+        self.action = LauncherMenuWidgetAction(widget, self)
         if self.actions()[index]:
-            self.insertAction(self.actions()[index], self._action)
+            self.insertAction(self.actions()[index], self.action)
         else:
-            self.addAction(self._action)
+            self.addAction(self.action)
 
     def setFilterCondition(self, condition, value):
+        """ Set one condition to given value."""
+
         self.filterConditions[condition.value] = value
         self.filterMenu(self.filterTerm)
 
     def filterMenu(self, filterTerm=None):
         """Filter menu items with filterTerm
 
-        Shows/hides action depending on filterTerm. Returns true if has
+        Shows/hides menu items depending on filterTerm. Returns true if has
         visible active (buttons) items.
         """
 
         self.filterTerm = filterTerm
         hasVisible = False
+        # Read filters
+
+        sensitivityFilter = self.filterConditions[
+            SearchOptions.sensitivity.value]
+        textFilter = self.filterConditions[SearchOptions.text.value]
+        cmdFilter = self.filterConditions[SearchOptions.cmd.value]
         # Skip first item since it is either search entry or detach button.
 
         for action in self.actions()[1:len(self.actions())]:
             if action.__class__.__name__ == "LauncherMenuWidgetAction":
                 widget = action.defaultWidget()
+                # Search is always only on NamedButtons. Get text from their
+                # models to avoid searching also the prefixes added later (in
+                # search view).
+
+                if isinstance(widget, LauncherNamedButton):
+                    text = QtCore.QString(widget.itemModel.text)
+
                 widgetType = widget.__class__.__name__
+
             if not filterTerm:
                 # Empty filter. Show depending on type. If submenu recursively
                 # empty  filter.
@@ -204,10 +242,13 @@ class LauncherMenu(QtGui.QMenu):
                 action.setVisibility(self.initFilterVisibility)
                 if widgetType == "LauncherMenuButton":
                     action.defaultWidget().menu().filterMenu(filterTerm)
+
             elif widgetType == "LauncherMenuTitle":
                 action.setVisibility(False)
+
             elif widgetType == "LauncherSubMenuAsTitle":
                 action.setVisibility(False)
+
             elif widgetType == "LauncherMenuButton":
                 # Recursively filter menus. Show only sub-menus that have
                 # visible items.
@@ -216,28 +257,41 @@ class LauncherMenu(QtGui.QMenu):
                 subHasVisible = subMenu.filterMenu(filterTerm)
                 hasVisible = hasVisible or subHasVisible
                 action.setVisibility(subHasVisible)
-            elif self.filterConditions[SearchOptions.text.value] and\
-                    widget.text().contains(filterTerm, self.filterConditions[
-                        SearchOptions.sensitivity.value]):
-                # Filter term is found in the button text. For now filter only
-                # cmd buttons.
+
+            elif textFilter and text.contains(filterTerm,
+                                              sensitivityFilter):
+                action.setVisibility(True)
+                hasVisible = True
+
+            elif widgetType == "LauncherCmdButton" and cmdFilter and\
+                QtCore.QString(widget.cmd).contains(filterTerm,
+                                                    sensitivityFilter):
 
                 action.setVisibility(True)
                 hasVisible = True
+
             else:
                 action.setVisibility(False)
+
         return hasVisible
 
     def showEvent(self, showEvent):
-        """Catch event when menu is shown and move it by side of parent.
+        """Catch event when menu is shown and move it by side.
 
         Whenever show(), popup(), exec() are called this method is called.
         Move the menu to the left side of the button (default is bellow)
         """
         # TODO handle cases when to close to the edge of screen.
+
+        if self.button:
+            width = self.button.width()
+            height = self.button.height()
+        else:
+            width = self.parent().width()
+            height = self.parent().height()
         position = self.pos()
-        position.setX(position.x()+self.parent().width())
-        position.setY(position.y()-self.parent().height())
+        position.setX(position.x()+width)
+        position.setY(position.y()-height)
         self.move(position)
 
         # Set focus on first button (skip detach button and titles)
@@ -248,21 +302,26 @@ class LauncherMenu(QtGui.QMenu):
         self.actions()[i].defaultWidget().setFocus()
         self.setActiveAction(self.actions()[i])
 
-    def _getRootAncestor(self):
-        """Return mainButton from which all menus expand.
+    def getLauncherWindow(self):
+        """ Search and return application main window object"""
+
+        candidate = self
+        while type(candidate) is not LauncherWindow:
+            candidate = candidate.parent()
+
+        return candidate
+
+    def getMainMenu(self):
+        """Return menu of mainButton from which all menus expand.
 
         All LauncherMenu menus visualized from the same root menu model
-        have lowest common ancestor which is a mainButton of the
-        LauncherWindow. If this button is destroyed all menus are also
-        destroyed, and all detached menus are closed. Because each Qt element
-        holds reference to its parent, mainButton of LauncherWindow can be
-        recursively determined.
+        have lowest common ancestor which is a menu of mainButton. If this menu
+        is destroyed all other are also destroyed, and all detached menus are
+        closed. Because each Qt element holds reference to its parent, this
+        menu can be recursively determined.
         """
 
-        _object = self
-        while type(_object) is not LauncherWindow:
-            _object = _object.parent()
-        return _object.mainButton
+        return self.getLauncherWindow().mainButton.menu()
 
 
 class LauncherSubMenu(LauncherMenu):
@@ -275,8 +334,8 @@ class LauncherSubMenu(LauncherMenu):
     Creates detach button and adds it to the menu.
     """
 
-    def __init__(self, menuModel, parent=None):
-        LauncherMenu.__init__(self, menuModel, parent)
+    def __init__(self, menuModel, button, parent=None):
+        LauncherMenu.__init__(self, menuModel, button, parent)
         self.detachButton = LauncherDetachButton(self)
         self.insertToMenu(self.detachButton, 0)
 
@@ -284,22 +343,39 @@ class LauncherSubMenu(LauncherMenu):
         """Open menu in new window.
 
         Creates  new menu and opens it as new window. Menu parent should be
-        mainButton on launcherWindow. This way it will be closed only if the
+        mainButton on main window. This way it will be closed only if the
         launcher is close or the root menu is changed.
         """
 
-        _launcherWindow = self._getRootAncestor()
-        _detachedMenu = LauncherDetachedMenu(self.menuModel, _launcherWindow)
+        detachedMenu = LauncherDetachedMenu(self.menuModel,
+                                            self.getMainMenu())
         # Put an existing filter to it and set property to open it as new
         # window.
-        _detachedMenu.setWindowTitle(self.menuModel.mainTitle)
-        _detachedMenu.searchInput.setText(self.filterTerm)
-        _detachedMenu.setWindowFlags(Qt.Window | Qt.Tool)
-        _detachedMenu.setAttribute(Qt.WA_DeleteOnClose, True)
-        _detachedMenu.setAttribute(Qt.WA_X11NetWmWindowTypeMenu, True)
-        _detachedMenu.setEnabled(True)
-        _detachedMenu.show()
-        _detachedMenu.move(self.pos().x(), self.pos().y())
+#
+#                Q_D(QTornOffMenu);
+#        // make the torn-off menu a sibling of p (instead of a child)
+#        QWidget *parentWidget = d->causedStack.isEmpty() ? p : d->causedStack.last();
+#        if (parentWidget->parentWidget())
+#            parentWidget = parentWidget->parentWidget();
+#        setParent(parentWidget, Qt::Window | Qt::Tool);
+#        setAttribute(Qt::WA_DeleteOnClose, true);
+#        setAttribute(Qt::WA_X11NetWmWindowTypeMenu, true);
+#        setWindowTitle(p->windowTitle());
+#        setEnabled(p->isEnabled());
+#        //QObject::connect(this, SIGNAL(triggered(QAction*)), this, SLOT(onTrigger(QAction*)));
+#        //QObject::connect(this, SIGNAL(hovered(QAction*)), this, SLOT(onHovered(QAction*)));
+#        QList<QAction*> items = p->actions();
+#        for(int i = 0; i < items.count(); i++)
+#            addAction(items.at(i));
+
+        detachedMenu.setWindowTitle(self.menuModel.mainTitle)
+        detachedMenu.searchInput.setText(self.filterTerm)
+        detachedMenu.setWindowFlags(Qt.Window | Qt.Tool)
+        detachedMenu.setAttribute(Qt.WA_DeleteOnClose, True)
+        detachedMenu.setAttribute(Qt.WA_X11NetWmWindowTypeMenu, True)
+        detachedMenu.setEnabled(True)
+        detachedMenu.show()
+        detachedMenu.move(self.pos().x(), self.pos().y())
         self.hide()
 
 
@@ -316,12 +392,12 @@ class LauncherDetachedMenu(LauncherMenu):
     """
 
     def __init__(self, menuModel, parent=None):
-        LauncherMenu.__init__(self, menuModel, parent)
+        LauncherMenu.__init__(self, menuModel, None, parent)
         self.searchInput = LauncherFilterWidget(self, self)
         self.insertToMenu(self.searchInput, 0)
 
     def hide(self):
-        pass  # Detached menu should not be hidden by left arrow.
+        pass  # Detached menu should not be hidden at any action (left key).
 
     def changeEvent(self, changeEvent):
         """Catch when menu window is selected and focus to search."""
@@ -343,46 +419,49 @@ class LauncherSearchMenuView(LauncherMenu):
 
     """Search view
 
-    A bit different visualization (without submenus) of menu for searching.
+    Different visualization of launcher for searching. Submenues do not
+    expand, but are rather included at the bottom of the list.
     """
 
-    def __init__(self, menuModel, parent=None):
-        LauncherMenu.__init__(self, menuModel, parent)
-        self.searchWidget = LauncherSearchWidget(self)  # TODO add parent
+    def __init__(self, menuModel, button=None, parent=None):
+        LauncherMenu.__init__(self, menuModel, button, parent)
+        self.searchWidget = LauncherSearchWidget(self, self.getMainMenu())
         self.insertToMenu(self.searchWidget, 0)
         self.initFilterVisibility = False
 
     def buildMenu(self, menuModel):
         """Visualize menu
 
-        Override this method and build diffrent visualization.
+        Override this method and build different visualization.
         """
-        cMenuItems = list(self.menuModel.menuItems)
+        cMenuItems = list(self.menuModel.menu_items)
         level = 0
         sectionTitle = None
-        levelTitle = None
         for item in cMenuItems:
-            for i in xrange(0, item.parent.level):
-                if item.__class__.__name__ != "LauncherItemSeparator":
-                    item.text = "> " + item.text
-            if item.__class__.__name__ == "LauncherCmdItem":
-                self.appendToMenu(LauncherCmdButton(item, sectionTitle, self))
-            elif item.__class__.__name__ == "LauncherSubMenuItem":
-                subMenuTitleButton = LauncherSubMenuAsTitle(
-                    item, sectionTitle, self)
-                self.appendToMenu(subMenuTitleButton)
+            levelPrefix = ""
+            addPrefix = False
+            for traceItem in item.trace:
+                levelPrefix = levelPrefix + traceItem.text + " > "
+            if item.__class__.__name__ == "launcher_cmd_item" or \
+               item.__class__.__name__ == "launcher_caqtdm_item" or\
+               item.__class__.__name__ == "launcher_medm_item":
+                button = LauncherCmdButton(item, sectionTitle, self)
+                self.appendToMenu(button)
+                addPrefix = True
+            elif item.__class__.__name__ == "launcher_sub_menu_item":
                 # Take subemnu model and build (visualize) it below
-
-                levelTitle = subMenuTitleButton
-                cSubMenuItems = copy.copy(item.subMenu.menuItems)
-                index = cMenuItems.index(item) + 1
-                cMenuItems[index:index] = cSubMenuItems
-            elif item.__class__.__name__ == "LauncherTitleItem":
-                titleButton = LauncherMenuTitle(item, levelTitle, self)
-                self.appendToMenu(titleButton)
-                sectionTitle = titleButton
-            elif item.__class__.__name__ == "LauncherItemSeparator":
+                cSubMenuItems = copy.copy(item.sub_menu.menu_items)
+                cMenuItems.extend(cSubMenuItems)
+            elif item.__class__.__name__ == "launcher_title_item":
+                button = LauncherMenuTitle(item, None, self)
+                self.appendToMenu(button)
+                sectionTitle = button
+                addPrefix = True
+            elif item.__class__.__name__ == "launcher_item_separator":
                 self.addAction(LauncherSeparator(item, self))
+
+            if addPrefix:  # Add level prefix
+                button.setText(levelPrefix + button.text())
 
     def exposeMenu(self, searchInput=None):
         """Open menu in new window.
@@ -392,15 +471,26 @@ class LauncherSearchMenuView(LauncherMenu):
         launcher is close or the root menu is changed.
         """
 
-        self.setWindowTitle(self.menuModel.mainTitle)
-        # self.searchInput.setText(self.filterTerm) TODO
+        self.setWindowTitle("Search")
+        self.searchWidget.setText(searchInput)
         self.filterMenu(searchInput)
         self.setWindowFlags(Qt.Window | Qt.Tool)
         self.setAttribute(Qt.WA_DeleteOnClose, True)
         self.setAttribute(Qt.WA_X11NetWmWindowTypeMenu, True)
         self.setEnabled(True)
         self.show()
+        self.searchWidget.setFocus()
         # self.move(self.pos().x(), self.pos().y()) TODO
+
+    def changeEvent(self, changeEvent):
+        """Catch when menu window is selected and focus to search."""
+
+        if changeEvent.type() == QtCore.QEvent.ActivationChange and \
+                self.isActiveWindow():
+            self.searchWidget.setFocus()
+
+    def hide(self):
+        pass  # Search menu should not be hidden at any action (left key).
 
 
 class LauncherMenuWidgetAction(QtGui.QWidgetAction):
@@ -428,6 +518,117 @@ class LauncherMenuWidgetAction(QtGui.QWidgetAction):
             self.widget.sectionTitle.myAction.setVisibility(True)
 
 
+class LauncherFilterLineEdit(QtGui.QLineEdit):
+
+    """Input field with an option to clear it.
+
+    LauncherFilterLineEdit is QLineEdit which does filtering of menu items
+    recursively by putting the filter  to child menus. It has a button to clear
+    current input with one click. When enter button is pressed a search window
+    with results is opened.
+    """
+
+    def __init__(self, menu, parent=None):
+        QtGui.QLineEdit.__init__(self, parent)
+        self.textChanged.connect(lambda: menu.filterMenu(self.text()))
+        self.myAction = None
+        self.setPlaceholderText("Enter filter term.")
+        self.menu = menu
+        # Create button to clear text and add it to the right edge of the
+        # input.
+
+        self.clearButton = QtGui.QToolButton(self)
+        self.clearButton.setFixedSize(27, 27)
+        self.setTextMargins(0, 0, 30, 0)
+        icon = QtGui.QIcon("./images/delete-2x.png")  # add  icon
+        self.clearButton.setIcon(icon)
+        self.clearButton.setStyleSheet("background-color: transparent; \
+                                        border: none")
+        self.clearButton.setFocusPolicy(Qt.NoFocus)
+
+        self.setMinimumWidth(200)
+        position = QtCore.QPoint(self.pos().x()+self.width(), 0)
+        self.clearButton.move(position)
+        self.clearButton.setCursor(Qt.ArrowCursor)
+        self.clearButton.clicked.connect(lambda: self.clear())
+        # Set search policy (default False). If True it opens search when
+        # Enter is pressed
+
+        self.searchPolicy = False
+
+    def setMyAction(self, action):
+        self.myAction = action
+
+    def resizeEvent(self, event):
+        position = QtCore.QPoint(self.pos().x()+self.width() -
+                                 self.clearButton.width(), 0)
+        self.clearButton.move(position)
+
+    def keyPressEvent(self, event):
+        """Catch key pressed event.
+
+        Catch return and enter key pressed and open search in new window.
+        """
+
+        if self.searchPolicy is True and \
+                ((event.key() == Qt.Key_Return) or
+                    (event.key() == Qt.Key_Enter)):
+            self.openSearch()
+
+        elif event.key() == Qt.Key_Down:
+            self.focusNextPrevChild(True)
+
+        elif event.key() == Qt.Key_Up:
+
+            self.focusNextPrevChild(False)
+        else:
+            QtGui.QLineEdit.keyPressEvent(self, event)
+
+    def openSearch(self):
+        """ Do a search on full menu (root menu)."""
+        menu = self.menu.getMainMenu()
+        searchMenu = LauncherSearchMenuView(menu.menuModel, menu.button,
+                                            menu)
+        searchMenu.exposeMenu(self.text())
+
+
+class LauncherFilterWidget(QtGui.QWidget):
+
+    """ Filter menu widget which opens search when return is pressed"""
+
+    def __init__(self, menu, parent=None):
+        QtGui.QWidget.__init__(self, parent)
+        mainLayout = QtGui.QHBoxLayout(self)
+        mainLayout.setMargin(0)
+        mainLayout.setSpacing(0)
+        self.setLayout(mainLayout)
+
+        self.searchInput = LauncherFilterLineEdit(menu, self)
+        self.searchInput.searchPolicy = True
+        self.searchButton = QtGui.QToolButton(self)
+
+        self.searchButton.setFixedSize(27, 27)
+        icon = QtGui.QIcon("./images/magnifying-glass-2x.png")  # add  icon
+        self.searchButton.setIcon(icon)
+        self.searchButton.setFocusPolicy(Qt.ClickFocus)
+
+        self.searchButton.clicked.connect(
+            lambda: self.searchInput.openSearch())
+        mainLayout.addWidget(self.searchInput)
+        mainLayout.addWidget(self.searchButton)
+        # Focus policy: get focus when tabing/arrow key and pass it to
+        # search input
+
+        self.setFocusPolicy(Qt.TabFocus)
+        self.setFocusProxy(self.searchInput)
+
+    def setMyAction(self, action):
+        self.myAction = action
+
+    def setText(self, text):
+        self.searchInput.setText(text)
+
+
 class LauncherSearchWidget(QtGui.QWidget):
 
     """ Search menu widget
@@ -439,6 +640,7 @@ class LauncherSearchWidget(QtGui.QWidget):
     def __init__(self, menu, parent=None):
         QtGui.QWidget.__init__(self, parent)
         mainLayout = QtGui.QVBoxLayout(self)
+        mainLayout.setMargin(0)
         self.setLayout(mainLayout)
         # Prepare components and add them to layout:
         #    - search field
@@ -446,95 +648,47 @@ class LauncherSearchWidget(QtGui.QWidget):
         #    - filters (text, cmd)
         #    - menu
 
-        searchField = QtGui.QLineEdit(self)
+        self.searchInput = LauncherFilterLineEdit(menu, self)
         caseSensitive = QtGui.QCheckBox("Case sensitive", self)
         caseSensitive.setChecked(False)
+        caseSensitive.stateChanged.connect(lambda: menu.setFilterCondition(
+            SearchOptions.sensitivity, caseSensitive.isChecked()))
         menu.setFilterCondition(SearchOptions.sensitivity,
                                 caseSensitive.isChecked())
-        mainLayout.addWidget(searchField)
+        mainLayout.addWidget(self.searchInput)
         mainLayout.addWidget(caseSensitive)
         options = QtGui.QWidget(self)
         optionsLayout = QtGui.QHBoxLayout(options)
         searchText = QtGui.QCheckBox("Title search", options)
         searchText.setChecked(True)
+        searchText.stateChanged.connect(
+            lambda: menu.setFilterCondition(SearchOptions.text,
+                                            searchText.isChecked()))
         menu.setFilterCondition(SearchOptions.text, searchText.isChecked())
         searchCmd = QtGui.QCheckBox("Command search", options)
         searchCmd.setChecked(False)
+        searchCmd.stateChanged.connect(
+            lambda: menu.setFilterCondition(SearchOptions.cmd,
+                                            searchCmd.isChecked()))
         menu.setFilterCondition(SearchOptions.cmd, searchCmd.isChecked())
         optionsLayout.addWidget(searchText)
         optionsLayout.addWidget(searchCmd)
         options.setLayout(optionsLayout)
         mainLayout.addWidget(options)
 
-        searchField.textChanged.connect(
-            lambda: menu.filterMenu(searchField.text()))
+        self.searchInput.setPlaceholderText("Enter search term.")
         self.myAction = None
-        # Not supported on Qt 4.6.2
-        searchField.setPlaceholderText("Enter search term.")
-        caseSensitive.stateChanged.connect(lambda: menu.setFilterCondition(
-            SearchOptions.sensitivity, caseSensitive.isChecked()))
-        searchText.stateChanged.connect(
-            lambda: menu.setFilterCondition(SearchOptions.text,
-                                            searchText.isChecked()))
-        searchCmd.stateChanged.connect(
-            lambda: menu.setFilterCondition(SearchOptions.cmd,
-                                            searchCmd.isChecked()))
+        # Focus policy: get focus when tabing/arrow key and pass it to
+        # search input
+
+        self.setFocusPolicy(Qt.TabFocus)
+        self.setFocusProxy(self.searchInput)
+
+    def setText(self, text):
+        self.searchInput.setText(text)
 
     def setMyAction(self, action):
         self.myAction = action
-
-
-class LauncherFilterWidget(QtGui.QLineEdit):
-
-    """Filter menu widget.
-
-    LauncherFilterWidget is QLineEdit which does filtering of menu items
-    recursively by putting the filter  to child menus. When enter button is
-    pressed a search window with results is opened (TODO).
-    """
-
-    def __init__(self, menu, parent=None):
-        QtGui.QLineEdit.__init__(self, parent)
-        self.textChanged.connect(lambda: menu.filterMenu(self.text()))
-        self.myAction = None
-        self.setPlaceholderText("Enter filter term.")
-        self.menu = menu
-
-    def setMyAction(self, action):
-        self.myAction = action
-
-    def keyPressEvent(self, event):
-        """Catch key pressed event.
-
-        Catch return and enter key pressed and open search in new window.
-        """
-
-        if (event.key() == Qt.Key_Return) or (event.key() == Qt.Key_Enter):
-            # Do a search on full menu (root menu).
-            mainButton = self.menu._getRootAncestor()
-            menu = mainButton.menu()
-            searchMenu = LauncherSearchMenuView(menu.menuModel, launcherWindow)
-            searchMenu.exposeMenu(self.text())
-        # TODO set other  cases
-
-        # elif event.key() == Qt.Key_Left:
-        #    self.parent().hide()
-        # elif event.key() == Qt.Key_Right:
-        #    pass
-        # elif event.key() == Qt.Key_Down:
-        #    _candidate = self.nextInFocusChain()
-        #    while isinstance(_candidate, LauncherMenuTitle):
-        #        _candidate.focusNextChild()
-        #        _candidate = _candidate.nextInFocusChain()
-        #    _candidate.focusNextChild()
-        # elif event.key() == Qt.Key_Up:
-        #    _candidate = self.previousInFocusChain()
-        #    while isinstance(_candidate, LauncherMenuTitle):
-        #        _candidate.focusPreviousChild()
-        #        _candidate = _candidate.previousInFocusChain()
-        #    _candidate.focusPreviousChild()
-        else:
-            QtGui.QLineEdit.keyPressEvent(self, event)
 
 
 class LauncherSeparator(QtGui.QAction):
@@ -555,32 +709,20 @@ class LauncherMenuTitle(QtGui.QLabel):
 
     def __init__(self, itemModel, sectionTitle=None, parent=None):
         QtGui.QLabel.__init__(self, itemModel.text, parent)
-        self.setStyleSheet("QLabel { color: blue; }")
         self.myAction = None
+        self.setFocusPolicy(Qt.NoFocus)
         # For title element sectionTitle is menu button that owns menu with
         # this element.
 
         self.sectionTitle = sectionTitle
+        # Apply custom styles
+
+        style = LauncherStyle(self, itemModel.theme, itemModel.style)
+        self.setStyleSheet(style.style)
 
     def setMyAction(self, action):
         self.myAction = action
-
-
-class LauncherSubMenuAsTitle(QtGui.QLabel):
-
-    """Menu button as title
-
-    Passive element with no action and no key focus.Used only in
-    LauncherSearchMenuView"""
-
-    def __init__(self, itemModel, sectionTitle=None, parent=None):
-        QtGui.QLabel.__init__(self, itemModel.text, parent)
-        self.setStyleSheet("QLabel { color: red; }")
-        self.myAction = None
-        self.sectionTitle = sectionTitle
-
-    def setMyAction(self, action):
-        self.myAction = action
+        self.myAction.setSeparator(True)  # TODO check if is ok on all systems
 
 
 class LauncherButton(QtGui.QPushButton):
@@ -598,9 +740,16 @@ class LauncherButton(QtGui.QPushButton):
     def __init__(self, sectionTitle=None, parent=None):
         QtGui.QPushButton.__init__(self, parent)
         self.setMouseTracking(True)
-        self._parent = parent
         self.myAction = None
         self.sectionTitle = sectionTitle
+
+        self.contextMenu = QtGui.QMenu(self)
+
+    def contextMenuEvent(self, event):
+        """ Show context menu if context exists"""
+
+        if self.contextMenu.actions():
+            self.contextMenu.exec_(QtGui.QCursor.pos())
 
     def setMyAction(self, action):
         self.myAction = action
@@ -619,28 +768,25 @@ class LauncherButton(QtGui.QPushButton):
 
         if (event.key() == Qt.Key_Return) or (event.key() == Qt.Key_Enter):
             self.click()
+
         elif event.key() == Qt.Key_Left:
             self.parent().hide()
+
         elif event.key() == Qt.Key_Right:
             pass
+
         elif event.key() == Qt.Key_Down:
-            _candidate = self.nextInFocusChain()
-            while isinstance(_candidate, LauncherMenuTitle):
-                _candidate.focusNextChild()
-                _candidate = _candidate.nextInFocusChain()
-            _candidate.focusNextChild()
+            self.focusNextPrevChild(True)
+
         elif event.key() == Qt.Key_Up:
-            _candidate = self.previousInFocusChain()
-            while isinstance(_candidate, LauncherMenuTitle):
-                _candidate.focusPreviousChild()
-                _candidate = _candidate.previousInFocusChain()
-            _candidate.focusPreviousChild()
+            self.focusNextPrevChild(False)
+
         else:
             QtGui.QPushButton.keyPressEvent(self, event)
 
     def mouseMoveEvent(self, event):
         self.setFocus()
-        self._parent.setActiveAction(self.myAction)
+        self.parent().setActiveAction(self.myAction)
 
 
 class LauncherDetachButton(LauncherButton):
@@ -654,16 +800,6 @@ class LauncherDetachButton(LauncherButton):
 
     def __init__(self, parent=None):
         LauncherButton.__init__(self, None, parent)
-        self.setStyleSheet("""
-            QPushButton{
-                height: 2px;
-                background-color: #666666
-            }
-            QPushButton:focus {
-                background-color: #bdbdbd;
-                outline: none
-            }
-        """)
         self.clicked.connect(parent.detach)
 
 
@@ -679,6 +815,8 @@ class LauncherMainButton(LauncherButton):
         LauncherButton.__init__(self, None, parent)
         self.setText(menu.menuModel.mainTitle)
         self.setMenu(menu)
+
+        # TODO apply styles
 
     def mouseMoveEvent(self, event):
         self.setFocus()
@@ -700,35 +838,26 @@ class LauncherMainButton(LauncherButton):
 
 class LauncherNamedButton(LauncherButton):
 
-    """Parent class to all buttons with text."""
+    """Parent class to menu all buttons with text."""
 
     def __init__(self, itemModel, sectionTitle=None, parent=None):
         LauncherButton.__init__(self, sectionTitle, parent)
+        self.itemModel = itemModel
         self.setText(itemModel.text)
+        style = LauncherStyle(self, itemModel.theme, itemModel.style)
+        self.setStyleSheet(style.style)
 
+        if itemModel.help_link:
+            helpAction = QtGui.QAction("&Help", self)
+            helpAction.setData(itemModel.help_link)
+            self.contextMenu.addAction(helpAction)
+            helpAction.triggered.connect(self.openHelp)
 
-class LauncherFileChoiceButton(LauncherNamedButton):
+    def openHelp(self):
 
-    """Button to change the root menu of the launcher.
-
-    LauncherFileChoiceButton causes the launcher to change the root menu and
-    sets new view.
-    """
-
-    def __init__(self, itemModel, parent=None):
-        LauncherNamedButton.__init__(self, itemModel, None, parent)
-        self._itemModel = itemModel
-        self.clicked.connect(self._changeView)
-
-    @pyqtSlot()
-    def _changeView(self):
-        """Find LauncherWindow and set new view."""
-
-        _candidate = self
-        while _candidate.__class__.__name__ is not "LauncherWindow":
-            _candidate = _candidate.parent()
-        _candidate.setNewView(self._itemModel.rootMenuFile)
-        self.parent().hide()  # When done hide popuped menu.
+        url = QtCore.QUrl(
+            self.sender().data().toString(), QtCore.QUrl.TolerantMode)
+        QtGui.QDesktopServices.openUrl(url)
 
 
 class LauncherCmdButton(LauncherNamedButton):
@@ -737,12 +866,16 @@ class LauncherCmdButton(LauncherNamedButton):
 
     def __init__(self, itemModel, sectionTitle=None, parent=None):
         LauncherNamedButton.__init__(self, itemModel, sectionTitle, parent)
-        self._cmd = itemModel.cmd
-        self.clicked.connect(self._executeCmd)
+        self.cmd = itemModel.cmd
+        self.clicked.connect(self.executeCmd)
+        if not itemModel.tip:
+            toolTip = "Command: " + self.cmd
+        else:
+            toolTip = itemModel.tip
+        self.setToolTip(toolTip)
 
-    @pyqtSlot()
-    def _executeCmd(self):
-        subprocess.Popen(self._cmd, stdout=subprocess.PIPE, shell=True)
+    def executeCmd(self):
+        subprocess.Popen(self.cmd, stdout=subprocess.PIPE, shell=True)
         self.parent().hide()  # When done hide popuped menu.
 
 
@@ -756,8 +889,13 @@ class LauncherMenuButton(LauncherNamedButton):
 
     def __init__(self, itemModel, sectionTitle=None, parent=None):
         LauncherNamedButton.__init__(self, itemModel, sectionTitle, parent)
-        _menu = LauncherSubMenu(itemModel.subMenu, self)
-        self.setMenu(_menu)
+        menu = LauncherSubMenu(itemModel.sub_menu, self, self.parent())
+        self.setMenu(menu)
+        if not itemModel.tip:
+            toolTip = "Menu: " + menu.menuModel.mainTitle
+        else:
+            toolTip = itemModel.tip
+        self.setToolTip(toolTip)
 
     def keyPressEvent(self, event):
         """Submenu can also be opened with right arrow key."""
@@ -768,55 +906,93 @@ class LauncherMenuButton(LauncherNamedButton):
             LauncherNamedButton.keyPressEvent(self, event)
 
 
+class LauncherViewMenu(QtGui.QMenu):
+
+    def __int__(self, text, parent=None):
+        QtGui.QMenu.__init__(self, text, parent)
+
+    def buildViewMenu(self, menuModel):
+        self.menuModel = menuModel
+        self.clear()
+        for view in menuModel.file_choices:
+            buttonAction = LauncherFileChoiceAction(view, self)
+            self.addAction(buttonAction)
+        self.addSeparator()
+        searchAction = QtGui.QAction("Search", self)
+        searchAction.setShortcuts(QtGui.QKeySequence("Ctrl+F"))
+        searchAction.setStatusTip("Search launcher items")
+        searchAction.triggered.connect(self.openSearch)
+        self.addAction(searchAction)
+
+    def openSearch(self):
+        searchMenu = LauncherSearchMenuView(self.menuModel,
+                                            self.parent().parent().mainButton,
+                                            self.parent().parent().launcherMenu
+                                            )
+        searchMenu.exposeMenu("")
+
+
+class LauncherFileChoiceAction(QtGui.QAction):
+
+    """Action to change the root menu of the launcher.
+
+    LauncherFileChoiceAction causes the launcher to change the root menu and
+    sets new view. It is placed in a View menu.
+    """
+
+    def __init__(self, itemModel, parent=None):
+        QtGui.QAction.__init__(self, itemModel.text, parent)
+        self.itemModel = itemModel
+        self.triggered.connect(self.changeView)
+
+    def changeView(self):
+        """Find LauncherWindow and set new view."""
+
+        candidate = self
+        while candidate.__class__.__name__ is not "LauncherWindow":
+            candidate = candidate.parent()
+        candidate.setNewView(self.itemModel.root_menu_file)
+
+
+class LauncherStyle:
+
+    def __init__(self, item, theme=None, style=None):
+        self.item = item
+        self.styleString = ""
+        self.style = QtCore.QLatin1String(self.styleString)
+        if theme:
+            self.appendThemeStyle(theme)
+        if style and item:
+            self.appendStyle(style, item)
+
+    def appendThemeStyle(self, theme):
+        mainWindow = self.item.parent().getLauncherWindow()
+        theme_file = open_launcher_file(
+            mainWindow.launcherCfg.get("theme_base") + theme + ".qss")
+        self.styleString = self.styleString + theme_file.read()
+        theme_file.close()
+        self.style = QtCore.QLatin1String(self.styleString)
+
+    def appendStyle(self, style, item):
+        self.styleString = self.styleString + item.__class__.__name__ +\
+            "{" + style + "}"
+        self.style = QtCore.QLatin1String(self.styleString)
+
+
 if __name__ == '__main__':
 
     # Usage: launcher.py menu config
     argsPars = argparse.ArgumentParser()
-    argsPars.add_argument('launcher',
-                          help="Launcher menu file.")
     argsPars.add_argument('config',
                           help='Launcher configuration file')
+    argsPars.add_argument('launcher',
+                          help="Launcher menu file.")
 
     args = argsPars.parse_args()
 
     app = QtGui.QApplication(sys.argv)
-    # With no style applied detached menu does not get window frame on SL6
-
     app.setStyle("cleanlooks")
-    app.setStyleSheet("""
-            QPushButton{
-                background-color: #e9e9e9;
-                border-image: none;
-                border: none;
-                padding: 4px;
-                text-align:left;
-            }
-            QPushButton:focus {
-                background-color: #bdbdbd;
-                outline: none
-            }
-            QPushButton:menu-indicator {
-                image: url(./images/arrow_bc.png);
-                subcontrol-position: right center;
-            }
-            QLabel{
-                background-color: #e9e9e9;
-                padding: 4px;
-                text-align:left;
-            }
-            QMenu {
-                background-color: #e9e9e9
-            }
-            QMenu::separator {
-                height: 1px;
-                background: #b0b0b0;
-            }
-        """)
-
-    rootMenuFile = sys.argv[1]
-    cfgFile = os.path.normpath(sys.argv[2])
-
-    launcherWindow = LauncherWindow(rootMenuFile, cfgFile)
+    launcherWindow = LauncherWindow(sys.argv[2], sys.argv[1])
     launcherWindow.setGeometry(0, 0, 150, 0)
     launcherWindow.show()
     sys.exit(app.exec_())

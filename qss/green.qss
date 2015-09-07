@@ -1,0 +1,7 @@
+LauncherButton, LauncherMenuTitle{
+    background-color: #0f9d58
+}
+LauncherButton:focus {
+    background-color: #c3e6d5;
+    outline: none
+}
