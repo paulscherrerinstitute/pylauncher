@@ -21,19 +21,18 @@ class LauncherMenuModel(object):
     # Translation table for character replacement
     translate_table = dict((ord(char), u'') for char in u'\\\n')
 
-    def __init__(self, dir_path, file_path, output_path, overwrite):
+    def __init__(self, dir_path, file_path):
 
         self._dir_path = dir_path
         self._file_path = file_path
-        self._out_path = output_path
         self._path = os.path.join(self._dir_path, self._file_path)
-        self._overwrite = overwrite
 
         self._title = None
         self._file_choice = None
 
         self._menu_items = list()
         self._json_config = dict()
+        self._file_list = list()
 
         self._line_number = 0
         self._parse()
@@ -95,6 +94,11 @@ class LauncherMenuModel(object):
         if command[0] == '@main-title':
             self._json_config['menu-title'] = params[0]
 
+            if len(params) > 0:
+                print ('Inf: Skipping additional parameters in '
+                       'file "%s", line line %d') \
+                    % (self._file_path, self._line_number)
+
         # Add the file choice element to the configuration list
         elif command[0] == '@FileChoice':
             file_choice = list()
@@ -102,14 +106,29 @@ class LauncherMenuModel(object):
                                     ('file', command[1]+'.json')]))
             self._json_config['file-choice'] = file_choice
 
+            if len(params) > 1:
+                print ('Inf: Skipping additional parameters in '
+                       'file "%s", line line %d') \
+                    % (self._file_path, self._line_number)
+
         # The command dictates that a separator is added
         elif command[0] == '@separator':
             element['type'] = 'separator'
+
+            if len(params) > 0:
+                print ('Inf: Skipping additional parameters in '
+                       'file "%s", line line %d') \
+                    % (self._file_path, self._line_number)
 
         # The commands translates into the title element
         elif command[0] == '@title':
             element['type'] = 'title'
             element['text'] = params[0]
+
+            if len(params) > 1:
+                print ('Inf: Skipping additional parameters in '
+                       'file "%s", line line %d') \
+                    % (self._file_path, self._line_number)
 
         # The command loads a new menu from another file
         elif command[0] == '>launcher':
@@ -117,7 +136,15 @@ class LauncherMenuModel(object):
             element['text'] = params[0]
             element['file'] = command[1] + '.json'
 
-        # Skip over lines where the command starts with a hash (comment) 
+            if len(params) > 1:
+                print ('Inf: Skipping additional parameters in '
+                       'file "%s", line line %d') \
+                    % (self._file_path, self._line_number)
+
+            # Track all additional files that need to be parsed
+            self._file_list.append(command[1] + '.config')
+
+        # Skip over lines where the command starts with a hash (comment)
         elif command[0] == '#':
             print 'Inf: Skipping line %d in file "%s" - comment' \
                 % (self._line_number, self._file_path)
@@ -127,32 +154,33 @@ class LauncherMenuModel(object):
             cmd_text = ''.join('%s ' % item for item in command).rstrip()
             # Escape possible double quotes in the command string
             cmd_text = cmd_text.replace('"', r'\"').replace('\t', ' ')
-            
+
             element['type'] = 'cmd'
             element['text'] = params[0].replace('"', r'\"')
             element['param'] = cmd_text
-            
+
+        # Add the element dictionary to the list of menu items
         if len(element) > 0:
             self._menu_items.append(element)
 
-    def to_json(self):
+    def to_json(self, out_path, overwrite=False):
         split = os.path.splitext(self._file_path)
         if not split[1]:
             print 'Err: Unable to parse extension from file name: %s' \
                 % self._file_path
             return
 
-        out_file_path = os.path.join(self._out_path, split[0] + '.json')
-        print 'Inf: Writing file: %s' % out_file_path
+        out_file = os.path.join(out_path, split[0] + '.json')
+        print 'Inf: Writing file: %s' % out_file
 
-        if os.path.isdir(out_file_path):
-            print 'Err: Output file "%s" is a directory!' % out_file_path
+        if os.path.isdir(out_file):
+            print 'Err: Output file "%s" is a directory!' % out_file
             return
 
-        if os.path.isfile(out_file_path):
-            if not self._overwrite:
+        if os.path.isfile(out_file):
+            if not overwrite:
                 print 'Wrn: Output file "%s" already exists!' \
-                    % out_file_path
+                    % out_file
 
                 user_input = ''
                 while True:
@@ -167,15 +195,79 @@ class LauncherMenuModel(object):
         # Set the item list to the menu key in the top dictionary
         self._json_config['menu'] = self._menu_items
 
-        with codecs.open(out_file_path, mode='w', encoding='utf-8') \
-                as out_file:
+        with codecs.open(out_file, mode='w', encoding='utf-8') \
+                as output_file:
 
-            json.dump(self._json_config, out_file, indent=4)
-            out_file.close()
+            json.dump(self._json_config, output_file, indent=4)
+            output_file.close()
+
+    def get_file_list(self):
+        return self._file_list
+
+
+class LauncherMenuModelParser(object):
+
+    def __init__(self, input_file, output_path, overwrite=False):
+
+        # Split path into filename and directory path
+        input_file_split = os.path.split(input_file)
+
+        self._input_file_path = input_file_split[0]
+        self._input_file_name = input_file_split[1]
+        self._output_path = output_path
+        self._overwrite = overwrite
+
+        self._input_files = dict()
+
+        self._input_files[self._input_file_name] = 'No'
+
+    # Parse requested files
+    def parse(self, single=False):
+
+        finished = False
+
+        while not finished:
+
+            input_name = None
+
+            # Check if we parsed all files and get the next
+            # in line to be parsed
+            for key, value in self._input_files.iteritems():
+                if value == 'No':
+                    input_name = key
+                    break
+
+            # If we parsed all of them, stop
+            if not input_name:
+                finished = True
+                continue
+
+            # Parse the current file
+            menu_model = LauncherMenuModel(self._input_file_path,
+                                           input_name)
+
+            # Output the configuration to the json output file
+            menu_model.to_json(self._output_path, self._overwrite)
+
+            # If we do not want to parse any additional files, stop
+            if(single):
+                break
+
+            # Tag the current file as checked
+            self._input_files[input_name] = 'Yes'
+
+            # Get list of all depending files that have been
+            # detected during parsing of the configuration
+            file_list = menu_model.get_file_list()
+
+            # Add any files not yet present in the dictionary to it
+            for input_file in file_list:
+                if input_file not in self._input_files.keys():
+                    self._input_files[input_file] = 'No'
+
 
 if __name__ == '__main__':
 
-    # Usage: launcher.py menu config
     args_pars = argparse.ArgumentParser()
     args_pars.add_argument('inputfile',
                            help='Tickle configuration script to be converted.')
@@ -184,8 +276,8 @@ if __name__ == '__main__':
                            will be stored.')
     args_pars.add_argument('-y', '--yes', action='store_true',
                            help='Overwrite the output file.')
-    args_pars.add_argument('-r', '--recursive', action='store_true',
-                           help='Convert all files recursively.')
+    args_pars.add_argument('-s', '--single', action='store_true',
+                           help='Convert only a single file.')
 
     args = args_pars.parse_args()
 
@@ -200,12 +292,5 @@ if __name__ == '__main__':
         print 'Output path "' + output_path + '" is not a directory!'
         sys.exit(-1)
 
-    # Split path into filename and directory path
-    tickle_split_path = os.path.split(tickle_path)
-    tickle_path_dir = tickle_split_path[0]
-    tickle_path_file = tickle_split_path[1]
-
-    # Parse requested files
-    menuModel = LauncherMenuModel(tickle_path_dir, tickle_path_file,
-                                  output_path, args.yes)
-    menuModel.to_json()
+    parser = LauncherMenuModelParser(tickle_path, output_path, args.yes)
+    parser.parse(args.single)
