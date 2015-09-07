@@ -33,53 +33,70 @@ Each menu can be configured using predefined key value pairs in json files (for 
             {"text": "Expert", "file": "expert.json"}
             {"text": "Developer", "file": "dev.json"}
         ]
+
     ```
     > Possible views are shown in View menu in menu bar.
+
  3. `menu`, main section to define launcher items
+
     ```
     "menu": [
         {...},
         {...},
     ]
     ```
+
 ### Menu item types
 Following types of items are supported in launcher application:
 - **`separator`** to visually separate menu items with line.
+    
     ```
     {"type": "separator"}
     ```
 
 - **`title`** is a special separator with text.
+    
     ```
     {"type": "title", "text": "This is button text", "theme": "green", "style":"color: #000000"}
     ```
-    > `theme` and `style` and optional settings to modify apperance (explained in TODO)
+
+    > `theme` and `style` and optional settings to modify apperance (explained in [Button styles]())
+
 
 - **`menu`** is a button which opens sub menu defined in `file`.
+    
     ```
     {"type": "menu", "text": "Strip-tool", "file": "menu_2.json"}
     ```
     
 - **`cmd`** is a basic button which executes shell command defined in `param`.
+
     ```
     {"type": "cmd", "text": "This is command button", "param": "myScript.sh", "theme": "blue", "style": "color: #000000", "tip": "What my script does.", "help-link": "http://www.link.com/to/help"}
     ```
+
     > `theme` and `style` and optional settings to modify appearance (explained in [Button styles]())
     
     > `help_link` and `tip` are optional settings to specify user's help
+
     
 - **`caqtdm`** is a button which opens a qt file screen in `file` with macros defined in `param`.
+
     ```
     {"type": "cmd", "text": "This is caqtdm button", "file": "submenu.json", "param": "MACRO1=M1,MACRO2=M2", "theme": "blue", "style": "color: #000000", "tip": "What this screen does.", "help-link": "http://www.link.com/to/help"}
     ```
+
     > `theme` and `style` and optional settings to modify appearance (explained in [Button styles]())
     
     > `help_link` and `tip` are optional settings to specify user's help
+
     
 - **`medm`** is a button which opens a medm screen defined in `file` with macros defined in `param`.
+
     ```
     {"type": "cmd", "text": "This is caqtdm button", "file": "submenu.json", "param": "MACRO1=M1,MACRO2=M2", "theme": "blue", "style": "color: #000000", "tip": "What this screen does.", "help-link": "http://www.link.com/to/help"}
     ```
+
     > `theme` and `style` and optional settings to modify appearance (explained in [Button styles]())
     
     > `help_link` and `tip` are optional settings to specify user's help
@@ -95,6 +112,7 @@ User can has also possibility to apply desired qss configuration as a string in 
 Launcher applications uses a configuration json file to specify the behavior of application on different systems (for now Linux, Windows and OS X are supported).
 
 Example of configuration can be found in ./config/config.json. Configuration is split for different os systems with key value pairs, where key can be `Linux`, `Windows` or `OS_X` and value is an array of settings. See an example of configuration for Linux operating system bellow:
+
 ```
 {
     "Linux": {
@@ -117,6 +135,7 @@ Example of configuration can be found in ./config/config.json. Configuration is 
     }
 }
 ```
+
 ### Configuration explanation:
 - `theme_base` should be a path to folder where all possible themes are defined (if needed). For details see section [Button styles]().
 
