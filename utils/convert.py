@@ -4,9 +4,9 @@ import sys
 import os
 import re
 import json
-import enum
 import codecs
 import argparse
+import pyparsing
 
 
 class LauncherMenuModel(object):
@@ -15,7 +15,8 @@ class LauncherMenuModel(object):
 
     # Regular expression to split the tcl configuration
     # lines into individual parameters
-    regex_split = re.compile('{([^\}]+)}[ \t]*')
+    #regex_split = re.compile('{([^\}]+)}[ \t]*')
+    expr_split = pyparsing.nestedExpr('{', '}')
     regex_type = re.compile('([^ ]+)[ \t]*')
 
     # Translation table for character replacement
@@ -65,26 +66,54 @@ class LauncherMenuModel(object):
                         self._parse_line(parse_line)
                     parse_line = ''
 
+    def _concatenate(self, item_list, level=0):
+        new_item_list = list()
+        for item in item_list:
+            if isinstance(item, list):
+                new_item_list.append(self._concatenate(item, level+1))
+            else:
+                new_item_list.append(item)
+
+        if level > 0:
+            return '{' + ' '.join(new_item_list) + '}'
+        else:
+            return ' '.join(new_item_list)
+
     def _parse_line(self, line):
-        params = re.split(LauncherMenuModel.regex_split, line)
+
+        line = '{' + line + '}'
+        items = LauncherMenuModel.expr_split.parseString(line).asList()[0]
+
+        command = items[0]
+        items.pop(0)
+
+        params = list()
+        for item in items:
+            if isinstance(item, list):
+                params.append(self._concatenate(item))
+
+#         print command
+#         print params
+#         print '-----------------------'
+#         return
 
         # Remove empty strings in the parameter list
-        for element in params:
-            if not element:
-                params.remove(element)
+#         for element in params:
+#             if not element:
+#                 params.remove(element)
 
-        command = re.split(LauncherMenuModel.regex_type, params[0], 2)
+#         command = re.split(LauncherMenuModel.regex_type, params[0], 2)
 
         # Remove empty strings in the parameter list
-        for element in command:
-            if not element:
-                command.remove(element)
+#         for element in command:
+#             if not element:
+#                 command.remove(element)
 
         element = dict()
 
         # Remove first parameter since it is parsed
         # and stored in the command variable
-        params.remove(params[0])
+        #params.remove(params[0])
 
 #         if len(params) == 0:
 #             print 'Wrn: No parameters passed in file "%s", line %d' \
@@ -151,9 +180,9 @@ class LauncherMenuModel(object):
 
         # If nothing else this is a command
         else:
-            cmd_text = ''.join('%s ' % item for item in command).rstrip()
-            # Escape possible double quotes in the command string
-            cmd_text = cmd_text.replace('"', r'\"').replace('\t', ' ')
+            cmd_text = self._concatenate(command)
+            # Replace tabulators with spaces
+            cmd_text = cmd_text.replace('\t', ' ')
 
             element['type'] = 'cmd'
             element['text'] = params[0].replace('"', r'\"')
