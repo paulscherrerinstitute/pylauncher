@@ -354,25 +354,6 @@ class LauncherSubMenu(LauncherMenu):
 
         detachedMenu = LauncherDetachedMenu(self.menuModel,
                                             self.getMainMenu())
-        # Put an existing filter to it and set property to open it as new
-        # window.
-#
-#                Q_D(QTornOffMenu);
-#        // make the torn-off menu a sibling of p (instead of a child)
-#        QWidget *parentWidget = d->causedStack.isEmpty() ? p : d->causedStack.last();
-#        if (parentWidget->parentWidget())
-#            parentWidget = parentWidget->parentWidget();
-#        setParent(parentWidget, Qt::Window | Qt::Tool);
-#        setAttribute(Qt::WA_DeleteOnClose, true);
-#        setAttribute(Qt::WA_X11NetWmWindowTypeMenu, true);
-#        setWindowTitle(p->windowTitle());
-#        setEnabled(p->isEnabled());
-#        //QObject::connect(this, SIGNAL(triggered(QAction*)), this, SLOT(onTrigger(QAction*)));
-#        //QObject::connect(this, SIGNAL(hovered(QAction*)), this, SLOT(onHovered(QAction*)));
-#        QList<QAction*> items = p->actions();
-#        for(int i = 0; i < items.count(); i++)
-#            addAction(items.at(i));
-
         detachedMenu.setWindowTitle(self.menuModel.mainTitle)
         detachedMenu.searchInput.setText(self.filterTerm)
         detachedMenu.setWindowFlags(Qt.Window | Qt.Tool)
@@ -381,7 +362,15 @@ class LauncherSubMenu(LauncherMenu):
         detachedMenu.setEnabled(True)
         detachedMenu.show()
         detachedMenu.move(self.pos().x(), self.pos().y())
+        self.hideAll()
+
+    def hideAll(self):
+        """ Recursively hide all popuped menus"""
+
         self.hide()
+        candidate = self.parent()
+        if isinstance(candidate, LauncherSubMenu):
+            candidate.hideAll()
 
 
 class LauncherDetachedMenu(LauncherMenu):
@@ -403,6 +392,9 @@ class LauncherDetachedMenu(LauncherMenu):
 
     def hide(self):
         pass  # Detached menu should not be hidden at any action (left key).
+
+    def hideAll(self):
+        pass
 
     def changeEvent(self, changeEvent):
         """Catch when menu window is selected and focus to search."""
@@ -496,6 +488,9 @@ class LauncherSearchMenuView(LauncherMenu):
 
     def hide(self):
         pass  # Search menu should not be hidden at any action (left key).
+
+    def hideAll(self):
+        pass
 
 
 class LauncherMenuWidgetAction(QtGui.QWidgetAction):
@@ -881,7 +876,7 @@ class LauncherCmdButton(LauncherNamedButton):
 
     def executeCmd(self):
         subprocess.Popen(self.cmd, stdout=subprocess.PIPE, shell=True)
-        self.parent().hide()  # When done hide popuped menu.
+        self.parent().hideAll()  # When done hide all popuped menus.
 
 
 class LauncherMenuButton(LauncherNamedButton):
