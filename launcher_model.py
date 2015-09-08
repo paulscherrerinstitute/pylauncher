@@ -14,7 +14,7 @@ def open_launcher_file(file_path):
         try:
             launcher_file_path = os.path.normpath(file_path)
             launcher_file_path = os.path.abspath(launcher_file_path)
-            launcher_file_path = 'file://' + urllib2.quote(launcher_file_path)
+            launcher_file_path = 'file:///' + launcher_file_path
             launcher_file = urllib2.urlopen(launcher_file_path)
         except IOError:
             raise IOError

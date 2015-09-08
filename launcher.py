@@ -576,10 +576,10 @@ class LauncherFilterLineEdit(QtGui.QLineEdit):
             self.openSearch()
 
         elif event.key() == Qt.Key_Down:
-                self.focusNextPrevChild(True)
+            self.focusNextPrevChild(True)
 
         elif event.key() == Qt.Key_Up:
-                self.focusNextPrevChild(False)
+            self.focusNextPrevChild(False)
         else:
             QtGui.QLineEdit.keyPressEvent(self, event)
 
@@ -775,10 +775,10 @@ class LauncherButton(QtGui.QPushButton):
             pass
 
         elif event.key() == Qt.Key_Down:
-                self.focusNextPrevChild(True)
+            self.focusNextPrevChild(True)
 
         elif event.key() == Qt.Key_Up:
-                self.focusNextPrevChild(False)
+            self.focusNextPrevChild(False)
 
         else:
             QtGui.QPushButton.keyPressEvent(self, event)
