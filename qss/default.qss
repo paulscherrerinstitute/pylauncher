@@ -17,7 +17,7 @@ LauncherButton{
     border-image: none;
     border: none;
 }
-LauncherButton:focus {
+LauncherButton:focus, LauncherButton:pressed {
     background-color: #bdbdbd;
     outline: none
 }

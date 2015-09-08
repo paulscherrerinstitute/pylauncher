@@ -294,11 +294,16 @@ class LauncherMenu(QtGui.QMenu):
         position.setY(position.y()-height)
         self.move(position)
 
-        # Set focus on first button (skip detach button and titles)
+        # Set focus on first button (skip separators (also titles) and detach
+        # button) If empty menu focus on detach button
         i = 1
-        while isinstance(self.actions()[i].defaultWidget(),
-                         LauncherMenuTitle):
-            i += 1
+        try:
+            while self.actions()[i].isSeparator():
+                i += 1
+
+        except LookupError:
+            i = 0
+
         self.actions()[i].defaultWidget().setFocus()
         self.setActiveAction(self.actions()[i])
 
@@ -576,11 +581,10 @@ class LauncherFilterLineEdit(QtGui.QLineEdit):
             self.openSearch()
 
         elif event.key() == Qt.Key_Down:
-            self.focusNextPrevChild(True)
+                self.focusNextPrevChild(True)
 
         elif event.key() == Qt.Key_Up:
-
-            self.focusNextPrevChild(False)
+                self.focusNextPrevChild(False)
         else:
             QtGui.QLineEdit.keyPressEvent(self, event)
 
@@ -776,10 +780,10 @@ class LauncherButton(QtGui.QPushButton):
             pass
 
         elif event.key() == Qt.Key_Down:
-            self.focusNextPrevChild(True)
+                self.focusNextPrevChild(True)
 
         elif event.key() == Qt.Key_Up:
-            self.focusNextPrevChild(False)
+                self.focusNextPrevChild(False)
 
         else:
             QtGui.QPushButton.keyPressEvent(self, event)
@@ -829,6 +833,7 @@ class LauncherMainButton(LauncherButton):
         """
 
         if event.key() == Qt.Key_Right:
+            self.setFocus()
             self.click()
         elif event.key() == Qt.Key_Left:
             pass
