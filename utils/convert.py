@@ -132,7 +132,7 @@ class LauncherMenuModel(object):
 
         # The command loads a new menu from another file
         elif command[0] == '>launcher':
-            element['type'] = 'title'
+            element['type'] = 'menu'
             element['text'] = params[0]
             element['file'] = command[1] + '.json'
 
