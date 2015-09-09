@@ -4,6 +4,7 @@ import sys
 import os
 import json
 import urllib2
+import logging
 
 
 def open_launcher_file(file_path):
@@ -67,15 +68,17 @@ class launcher_menu_model:
             file_path = os.path.join(launcher_cfg.get("launcher_base"),
                                      file_name)
             try:
-                open_launcher_file(file_path)
+                choice_file = open_launcher_file(file_path)
+                choice_file.close()
+                self.file_choices.append(launcher_file_choice_item(self,
+                                                                   launcher_cfg,
+                                                                   text,
+                                                                   file_name))
             except IOError:
                 err_msg = "ParseErr: " + menu_file.geturl() + ": File \"" +\
                     file_name + "\" not found."
-                sys.exit(err_msg)
-            self.file_choices.append(launcher_file_choice_item(self,
-                                                               launcher_cfg,
-                                                               text,
-                                                               file_name))
+                logging.warning(err_msg)
+
         # Build menu model. Report error if menu is not defined.
 
         list_of_menu_items = menu.get("menu", list())
@@ -83,7 +86,9 @@ class launcher_menu_model:
             err_msg = "ParseErr: " + menu_file.geturl() +\
                 ": Launcher menu is not defined."
             sys.exit(err_msg)
+
         for item in list_of_menu_items:
+            menu_item = None
             item_type = item.get("type", "")
             # For each check mandatory parameters and exit if not all.
 
@@ -129,14 +134,16 @@ class launcher_menu_model:
                                              file_name)
 
                     sub_file = open_launcher_file(file_path)
+                    menu_item = launcher_sub_menu_item(self, launcher_cfg,
+                                                       text, sub_file, theme,
+                                                       style, tip, None, None,
+                                                       None)
+                    sub_file.close()
                 except IOError:
                     err_msg = "ParseErr: " + menu_file.geturl() + \
                         ": File \"" + file_name + "\" not found."
-                    sys.exit(err_msg)
-                menu_item = launcher_sub_menu_item(self, launcher_cfg, text,
-                                                   sub_file, theme, style, tip,
-                                                   None, None, None)
-                sub_file.close()
+                    logging.warning(err_msg)
+
             elif item_type == "title":
                 self.check_item_format_json(item, ["text"])
                 text = item.get("text").strip()
@@ -148,9 +155,10 @@ class launcher_menu_model:
             else:
                 err_msg = "ParseErr:" + menu_file.geturl() + \
                           ": Unknown type \"" + item_type + "\"."
-                sys.exit(err_msg)
+                logging.warning(err_msg)
 
-            self.menu_items.append(menu_item)
+            if menu_item != None:
+                self.menu_items.append(menu_item)
 
     def check_item_format_json(self, item, mandatory_param):
         """Check dictionary for mandatory keys.

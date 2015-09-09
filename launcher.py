@@ -1017,7 +1017,7 @@ if __name__ == '__main__':
     args = argsPars.parse_args()
 
     app = QtGui.QApplication(sys.argv)
-    app.setStyle("cleanlooks")
+    #app.setStyle("cleanlooks")
     launcherWindow = LauncherWindow(sys.argv[2], sys.argv[1])
     launcherWindow.setGeometry(0, 0, 150, 0)
     launcherWindow.show()
