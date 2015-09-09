@@ -234,14 +234,21 @@ class LauncherMenu(QtGui.QMenu):
                     text = QtCore.QString(widget.itemModel.text)
 
                 widgetType = widget.__class__.__name__
+            else:
+                widget = None
+                widgetType = None
+                text = QtCore.QString("")
 
-            if not filterTerm:
+
+            if action.__class__.__name__ == "LauncherSeparator":
+                action.setVisibility(False)
+            elif not filterTerm:
                 # Empty filter. Show depending on type. If submenu recursively
                 # empty  filter.
 
                 action.setVisibility(self.initFilterVisibility)
                 if widgetType == "LauncherMenuButton":
-                    action.defaultWidget().menu().filterMenu(filterTerm)
+                    widget.menu().filterMenu(filterTerm)
 
             elif widgetType == "LauncherMenuTitle":
                 action.setVisibility(False)
@@ -252,8 +259,7 @@ class LauncherMenu(QtGui.QMenu):
             elif widgetType == "LauncherMenuButton":
                 # Recursively filter menus. Show only sub-menus that have
                 # visible items.
-
-                subMenu = action.defaultWidget().menu()
+                subMenu = widget.menu()
                 subHasVisible = subMenu.filterMenu(filterTerm)
                 hasVisible = hasVisible or subHasVisible
                 action.setVisibility(subHasVisible)
