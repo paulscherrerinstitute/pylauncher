@@ -546,8 +546,10 @@ class LauncherFilterLineEdit(QtGui.QLineEdit):
         self.clearButton = QtGui.QToolButton(self)
         self.clearButton.setFixedSize(27, 27)
         self.setTextMargins(0, 0, 30, 0)
-        icon = QtGui.QIcon("./images/delete-2x.png")  # add  icon
+        currDir = os.path.dirname(os.path.realpath(__file__))
+        icon = QtGui.QIcon(os.path.join(currDir, "./images/delete-2x.png"))
         self.clearButton.setIcon(icon)
+
         self.clearButton.setStyleSheet("background-color: transparent; \
                                         border: none")
         self.clearButton.setFocusPolicy(Qt.NoFocus)
@@ -613,8 +615,11 @@ class LauncherFilterWidget(QtGui.QWidget):
         self.searchButton = QtGui.QToolButton(self)
 
         self.searchButton.setFixedSize(27, 27)
-        icon = QtGui.QIcon("./images/magnifying-glass-2x.png")  # add  icon
+        currDir = os.path.dirname(os.path.realpath(__file__))
+        icon = QtGui.QIcon(os.path.join(currDir,
+                           "./images/magnifying-glass-2x.png"))
         self.searchButton.setIcon(icon)
+
         self.searchButton.setFocusPolicy(Qt.ClickFocus)
 
         self.searchButton.clicked.connect(
@@ -822,6 +827,12 @@ class LauncherMainButton(LauncherButton):
         self.setMenu(menu)
 
         # TODO apply styles
+        # add menu arrow indicator
+        currDir = os.path.dirname(os.path.realpath(__file__))
+        indicator = os.path.join(currDir, "./images/caret-right.png")
+        indicatorStyle = "LauncherButton:menu-indicator {image: url(" +\
+            indicator +");subcontrol-position: right center}"
+        self.setStyleSheet(indicatorStyle)
 
     def mouseMoveEvent(self, event):
         self.setFocus()
@@ -851,6 +862,12 @@ class LauncherNamedButton(LauncherButton):
         self.itemModel = itemModel
         self.setText(itemModel.text)
         style = LauncherStyle(self, itemModel.theme, itemModel.style)
+        # add menu arrow indicator
+        currDir = os.path.dirname(os.path.realpath(__file__))
+        indicator = os.path.join(currDir, "./images/caret-right.png")
+        indicatorStyle = "LauncherButton:menu-indicator {image: url(" +\
+            indicator +");subcontrol-position: right center}"
+        style.appendClassStyle(indicatorStyle)
         self.setStyleSheet(style.style)
 
         if itemModel.help_link:
@@ -984,6 +1001,9 @@ class LauncherStyle:
             "{" + style + "}"
         self.style = QtCore.QLatin1String(self.styleString)
 
+    def appendClassStyle(self, style):
+        self.styleString = self.styleString + style
+        self.style = QtCore.QLatin1String(self.styleString)
 
 if __name__ == '__main__':
 

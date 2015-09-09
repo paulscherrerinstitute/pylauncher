@@ -21,11 +21,6 @@ LauncherButton:focus, LauncherButton:pressed {
     background-color: #bdbdbd;
     outline: none
 }
-LauncherButton:menu-indicator {
-    image: url(images/caret-right.png);
-    subcontrol-position: right center;
-}
-
 LauncherMenu {
     background-color: #e9e9e9
 }
