@@ -60,7 +60,7 @@ Following types of items are supported in launcher application:
     {"type": "title", "text": "This is button text", "theme": "green", "style":"color: #000000"}
     ```
 
-    > `theme` and `style` and optional settings to modify apperance (explained in [Button styles]())
+    > `theme` and `style` and optional settings to modify apperance (explained in [Button styles]()). We discourage usage of `theme`.
 
 
 - **`menu`** is a button which opens sub menu defined in `file`.
@@ -75,7 +75,7 @@ Following types of items are supported in launcher application:
     {"type": "cmd", "text": "This is command button", "param": "myScript.sh", "theme": "blue", "style": "color: #000000", "tip": "What my script does.", "help-link": "http://www.link.com/to/help"}
     ```
 
-    > `theme` and `style` and optional settings to modify appearance (explained in [Button styles]())
+    > `theme` and `style` and optional settings to modify appearance (explained in [Button styles]()). We discourage usage of `theme`.
     
     > `help_link` and `tip` are optional settings to specify user's help
 
@@ -86,7 +86,7 @@ Following types of items are supported in launcher application:
     {"type": "cmd", "text": "This is caqtdm button", "file": "submenu.json", "param": "MACRO1=M1,MACRO2=M2", "theme": "blue", "style": "color: #000000", "tip": "What this screen does.", "help-link": "http://www.link.com/to/help"}
     ```
 
-    > `theme` and `style` and optional settings to modify appearance (explained in [Button styles]())
+    > `theme` and `style` and optional settings to modify appearance (explained in [Button styles]()). We discourage usage of `theme`.
     
     > `help_link` and `tip` are optional settings to specify user's help
 
@@ -97,7 +97,7 @@ Following types of items are supported in launcher application:
     {"type": "cmd", "text": "This is caqtdm button", "file": "submenu.json", "param": "MACRO1=M1,MACRO2=M2", "theme": "blue", "style": "color: #000000", "tip": "What this screen does.", "help-link": "http://www.link.com/to/help"}
     ```
 
-    > `theme` and `style` and optional settings to modify appearance (explained in [Button styles]())
+    > `theme` and `style` and optional settings to modify appearance (explained in [Button styles]()). We discourage usage of `theme`.
     
     > `help_link` and `tip` are optional settings to specify user's help
     
