@@ -174,7 +174,36 @@ class LauncherMenuModel(object):
 
         # Add the element dictionary to the list of menu items
         if len(element) > 0:
+            # Check if one of the parameters is a help link
+            html_help = self._get_html_help(params[1:])
+            if html_help:
+                element['help-link'] = html_help
+
             self._menu_items.append(element)
+
+    def _get_html_help(self, parameters):
+        """Checks the parameter if it is a link to a web page.
+
+        The function checks if one of the parameters is a link to a page
+        or html file that will be used as the help link text. If none of
+        the paramters match the criteria, None is returned.
+        """
+
+        for param in parameters:
+            part = param.split()[0]
+            if (part == 'obj:' or
+                    part == 'fltr:' or
+                    part == 'lvl:'):
+                continue
+            else:
+                part = os.path.splitext(param)
+                if (len(part) > 1 and 
+                        (part[1] == '.html' or
+                        part[1] == '.php3' or
+                        part[1] == '.php')):
+                    return param
+
+        return None
 
     def _concatenate(self, item_list, level=0):
         """Concatenates a list of string and list items into a string.
@@ -294,6 +323,13 @@ class LauncherMenuModelParser(object):
             # If we parsed all of them, stop
             if not input_name:
                 finished = True
+                continue
+            
+            # Check if the file exists
+            if not os.path.isfile(os.path.join(self._input_file_path,
+                                               input_name)):
+                print 'Wrn: File "' + input_name + '" is not a regular file!'
+                self._input_files[input_name] = 'Yes'
                 continue
 
             # Parse the current file
