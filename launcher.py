@@ -57,13 +57,6 @@ class LauncherWindow(QtGui.QMainWindow):
         path_tuple = os.path.split(rootFilePath)
         self.launcherCfg["launcher_base"] = path_tuple[0]
         rootFilePath = path_tuple[1]
-        # Load default theme
-
-        style_file = open_launcher_file(
-            self.launcherCfg.get("theme_base") + "default.qss")
-        self.setStyleSheet(style_file.read())
-        style_file.close()
-        # Build menu model from rootMenuFile and set general parameters.
 
         self.menuModel = self.buildMenuModel(rootFilePath)
         self.setWindowTitle(self.menuModel.mainTitle)
@@ -238,7 +231,6 @@ class LauncherMenu(QtGui.QMenu):
                 widget = None
                 widgetType = None
                 text = QtCore.QString("")
-
 
             if action.__class__.__name__ == "LauncherSeparator":
                 action.setVisibility(False)
@@ -547,7 +539,7 @@ class LauncherFilterLineEdit(QtGui.QLineEdit):
         self.clearButton.setFixedSize(27, 27)
         self.setTextMargins(0, 0, 30, 0)
         currDir = os.path.dirname(os.path.realpath(__file__))
-        icon = QtGui.QIcon(os.path.join(currDir, "./images/delete-2x.png"))
+        icon = QtGui.QIcon(os.path.join(currDir, "res/images/delete-2x.png"))
         self.clearButton.setIcon(icon)
 
         self.clearButton.setStyleSheet("background-color: transparent; \
@@ -617,7 +609,7 @@ class LauncherFilterWidget(QtGui.QWidget):
         self.searchButton.setFixedSize(27, 27)
         currDir = os.path.dirname(os.path.realpath(__file__))
         icon = QtGui.QIcon(os.path.join(currDir,
-                           "./images/magnifying-glass-2x.png"))
+                                        "res/images/magnifying-glass-2x.png"))
         self.searchButton.setIcon(icon)
 
         self.searchButton.setFocusPolicy(Qt.ClickFocus)
@@ -826,12 +818,12 @@ class LauncherMainButton(LauncherButton):
         self.setText(menu.menuModel.mainTitle)
         self.setMenu(menu)
 
-        # TODO apply styles
-        # add menu arrow indicator
+        # add menu arrow indicator added here to use right path and avoid
+        # compiling python code
         currDir = os.path.dirname(os.path.realpath(__file__))
-        indicator = os.path.join(currDir, "./images/caret-right.png")
+        indicator = os.path.join(currDir, "res/images/caret-right.png")
         indicatorStyle = "LauncherButton:menu-indicator {image: url(" +\
-            indicator +");subcontrol-position: right center}"
+            indicator + ");subcontrol-position: right center}"
         self.setStyleSheet(indicatorStyle)
 
     def mouseMoveEvent(self, event):
@@ -864,9 +856,9 @@ class LauncherNamedButton(LauncherButton):
         style = LauncherStyle(self, itemModel.theme, itemModel.style)
         # add menu arrow indicator
         currDir = os.path.dirname(os.path.realpath(__file__))
-        indicator = os.path.join(currDir, "./images/caret-right.png")
+        indicator = os.path.join(currDir, "res/images/caret-right.png")
         indicatorStyle = "LauncherButton:menu-indicator {image: url(" +\
-            indicator +");subcontrol-position: right center}"
+            indicator + ");subcontrol-position: right center}"
         style.appendClassStyle(indicatorStyle)
         self.setStyleSheet(style.style)
 
@@ -1013,12 +1005,29 @@ if __name__ == '__main__':
                           help='Launcher configuration file')
     argsPars.add_argument('launcher',
                           help="Launcher menu file.")
-
+    argsPars.add_argument('-s', '--style',
+                          help="Path to application style (qss file).")
     args = argsPars.parse_args()
 
     app = QtGui.QApplication(sys.argv)
+    # Load default style and theme
+
     app.setStyle("cleanlooks")
-    launcherWindow = LauncherWindow(sys.argv[2], sys.argv[1])
+    currDir = os.path.dirname(os.path.realpath(__file__))
+    styleFile = open_launcher_file(os.path.join(currDir,
+                                                 "res/qss/default.qss"))
+    app.setStyleSheet(styleFile.read())
+    styleFile.close()
+    launcherWindow = LauncherWindow(args.launcher, args.config)
+    if args.style:
+        try:
+            userStyle = open_launcher_file(args.style)
+            launcherWindow.setStyleSheet(userStyle.read())
+            userStyle.close()
+        except IOError:
+            errMsg = "Err: Style file \"" + args.style + "\" not found."
+            sys.exit(errMsg)
+
     launcherWindow.setGeometry(0, 0, 150, 0)
     launcherWindow.show()
     sys.exit(app.exec_())

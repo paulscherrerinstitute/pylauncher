@@ -1,1 +1,0 @@
-eval caqtdm -macro "$2" ./test_uis/$1 &
