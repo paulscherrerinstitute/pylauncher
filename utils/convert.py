@@ -172,7 +172,7 @@ class LauncherMenuModel(object):
             self.file_list.append(command[1] + '.config')
 
         # Skip over lines where the command starts with a hash (comment)
-        elif command[0] == '#':
+        elif command[0].startswith('#'):
             print 'Inf: Skipping line %d in file "%s" - comment' \
                 % (self.line_number, self.file_path)
 
