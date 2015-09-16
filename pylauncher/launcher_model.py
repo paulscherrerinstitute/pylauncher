@@ -75,17 +75,18 @@ class launcher_menu_model:
                                                                    text,
                                                                    file_name))
             except IOError:
-                err_msg = "ParseErr: " + menu_file.geturl() + ": File \"" +\
-                    file_name + "\" not found."
-                logging.warning(err_msg)
+                warn_msg = "Parser: " + menu_file.geturl() + ": File \"" +\
+                    file_name + "\" not found. Skipped"
+                logging.warning(warn_msg)
 
         # Build menu model. Report error if menu is not defined.
 
         list_of_menu_items = menu.get("menu", list())
         if not list_of_menu_items:
-            err_msg = "ParseErr: " + menu_file.geturl() +\
-                ": Launcher menu is not defined."
-            sys.exit(err_msg)
+            err_msg = "Parser: " + menu_file.geturl() +\
+                ": Launcher menu is empty."
+            logging.error(err_msg)
+            sys.exit()
 
         for item in list_of_menu_items:
             menu_item = None
@@ -140,9 +141,9 @@ class launcher_menu_model:
                                                        None)
                     sub_file.close()
                 except IOError:
-                    err_msg = "ParseErr: " + menu_file.geturl() + \
-                        ": File \"" + file_name + "\" not found."
-                    logging.warning(err_msg)
+                    warn_msg = "Parser: " + menu_file.geturl() + \
+                        ": File \"" + file_name + "\" not found. Skipped"
+                    logging.warning(warn_msg)
 
             elif item_type == "title":
                 self.check_item_format_json(item, ["text"])
@@ -153,9 +154,9 @@ class launcher_menu_model:
                 menu_item = launcher_item_separator(self, theme, style)
 
             else:
-                err_msg = "ParseErr:" + menu_file.geturl() + \
-                          ": Unknown type \"" + item_type + "\"."
-                logging.warning(err_msg)
+                warn_msg = "Parser:" + menu_file.geturl() + \
+                    ": Unknown type \"" + item_type + "\". Skipped"
+                logging.warning(warn_msg)
 
             if menu_item != None:
                 self.menu_items.append(menu_item)
@@ -169,9 +170,10 @@ class launcher_menu_model:
 
         for param in mandatory_param:
             if not item.get(param):
-                err_msg = "ParseErr: Parameter \"" + param + \
+                err_msg = "Parser Parameter \"" + param + \
                     "\" is mandatory in configuration \"" + item + "\"."
-                sys.exit(err_msg)
+                logging.error(err_msg)
+                sys.exit()
 
 
 class launcher_menu_model_item:

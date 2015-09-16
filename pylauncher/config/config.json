@@ -1,6 +1,6 @@
 {
     "Linux": {
-        "theme_base": "./qss/",
+        "theme_base": "../qss",
         "cmd": {
             "command": ""
         },

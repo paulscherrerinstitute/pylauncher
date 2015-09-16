@@ -9,6 +9,8 @@ import json
 import copy
 import enum
 import urllib2
+import urlparse
+import logging
 
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import pyqtSlot, Qt
@@ -38,9 +40,10 @@ class LauncherWindow(QtGui.QMainWindow):
         try:
             cfgFile = open_launcher_file(cfgFilePath)
         except IOError:
-            errMsg = "Err: Configuration file \"" + cfgFilePath + \
+            errMsg = "Configuration file \"" + cfgFilePath + \
                 "\" not found."
-            sys.exit(errMsg)
+            logging.error(errMsg)
+            sys.exit()
         cfg = json.load(cfgFile)
         cfgFile.close()
         # Get configuration for current system. platform.system() returns:
@@ -57,6 +60,8 @@ class LauncherWindow(QtGui.QMainWindow):
         path_tuple = os.path.split(rootFilePath)
         self.launcherCfg["launcher_base"] = path_tuple[0]
         rootFilePath = path_tuple[1]
+        # Get defined theme base. If it is not url or absolute dir, make it
+        # relative to config file.
 
         self.menuModel = self.buildMenuModel(rootFilePath)
         self.setWindowTitle(self.menuModel.mainTitle)
@@ -122,8 +127,9 @@ class LauncherWindow(QtGui.QMainWindow):
         try:
             rootMenuFile = open_launcher_file(rootMeniFullPath)
         except IOError:
-            errMsg = "Err: File \"" + rootMenuPath + "\" not found."
-            sys.exit(errMsg)
+            errMsg = "File \"" + rootMenuPath + "\" not found."
+            logging.error(errMsg)
+            sys.exit()
         rootMenu = launcher_menu_model(None, rootMenuFile, 0, self.launcherCfg)
         rootMenuFile.close()
         return rootMenu
@@ -445,6 +451,7 @@ class LauncherSearchMenuView(LauncherMenu):
                 addPrefix = True
             elif item.__class__.__name__ == "launcher_sub_menu_item":
                 # Take subemnu model and build (visualize) it below
+
                 cSubMenuItems = copy.copy(item.sub_menu.menu_items)
                 cMenuItems.extend(cSubMenuItems)
             elif item.__class__.__name__ == "launcher_title_item":
@@ -982,11 +989,17 @@ class LauncherStyle:
 
     def appendThemeStyle(self, theme):
         mainWindow = self.item.parent().getLauncherWindow()
-        theme_file = open_launcher_file(
-            mainWindow.launcherCfg.get("theme_base") + theme + ".qss")
-        self.styleString = self.styleString + theme_file.read()
-        theme_file.close()
-        self.style = QtCore.QLatin1String(self.styleString)
+        try:
+            theme_file = open_launcher_file(
+                os.path.join(mainWindow.launcherCfg.get("theme_base"),
+                             theme + ".qss"))
+            self.styleString = self.styleString + theme_file.read()
+            theme_file.close()
+            self.style = QtCore.QLatin1String(self.styleString)
+        except IOError:
+            warnMsg = "Theme \"" + theme + \
+                "\" was not found. Theme ignored."
+            logging.warning(warnMsg)
 
     def appendStyle(self, style, item):
         self.styleString = self.styleString + item.__class__.__name__ +\
@@ -997,8 +1010,8 @@ class LauncherStyle:
         self.styleString = self.styleString + style
         self.style = QtCore.QLatin1String(self.styleString)
 
-if __name__ == '__main__':
 
+def main():
     # Usage: launcher.py menu config
     argsPars = argparse.ArgumentParser()
     argsPars.add_argument('config',
@@ -1014,8 +1027,9 @@ if __name__ == '__main__':
 
     app.setStyle("cleanlooks")
     currDir = os.path.dirname(os.path.realpath(__file__))
+    print currDir
     styleFile = open_launcher_file(os.path.join(currDir,
-                                                 "res/qss/default.qss"))
+                                                "res/qss/default.qss"))
     app.setStyleSheet(styleFile.read())
     styleFile.close()
     launcherWindow = LauncherWindow(args.launcher, args.config)
@@ -1025,9 +1039,13 @@ if __name__ == '__main__':
             launcherWindow.setStyleSheet(userStyle.read())
             userStyle.close()
         except IOError:
-            errMsg = "Err: Style file \"" + args.style + "\" not found."
-            sys.exit(errMsg)
+            errMsg = "Style file \"" + args.style + "\" not found."
+            logging.error(errMsg)
+            sys.exit()
 
     launcherWindow.setGeometry(0, 0, 150, 0)
     launcherWindow.show()
     sys.exit(app.exec_())
+
+if __name__ == '__main__':
+    main()
