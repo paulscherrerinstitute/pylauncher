@@ -11,7 +11,7 @@ def open_launcher_file(file_path):
     launcher_file = None
     try:
         launcher_file = urllib2.urlopen(file_path)
-    except ValueError:
+    except (urllib2.URLError, ValueError):
         try:
             launcher_file_path = os.path.normpath(file_path)
             launcher_file_path = os.path.abspath(launcher_file_path)

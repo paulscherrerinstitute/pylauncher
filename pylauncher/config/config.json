@@ -14,7 +14,7 @@
         }
     },
     "Windows": {
-        "theme_base": "./qss/",
+        "theme_base": "../qss/",
         "cmd": {
             "command": ""
         },
@@ -28,7 +28,7 @@
         }
     },
     "OS_X": {
-        "theme_base": "./qss/",
+        "theme_base": "../qss/",
         "cmd": {
             "command": ""
         },

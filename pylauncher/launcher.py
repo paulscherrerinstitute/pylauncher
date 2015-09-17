@@ -11,6 +11,7 @@ import enum
 import urllib2
 import urlparse
 import logging
+import re
 
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import pyqtSlot, Qt
@@ -62,6 +63,16 @@ class LauncherWindow(QtGui.QMainWindow):
         rootFilePath = path_tuple[1]
         # Get defined theme base. If it is not url or absolute dir, make it
         # relative to config file.
+        theme_base = self.launcherCfg["theme_base"]
+        try:
+            urllib2.urlopen(theme_base)
+        except (urllib2.URLError, ValueError):
+            # Not an url. Check if absoulte path.
+            
+            if not os.path.isabs(theme_base):
+                cfgDir = os.path.dirname(cfgFilePath)
+                self.launcherCfg["theme_base"] = os.path.join(cfgDir,
+                                                              theme_base)
 
         self.menuModel = self.buildMenuModel(rootFilePath)
         self.setWindowTitle(self.menuModel.mainTitle)
@@ -824,11 +835,15 @@ class LauncherMainButton(LauncherButton):
         LauncherButton.__init__(self, None, parent)
         self.setText(menu.menuModel.mainTitle)
         self.setMenu(menu)
-
         # add menu arrow indicator added here to use right path and avoid
         # compiling python code
+
         currDir = os.path.dirname(os.path.realpath(__file__))
         indicator = os.path.join(currDir, "res/images/caret-right.png")
+        indicator = os.path.normpath(indicator)
+        # Even on windows a path to the image must be with forward slashes.
+
+        indicator = re.sub(r'\\', '/', indicator)
         indicatorStyle = "LauncherButton:menu-indicator {image: url(" +\
             indicator + ");subcontrol-position: right center}"
         self.setStyleSheet(indicatorStyle)
@@ -861,9 +876,15 @@ class LauncherNamedButton(LauncherButton):
         self.itemModel = itemModel
         self.setText(itemModel.text)
         style = LauncherStyle(self, itemModel.theme, itemModel.style)
-        # add menu arrow indicator
+        # add menu arrow indicator added here to use right path and avoid
+        # compiling python code
+
         currDir = os.path.dirname(os.path.realpath(__file__))
         indicator = os.path.join(currDir, "res/images/caret-right.png")
+        indicator = os.path.normpath(indicator)
+        # Even on windows a path to the image must be with forward slashes.
+
+        indicator = re.sub(r'\\', '/', indicator)
         indicatorStyle = "LauncherButton:menu-indicator {image: url(" +\
             indicator + ");subcontrol-position: right center}"
         style.appendClassStyle(indicatorStyle)
@@ -876,6 +897,7 @@ class LauncherNamedButton(LauncherButton):
             helpAction.triggered.connect(self.openHelp)
 
     def openHelp(self):
+        """ Open help link in default browser. """
 
         url = QtCore.QUrl(
             self.sender().data().toString(), QtCore.QUrl.TolerantMode)
@@ -930,6 +952,8 @@ class LauncherMenuButton(LauncherNamedButton):
 
 class LauncherViewMenu(QtGui.QMenu):
 
+    """ View menu for menu bar """
+
     def __int__(self, text, parent=None):
         QtGui.QMenu.__init__(self, text, parent)
 
@@ -978,6 +1002,8 @@ class LauncherFileChoiceAction(QtGui.QAction):
 
 class LauncherStyle:
 
+    """ Class which handles qss style sheet from multiple sources """
+
     def __init__(self, item, theme=None, style=None):
         self.item = item
         self.styleString = ""
@@ -1012,7 +1038,8 @@ class LauncherStyle:
 
 
 def main():
-    # Usage: launcher.py menu config
+    """ Main logic """
+
     argsPars = argparse.ArgumentParser()
     argsPars.add_argument('config',
                           help='Launcher configuration file')
@@ -1047,5 +1074,6 @@ def main():
     launcherWindow.show()
     sys.exit(app.exec_())
 
+# Start program here
 if __name__ == '__main__':
     main()
