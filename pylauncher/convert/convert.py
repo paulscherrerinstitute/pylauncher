@@ -370,8 +370,7 @@ class LauncherMenuModelParser(object):
             # Output the configuration to the json output file
             self.input_files[key].to_json(self.output_path, self.overwrite)
 
-
-if __name__ == '__main__':
+def main():
 
     args_pars = argparse.ArgumentParser()
     args_pars.add_argument('inputfile',
@@ -402,3 +401,7 @@ if __name__ == '__main__':
     parser = LauncherMenuModelParser(tickle_path, output_path, args.overwrite)
     parser.parse(args.single, args.force)
     parser.to_json()
+
+
+if __name__ == '__main__':
+    main()
