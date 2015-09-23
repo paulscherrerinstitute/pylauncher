@@ -1,5 +1,6 @@
 {
-    "menu-title": "F_L3",
+    "menu-title":
+        {"text": "F_L3"},
     "menu": [
         {"type": "title", "text": "Test 3"},
         {"type": "cmd", "text": "Button_1 3", "param": "ls"},

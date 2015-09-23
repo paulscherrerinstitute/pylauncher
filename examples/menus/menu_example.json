@@ -1,0 +1,58 @@
+{
+    "menu-title": {
+        "text": "This is menu title",
+        "theme": "green",
+        "style": "color: #000000"
+    },
+    "file-choice": [
+        {"text": "This is view 1", "file": "menu_1.json"},
+        {"text": "This is view 2", "file": "menu_2.json"}
+    ],
+    "menu": [
+        {
+            "type": "title",
+            "text": "Title 1 - default style"
+        },
+        {
+            "type": "menu",
+            "text": "This is  sub-menu -default style", 
+            "file": "menu_2.json",
+            "tip": "Menu tip.",
+            "help-link": "http://www.link.com/to/help"
+        },
+        {
+            "type": "cmd",
+            "text": "This is command-default style",
+            "param": "xeyes",
+            "tip": "Opens xeyes."
+        },
+        {
+            "type": "separator"
+        },
+        {
+            "type": "title",
+            "text": "Title 2 - changed style",
+            "style":"color: #ff0000"
+        },
+        {
+            "type": "caqtdm",
+            "text": "This is caQtDM screen - changed style",
+            "file": "MY-SCREEN",
+            "param": "MACRO1=M1,MACRO2=M2",
+            "tip": "Opens MY-SCREEN.ui.",
+            "help-link": "http://www.link.com/to/help",
+            "theme": "green",
+            "style": "color: #333333"
+        },
+        {
+            "type": "medm",
+            "text": "This is medm screen - changed style",
+            "file": "MY-MEDM.adl",
+            "param": "MACRO1=M1,MACRO2=M2",
+            "tip": "Opens screen MY-MEDM.adl.",
+            "help-link": "http://www.link.com/to/help",
+            "theme": "green",
+            "style": "color: #333333"
+        }
+    ]
+}

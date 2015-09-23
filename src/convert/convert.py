@@ -12,7 +12,7 @@ class LauncherMenuModel(object):
 
     """Representation - model of the launcher menu configuration.
 
-    This class cotains all logic and data needed to parse and output a
+    This class contains all logic and data needed to parse and output a
     single launcher menu configuration file. The configuration is read
     from a tickle script parsed, transmuted and output to a JSON
     configuration file. During parsing a list of files is compiled of
@@ -107,7 +107,8 @@ class LauncherMenuModel(object):
 
         # Configure the title of the main menu
         if command[0] == '@main-title':
-            self.json_config['menu-title'] = params[0]
+            self.json_config['menu-title'] = dict()
+            self.json_config['menu-title']['text'] = params[0]
 
             if len(params) > 0:
                 print ('Inf: Skipping additional parameters in '

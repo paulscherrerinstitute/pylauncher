@@ -67,7 +67,7 @@ class LauncherWindow(QtGui.QMainWindow):
         try:
             urllib2.urlopen(theme_base)
         except (urllib2.URLError, ValueError):
-            # Not an url. Check if absoulte path.
+            # Not an url. Check if absolute path.
             
             if not os.path.isabs(theme_base):
                 cfgDir = os.path.dirname(cfgFilePath)
@@ -75,7 +75,7 @@ class LauncherWindow(QtGui.QMainWindow):
                                                               theme_base)
 
         self.menuModel = self.buildMenuModel(rootFilePath)
-        self.setWindowTitle(self.menuModel.mainTitle)
+        self.setWindowTitle(self.menuModel.main_title.text)
         # QMainWindow has predefined layout. Content should be in the central
         # widget. Create widget with a QVBoxLayout and set it as central.
 
@@ -86,13 +86,13 @@ class LauncherWindow(QtGui.QMainWindow):
         # Main window consist of filter/serach entry and a main button which
         # pops up the root menu. Create a layout and add the items.
 
-        self.launcherMenu = LauncherSubMenu(self.menuModel, None, self)
-        self.mainButton = LauncherMainButton(self.launcherMenu, self)
+        self.launcherMenu = LauncherSubMenu(self.menuModel, None, mainWidget)
+        self.mainButton = LauncherMainButton(self.launcherMenu, mainWidget)
         self.launcherMenu.button = self.mainButton
         # Create Filter/search item. Add it and main button to the layout.
 
         self.searchInput = LauncherFilterWidget(self.launcherMenu,
-                                                self)
+                                                mainWidget)
         self.mainLayout.addWidget(self.searchInput)
         self.mainLayout.addWidget(self.mainButton)
         # Create menu bar. In current visualization menu bar exposes all
@@ -113,9 +113,8 @@ class LauncherWindow(QtGui.QMainWindow):
         """
         del self.menuModel
         self.menuModel = self.buildMenuModel(rootMenuFile)
-        self.setWindowTitle(self.menuModel.mainTitle)
-        self.mainButton.setText(self.menuModel.mainTitle)
-        # TODO restyle main Button and reload model for search
+        self.setWindowTitle(self.menuModel.main_title.text)
+        self.mainButton.restyle(self.menuModel.main_title)
         self.launcherMenu.deleteLater()
         self.launcherMenu = LauncherSubMenu(self.menuModel, self.mainButton,
                                             self)
@@ -322,15 +321,6 @@ class LauncherMenu(QtGui.QMenu):
         self.actions()[i].defaultWidget().setFocus()
         self.setActiveAction(self.actions()[i])
 
-    def getLauncherWindow(self):
-        """ Search and return application main window object"""
-
-        candidate = self
-        while type(candidate) is not LauncherWindow:
-            candidate = candidate.parent()
-
-        return candidate
-
     def getMainMenu(self):
         """Return menu of mainButton from which all menus expand.
 
@@ -369,7 +359,7 @@ class LauncherSubMenu(LauncherMenu):
 
         detachedMenu = LauncherDetachedMenu(self.menuModel,
                                             self.getMainMenu())
-        detachedMenu.setWindowTitle(self.menuModel.mainTitle)
+        detachedMenu.setWindowTitle(self.menuModel.main_title.text)
         detachedMenu.searchInput.setText(self.filterTerm)
         detachedMenu.setWindowFlags(Qt.Window | Qt.Tool)
         detachedMenu.setAttribute(Qt.WA_DeleteOnClose, True)
@@ -557,7 +547,7 @@ class LauncherFilterLineEdit(QtGui.QLineEdit):
         self.clearButton.setFixedSize(27, 27)
         self.setTextMargins(0, 0, 30, 0)
         currDir = os.path.dirname(os.path.realpath(__file__))
-        icon = QtGui.QIcon(os.path.join(currDir, "res/images/delete-2x.png"))
+        icon = QtGui.QIcon(os.path.join(currDir, "resources/images/delete-2x.png"))
         self.clearButton.setIcon(icon)
 
         self.clearButton.setStyleSheet("background-color: transparent; \
@@ -627,7 +617,7 @@ class LauncherFilterWidget(QtGui.QWidget):
         self.searchButton.setFixedSize(27, 27)
         currDir = os.path.dirname(os.path.realpath(__file__))
         icon = QtGui.QIcon(os.path.join(currDir,
-                                        "res/images/magnifying-glass-2x.png"))
+                                        "resources/images/magnifying-glass-2x.png"))
         self.searchButton.setIcon(icon)
 
         self.searchButton.setFocusPolicy(Qt.ClickFocus)
@@ -713,7 +703,7 @@ class LauncherSearchWidget(QtGui.QWidget):
 
 class LauncherSeparator(QtGui.QAction):
 
-    """Normal menu separator with a key option (key TODO)."""
+    """Just wrapped normal menu separator."""
 
     def __init__(self, itemModel, parent=None):
         QtGui.QAction.__init__(self, parent)
@@ -833,20 +823,25 @@ class LauncherMainButton(LauncherButton):
 
     def __init__(self, menu, parent=None):
         LauncherButton.__init__(self, None, parent)
-        self.setText(menu.menuModel.mainTitle)
+        self.restyle(menu.menuModel.main_title)
         self.setMenu(menu)
-        # add menu arrow indicator added here to use right path and avoid
+
+    def restyle(self, itemModel):
+        self.setText(itemModel.text)
+        style = LauncherStyle(self, itemModel.theme, itemModel.style)
+        # Add menu arrow indicator. Added here to use right path and avoid
         # compiling python code
 
         currDir = os.path.dirname(os.path.realpath(__file__))
-        indicator = os.path.join(currDir, "res/images/caret-right.png")
+        indicator = os.path.join(currDir, "resources/images/caret-right.png")
         indicator = os.path.normpath(indicator)
         # Even on windows a path to the image must be with forward slashes.
 
         indicator = re.sub(r'\\', '/', indicator)
         indicatorStyle = "LauncherButton:menu-indicator {image: url(" +\
             indicator + ");subcontrol-position: right center}"
-        self.setStyleSheet(indicatorStyle)
+        style.appendClassStyle(indicatorStyle)
+        self.setStyleSheet(style.style)
 
     def mouseMoveEvent(self, event):
         self.setFocus()
@@ -876,11 +871,11 @@ class LauncherNamedButton(LauncherButton):
         self.itemModel = itemModel
         self.setText(itemModel.text)
         style = LauncherStyle(self, itemModel.theme, itemModel.style)
-        # add menu arrow indicator added here to use right path and avoid
+        # Add menu arrow indicator. Added here to use right path and avoid
         # compiling python code
 
         currDir = os.path.dirname(os.path.realpath(__file__))
-        indicator = os.path.join(currDir, "res/images/caret-right.png")
+        indicator = os.path.join(currDir, "resources/images/caret-right.png")
         indicator = os.path.normpath(indicator)
         # Even on windows a path to the image must be with forward slashes.
 
@@ -936,7 +931,7 @@ class LauncherMenuButton(LauncherNamedButton):
         menu = LauncherSubMenu(itemModel.sub_menu, self, self.parent())
         self.setMenu(menu)
         if not itemModel.tip:
-            toolTip = "Menu: " + menu.menuModel.mainTitle
+            toolTip = "Menu: " + menu.menuModel.main_title.text
         else:
             toolTip = itemModel.tip
         self.setToolTip(toolTip)
@@ -1014,7 +1009,10 @@ class LauncherStyle:
             self.appendStyle(style, item)
 
     def appendThemeStyle(self, theme):
-        mainWindow = self.item.parent().getLauncherWindow()
+        mainWindow = self.item
+        while type(mainWindow) is not LauncherWindow:
+            mainWindow = mainWindow.parent()
+
         try:
             theme_file = open_launcher_file(
                 os.path.join(mainWindow.launcherCfg.get("theme_base"),
@@ -1054,9 +1052,8 @@ def main():
 
     app.setStyle("cleanlooks")
     currDir = os.path.dirname(os.path.realpath(__file__))
-    print currDir
     styleFile = open_launcher_file(os.path.join(currDir,
-                                                "res/qss/default.qss"))
+                                                "resources/qss/default.qss"))
     app.setStyleSheet(styleFile.read())
     styleFile.close()
     launcherWindow = LauncherWindow(args.launcher, args.config)

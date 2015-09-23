@@ -12,19 +12,9 @@ setup(name='pylauncher',
       long_description=README,
       author='PSI',
       url='https://github.psi.ch/projects/COS/repos/pylauncher/browse',
-      licence='GPLv3+',
       keywords='launcher, caqtdm, medm, PSI',
-      classifiers=[
-          # Get strings from
-          # http://pypi.python.org/pypi?%3Aaction=list_classifiers
-          'Development Status :: 3 - Alpha',
-          'Environment :: Console',
-          'Intended Audience :: Developers',
-          'Programming Language :: Python :: 2',
-          'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)'
-      ],
       packages=['pylauncher', 'pylauncher.convert'],
-      package_dir={'pylauncher': 'pylauncher'},
-      package_data={'pylauncher': ['res/images/*.png', 'res/qss/*.qss']},
+      package_dir={'pylauncher': 'src'},
+      package_data={'pylauncher': ['resources/images/*.png', 'resources/qss/*.qss']},
       platforms=["any"],
       )

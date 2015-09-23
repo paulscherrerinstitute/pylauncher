@@ -1,5 +1,5 @@
 package:
-    name: pylauncher
+    name: launcher
     version: 1.0.0
 source:
     git_url:  https://github.psi.ch/scm/cos/pylauncher.git
@@ -8,10 +8,19 @@ requirements:
         - python
         - setuptools
         - pyqt
+        - qt
+        - pyparsing
     run:
         - python
         - pyqt
+        - qt
+        - pyparsing
+
+build:
+  entry_points:
+    - launcher = pylauncher.launcher:main
+    - launcher-convert = pylauncher.convert.convert:main
+
 about:
     home: https://github.psi.ch/projects/COS/repos/pylauncher/browse
-    license: GPL3+
     summary: "Standard PSI launcher application."

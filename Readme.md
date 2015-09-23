@@ -1,122 +1,322 @@
-# Overview
-> All packages needed by launcher application are distributed in Anaconda [1] with python version 2.7. Anaconda can be found here: [Anaconda](http://continuum.io/downloads)
+# Launcher
 
-## Run pyLauncher application
-Start the launcher with following command:
+Launcher is a python based menu oriented application which allows users to access controls software on PSI. Launcher is very customizable tool which builds its appearance for different facilitates depending on menu-configuration files.
 
-```
-launcher.py <path_to_config_file> <path_to_menu_file>
+It is distributed over PSI as an [Anaconda](http://continuum.io/downloads) package which can be found [here](https://github.psi.ch/projects/AN).
+
+
+## Table of content
+- [Installation and usage of Launcher in Anaconda python environment](#installation-and-usage-of-launcher-in-anaconda-python-environment)
+  - [Install Launcher](#install-launcher1)
+  - [Run Launcher](#run-launcher1)
+    - [Run Launcher with custom color scheme](#run-launcher-with-custom-color-scheme)
+  - [Buidling Launcher as Anaconda package](#buidling-launcher-as-anaconda-package)
+- [Installation and usage of Launcher as none-conda application](#installation-and-usage-of-Launcher-as-none-conda-application)
+  - [Install Launcher](#install-launcher2)
+  - [Run Launcher](#run-launcher2)
+- [Defining a Launcher menu](#defining-a-launcher-menu)
+  - [Menu item types](#menu-item-types)
+  - [Styling of menu items](#styling-of-menu-items)
+- [Configuration of Launcher](#configuration-of-launcher)
+- [Customize Launcher appearance](#customize-launcher-appearance)
+  - [Write Launcher style file](#write-launcher-style-file)
+  - [Write Launcher theme file](#write-launcher-theme-file)
+
+## Installation and usage of Launcher in Anaconda python environment
+
+> To use Launcher as none-conda application consult section [Installation and usage of launcher as none-conda application](#instalaltion-and-usage-of-launcher-as-none-conda-application)
+
+Generally PSI user does not need to install neither Anaconda or Launcher by himself because they are already part of PSI infrastructure. To use it on standard PSI machine one must just execute following command, to set Anaconda python as default python environment.
+
+``` bash
+export PATH=/opt/gfa/python-2.7/2.3.0/bin:$PATH
 ```
 
-To run the launcher with example configuration run:
+If one still needs to install Launcher application locally consult section [Install Launcher](#install-launcher).
 
+### Install Launcher
+> Note that all launcher dependencies are already part of standard Anaconda (Python 2.7. version) distribution which can be found here: [Anaconda](http://continuum.io/downloads)
+
+> This section assumes that one already has a working Anaconda environment on his machine. To additionally install Launcher following steps must be made:
+
+ 1. Download prebuilt [Launcher package from PSI git](https://github.psi.ch/projects/AN)
+
+ > To build Launcher as Anaconda package manually consult section [Buidling Launcher as Anaconda package](#buidling-launcher-as-anaconda-package).
+
+ 2. Execute `conda install <path_to_launcher_package>`
+
+
+### Run Launcher
+> This section assumes that Launcher is installed as Anaconda package and Anaconda is selected as default python environment.
+
+Launcher can be started with following command:
+
+``` bash
+launcher <config_file> <menu_file>
 ```
-launcher.py ./config/config.json ./menus/menu_1.json
-```
+> `<config_file>` is a file which defines general behavior of Launcher on different systems. For detailed information see section [Configuration of Launcher](#configuration-of-launcher).
+>
+> `<menu_file>` defines a Launcher 'menu' for specific facility, beamline, etc. To prepare menu files consult section [Defining a Launcher menu](#defining-a-launcher-menu)
 
 For detailed help run  `launcher -h`.
 
-Application may fail with the example configuration. Instructions how to set-up application for specific system can be found in the section [Configuration of launcher application]().
-## Defining launcher menus
-Each menu can be configured using predefined key value pairs in json files (for details check examples in ./menus/ directory). On top level configuration of the menu is divided in 3 sections:
+#### Run Launcher with custom color scheme
+If one wants to run Launcher with custom color scheme there is a `-s (--style)` flag available to pass a new color scheme file. Color scheme must be defined in a file that follows [QSS](http://doc.qt.io/qt-4.8/stylesheet-syntax.html) syntax. For details about styling a Launcher consult section [Write Launcher style file](#write-launcher-style-file).
+
+To run a launcher with custom color scheme execute following command:
+
+``` bash
+launcher --style <style__qss_file> <config_file> <menu_file>
+```
+
+### Buidling Launcher as Anaconda package
+> This section assumes that one already has a working Anaconda environment on his machine and conda-build is installed.
+
+To build a stable version of Launcher as Anaconda package one should execute following steps:
+
+ 1. Clone git repository:
+
+ ``` bash
+ git clone https://github.psi.ch/scm/cos/pylauncher.git
+ ```
+
+ 2. List version (tag) names:
+
+ ``` bash
+ git tag -l
+ ```
+
+ 3. Select version:
+
+  ``` bash
+ git checkout tags/<tag_name>
+ ```
+
+ 4. Navigate to [./utils/conda_package]() and build:
+
+ ``` bash
+ cd ./utils/conda_package/
+ conda build pylauncher
+ ```
+
+
+
+## Installation and usage of Launcher as none-conda application
+
+If one wants to use Launcher with standard Python installation he must be aware that Launcher requires:
+- Python 2.7 [Link](https://www.python.org/download/releases/2.7/)
+- Qt 4 (4.8 or higher) [Link](http://www.qt.io/download/)
+- PyQt4 (4.8 or higher) [Link](https://www.riverbankcomputing.com/software/pyqt/download)
+- pyparsing [Link](http://pyparsing.wikispaces.com/Download+and+Installation)
+
+### Install Launcher
+> This section assumes that all dependencies are properly installed.
+
+To get a stable version of Launcher one should execute following steps:
+
+ 1. Clone git repository:
+
+ ``` bash
+ git clone https://github.psi.ch/scm/cos/pylauncher.git
+ ```
+
+ 2. List version (tag) names:
+
+ ``` bash
+ git tag -l
+ ```
+
+ 3. Select version:
+
+  ``` bash
+ git checkout tags/<tag_name>
+ ```
+
+Launcher application is located in the ./src/ directory.
+
+
+### Run Launcher
+> This section assumes that all dependencies are properly installed.
  
- 1. `menu-title`to set the menu title
+Launcher can be started with following command:
 
-    ```
-    "menu-title": "This is menu title",
+``` bash
+<launcher-git-dir>/src/launcher.py <config_file> <menu_file>
+```
+
+> Detailed explanation of Launcher options can be found in section [Installation and usage of Launcher in Anaconda python environment > Run Launcher](#run-launcher-1).
+
+
+## Defining a Launcher menu
+Each menu can be configured using predefined key value pairs in json files (check full example: [./examples/menus/menu_example.json]() directory). On top level, configuration of the menu is divided in 3 sections:
+ 
+ 1. `menu-title` is an optional section to set the menu title. If no title is specified a file name is used instead.
+
+    ``` json
+    "menu-title": {
+        "text": "This is menu title",
+        "theme": "light-blue",
+        "style": "color: #000000"
+    }
     ``` 
+    > `theme` and `style` are optional settings to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of main title button. We discourage usage of `theme`.
 
- 2. `file-choice` to specify possible views of the launcher (e.g. exert, user, ...) [If no views leave empty]
+ 2. `file-choice` is an optional section to specify possible views of the launcher (e.g. expert, user, ...) It can be skipped if no views are defined.
 
-    ```
+    ``` json
     "file-choice": [
-            {"text": "Expert", "file": "expert.json"}
-            {"text": "Developer", "file": "dev.json"}
+            {"text": "This is view 1", "file": "menu1.json"},
+            {"text": "This is view 2", "file": "menu2.json"}
         ]
 
-    ```
-    > Possible views are shown in View menu in menu bar.
+    ``` 
 
- 3. `menu`, main section to define launcher items
+    Once Launcher application is opened, one can select different view from **View** menu in menu bar. Selecting new view reloads Launcher from file specified in parameter `file`.
 
-    ```
+ 3. `menu` is a main section to define launcher items
+
+    ``` json
     "menu": [
-        {...},
-        {...},
+        { 
+            "type": "menu",
+            "text": "Submenu",
+            "file": "submenu.json",
+            "theme": "green",
+            "style": "color: #000000"
+        },
+        {
+            "type": "separator"
+        },
+        {
+
+        ...
+
+        }
     ]
     ```
+
+    One can specify as many items as needed. Type of each item is defined with `type` property. All supported types with available parameters are described in section [Menu item types](#menu-item-types).
 
 ### Menu item types
 Following types of items are supported in launcher application:
 - **`separator`** to visually separate menu items with line.
     
-    ```
+    ``` json
     {"type": "separator"}
     ```
 
-- **`title`** is a special separator with text.
+- **`title`** is a special separator with text. By default it is visually distinguishable from other items.
     
+    ``` json
+    {
+        "type": "title",
+        "text": "This is shown title",
+        "theme": "red",
+        "style":"color: #000000"
+    }
     ```
-    {"type": "title", "text": "This is button text", "theme": "green", "style":"color: #000000"}
-    ```
 
-    > `theme` and `style` and optional settings to modify apperance (explained in [Button styles]()). We discourage usage of `theme`.
+    > `theme` and `style` are optional parameters to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of title separator. We discourage usage of `theme`.
 
 
-- **`menu`** is a button which opens sub menu defined in `file`.
+- **`menu`** is an element which opens sub-menu specified in a menu file defined with parameter `file`.
     
+    ``` json
+    {
+        "type": "menu",
+        "text": "This is shown text", 
+        "file": "menu_2.json",
+        "tip": "Menu tip.",
+        "help-link": "http://www.link.com/to/help",
+        "theme": "green",
+        "style": "color: #000000"
+    }
     ```
-    {"type": "menu", "text": "Strip-tool", "file": "menu_2.json"}
-    ```
+
+    > `help_link` and `tip` are optional parameters to specify user's help. `tip` is shown as standard tool-tip (on mouse hover) and `help-link`can be accessed with right mouse click on an item.
+
+    > `theme` and `style` are optional parameters to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of element. We discourage usage of `theme`.
     
-- **`cmd`** is a basic button which executes shell command defined in `param`.
+- **`cmd`** is a basic element which executes shell command defined with parameter `param`.
 
+    ``` json
+    {
+        "type": "cmd",
+        "text": "This is shown text",
+        "param": "shell_command",
+        "tip": "What command does.",
+        "help-link": "http://www.link.com/to/help",
+        "theme": "blue",
+        "style": "color: #000000"
+    }
     ```
-    {"type": "cmd", "text": "This is command button", "param": "myScript.sh", "theme": "blue", "style": "color: #000000", "tip": "What my script does.", "help-link": "http://www.link.com/to/help"}
-    ```
+    > `help_link` and `tip` are optional parameters to specify user's help. `tip` is shown as standard tool-tip (on mouse hover) and `help-link`can be accessed with right mouse click on an item.
 
-    > `theme` and `style` and optional settings to modify appearance (explained in [Button styles]()). We discourage usage of `theme`.
-    
-    > `help_link` and `tip` are optional settings to specify user's help
-
-    
-- **`caqtdm`** is a button which opens a qt file screen in `file` with macros defined in `param`.
-
-    ```
-    {"type": "cmd", "text": "This is caqtdm button", "file": "submenu.json", "param": "MACRO1=M1,MACRO2=M2", "theme": "blue", "style": "color: #000000", "tip": "What this screen does.", "help-link": "http://www.link.com/to/help"}
-    ```
-
-    > `theme` and `style` and optional settings to modify appearance (explained in [Button styles]()). We discourage usage of `theme`.
-    
-    > `help_link` and `tip` are optional settings to specify user's help
+    > `theme` and `style` are optional parameters to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of element. We discourage usage of `theme`.
 
     
-- **`medm`** is a button which opens a medm screen defined in `file` with macros defined in `param`.
+- **`caqtdm`** is an element which opens a caQtDM screen defined with parameter `file`. Optionally one can also define macros with parameter `param`.
 
+    ``` json
+    {
+        "type": "caqtdm",
+        "text": "This is shown text",
+        "file": "screen_name",
+        "param": "MACRO1=M1,MACRO2=M2",
+        "tip": "What this screen does.",
+        "help-link": "http://www.link.com/to/help",
+        "theme": "blue",
+        "style": "color: #000000"
+    }
     ```
-    {"type": "cmd", "text": "This is caqtdm button", "file": "submenu.json", "param": "MACRO1=M1,MACRO2=M2", "theme": "blue", "style": "color: #000000", "tip": "What this screen does.", "help-link": "http://www.link.com/to/help"}
+
+    > `help_link` and `tip` are optional parameters to specify user's help. `tip` is shown as standard tool-tip (on mouse hover) and `help-link`can be accessed with right mouse click on an item.
+
+    > `theme` and `style` are optional parameters to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of element. We discourage usage of `theme`.
+
+    
+- **`medm`** is an element which opens a medm screen defined with parameter `file`. Optionally one can also define macros with parameter `param`.
+
+    ``` json
+    {
+        "type": "medm",
+        "text": "This is shown text",
+        "file": "screen_name",
+        "param": "MACRO1=M1,MACRO2=M2",
+        "tip": "What this screen does.",
+        "help-link": "http://www.link.com/to/help",
+        "theme": "blue",
+        "style": "color: #000000"
+    }
     ```
 
-    > `theme` and `style` and optional settings to modify appearance (explained in [Button styles]()). We discourage usage of `theme`.
+    > `help_link` and `tip` are optional parameters to specify user's help. `tip` is shown as standard tool-tip (on mouse hover) and `help-link`can be accessed with right mouse click on an item.
+
+    > `theme` and `style` are optional parameters to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of element. We discourage usage of `theme`.
     
-    > `help_link` and `tip` are optional settings to specify user's help
-    
-### Button styles
-Style definition follows [QSS](http://doc.qt.io/qt-4.8/stylesheet-syntax.html) syntax.
+### Styling of menu items
+If needed one can do a per item customization of the menu appearance. For this purpose large majority of the item types (for specific item consult section [Menu item types](#menu-item-types)) exposes following parameters:
+ 1. `style` which enables very flexible customization with [QSS](http://doc.qt.io/qt-4.8/stylesheet-syntax.html) syntax.
+ 2. `theme` which enables customization using one of the predefined themes. How to define a theme is described in section [Write Launcher theme file](#write-launcher-theme-file).
+ 
+ > Note that currently no themes are defined.
 
-To simplify styling of launcher menu items, a set of predefined themes is available in folder defined in configuration file (see [Configuration of launcher application]()). Name of each file (e.g. green.qss) also presents the theme name (e.g. using `"theme": "green"` in configuration will apply configuration defined in green.qss).
 
-User can has also possibility to apply desired qss configuration as a string in menu item definition (e.g.  `"style": "color: #000000"` will set the colour of the text to black.
+If both parameters are defined, both are used but `style` has a higher priority.
 
-## Configuration of launcher application
+**Example:**
+One uses theme that defines `background-color: red` and text color `color: blue`. Then he can redefine text color with setting `style` to `color: black`. This setting will result in an item with red background and black text.
+
+## Configuration of Launcher
 Launcher applications uses a configuration json file to specify the behavior of application on different systems (for now Linux, Windows and OS X are supported).
 
-Example of configuration can be found in ./config/config.json. Configuration is split for different os systems with key value pairs, where key can be `Linux`, `Windows` or `OS_X` and value is an array of settings. See an example of configuration for Linux operating system bellow:
+Full example of configuration can be found in [.examples/config/config.json](). Configuration is split into sections, one for each operating systems. An example of configuration for Linux operating system is shown bellow:
 
-```
+``` json
 {
+
     "Linux": {
-        "theme_base": "./qss/",
+        "theme_base": "../themes/",
         "cmd": {
             "command": ""
         },
@@ -136,22 +336,70 @@ Example of configuration can be found in ./config/config.json. Configuration is 
 }
 ```
 
-### Configuration explanation:
-- `theme_base` should be a path to folder where all possible themes are defined (if needed). For details see section [Button styles]().
+Configuration for each operating system consists of 4 parameters:
+ 1. `theme_base` for defining a path to a directory where all possible themes are stored. For details about usage of themes consult section [Styling of menu items](#styling-of-menu-items).
 
-Launcher application has 3 types of 'active' buttons (details in section [Defining launcher menus]()). To execute shell command, to open a qt screen and to open a medm screen. They are all executed as shell commands. How to call programs as caqtdm and medm must be defined in the configuration screen. Each of this button type has its own key with array of values.
-- `command` is either a prefix to user specified shell command for `cmd` (e.g 'bash -c') or actual command to call a caqtdm or medem program in case of `caqtdm` and `medm`.
-- `macro_flag`is flag after which macros are defined (usually '-macro')
+ 2. `cmd` for defining a behavior of menu item which executes a shell command. Parameter `command` is used as a prefix to user specified command.
 
->**Example:** On current PSI infrastructure caqtdm screen can be opened with command:
+ > **Example:** If `command`is set to `"command": "bash -c"` and item is defined as `{"type": "cmd", "param": "shell_command"}` following will be executed: `bash -c shell_command`.
 
-```
-caqtdm -macro "MACRO1=M1,MACRO2=M2" this_is_my_gui.ui
-```
-> To enable same functionality on launcher following must be set:
-```
-"caqtdm":{
-    "command": "caqtdm",
-    "macro_flag": "-macro"
+ 3. `caqtdm` for defining a behavior of menu item which opens a caQtDM screen. Parameter `command` defines command which opens caQtDM and parameter `macro` defines a macro prefix.
+
+ > **Example:** If `command`is set to `"command": "caqtdm"`, `macro` is set to `"macro": "-macro"` and item is defined as `{"type": "caqtdm", "param": "caqtdm_screen", "macro": "MACRO1=M1,MACRO2=M2"}` following will be executed: `caqtdm -macro "MACRO1=M1,MACRO2=M2" caqtd_screen.ui`.
+
+ 4. `medm` for defining a behavior of menu item which opens a medm screen. Parameter `command` defines command which opens medm and parameter `macro` defines a macro prefix.
+
+ > **Example:** If `command`is set to `"command": "medm -x"`, `macro` is set to `"macro": "-macro"` and item is defined as `{"type": "medm", "param": "medm_screen", "macro": "MACRO1=M1,MACRO2=M2"}` following will be executed: `medm -x -macro "MACRO1=M1,MACRO2=M2" medm_screen.adl`.
+
+## Customize Launcher appearance
+To customize appearance of Launcher one must be familiar with [QSS](http://doc.qt.io/qt-4.8/stylesheet-syntax.html) syntax.
+
+### Write Launcher style file
+At startup of launcher default appearance of launcher can be set as mentioned in section [Installation and usage of Launcher in Anaconda python environment > Run Launcher](#run-launcher-1). Such styling (.qss) file must use class names that strongly depend on Launcher implementation. Example can be found bellow:
+
+``` css
+LauncherButton{
+    background-color: #e9e9e9;
+    text-align:left;
+    border-image: none;
+    border: none;
+}
+
+LauncherButton:focus, LauncherButton:pressed {
+    background-color: #bdbdbd;
+    outline: none
+}
+
+LauncherMenuTitle{
+    background-color: #e9e9e9;
+    text-align:left;
+    color: #0000FF
+}
+
+LauncherDetachButton{
+    background-color: #666666;
 }
 ```
+- `LauncherButton` is most general and defines appearance of main title button and menu items of type: `cmd`, `caqtdm`, `medm` and `menu`.
+
+- `LauncherMenuTitle` defines appearance of menu item of type `title`.
+
+- `LauncherDetachButton` defines appearance of detached button.
+
+
+### Write Launcher theme file
+For custom theme to work following must be done:
+
+ 1. Theme file must be created. Basic one should look similar to:
+
+ ``` css
+ LauncherButton, LauncherMenuTitle{
+     background-color: #0f9d58
+ }
+ ```
+
+ > Class names strongly depend on Launcher implementation so they should not be changed.
+
+ 2. Theme file must be saved into directory defined by configuration file (consult [Configuration of Launcher](#configuration-of-launcher)). File name defines a theme name.
+
+ > **Example:** File named [green.qss] defines theme with name *green*.

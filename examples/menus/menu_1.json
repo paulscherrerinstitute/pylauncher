@@ -1,5 +1,6 @@
 {
-    "menu-title": "F_L1",
+    "menu-title":
+        {"text": "F_L1","theme": "green", "style": "color: #FF3388"},
     "file-choice": [
         {"text": "Load F_L2", "file": "menu_2.json"}
     ],
