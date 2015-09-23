@@ -90,7 +90,7 @@ For detailed help run  `launcher -h`.
 ### Buidling Launcher as Anaconda package
 > This section assumes that one already has a working Anaconda environment on his machine and conda-build is installed.
 
-To build a stable version of Launcher as Anaconda package one should execute following steps:
+To build a last stable version of Launcher as Anaconda package one should execute following steps:
 
  1. Clone git repository:
 
@@ -98,19 +98,7 @@ To build a stable version of Launcher as Anaconda package one should execute fol
  git clone https://github.psi.ch/scm/cos/pylauncher.git
  ```
 
- 2. List version (tag) names:
-
- ``` bash
- git tag -l
- ```
-
- 3. Select version:
-
-  ``` bash
- git checkout tags/<tag_name>
- ```
-
- 4. Navigate to [./utils/conda_package]() and build:
+ 2. Navigate to [./utils/conda_package]() and build:
 
  ``` bash
  cd ./utils/conda_package/

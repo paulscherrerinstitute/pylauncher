@@ -112,6 +112,7 @@ class LauncherWindow(QtGui.QMainWindow):
         window elements.
         """
         del self.menuModel
+
         self.menuModel = self.buildMenuModel(rootMenuFile)
         self.setWindowTitle(self.menuModel.main_title.text)
         self.mainButton.restyle(self.menuModel.main_title)
@@ -120,7 +121,7 @@ class LauncherWindow(QtGui.QMainWindow):
                                             self)
         self.mainButton.setMenu(self.launcherMenu)
         self.viewMenu.buildViewMenu(self.menuModel)
-        self.searchInput.menu = self.launcherMenu
+        self.searchInput.setMenu(self.launcherMenu)
 
     def changeEvent(self, changeEvent):
         """Catch when main window is selected and set focus to search."""
@@ -214,6 +215,15 @@ class LauncherMenu(QtGui.QMenu):
 
         self.filterConditions[condition.value] = value
         self.filterMenu(self.filterTerm)
+
+    def getLauncherWindow(self):
+        """ Search and return application main window object"""
+
+        candidate = self
+        while type(candidate) is not LauncherWindow:
+            candidate = candidate.parent()
+
+        return candidate
 
     def filterMenu(self, filterTerm=None):
         """Filter menu items with filterTerm
@@ -536,10 +546,10 @@ class LauncherFilterLineEdit(QtGui.QLineEdit):
 
     def __init__(self, menu, parent=None):
         QtGui.QLineEdit.__init__(self, parent)
-        self.textChanged.connect(lambda: menu.filterMenu(self.text()))
+        self.menu = menu
+        self.textChanged.connect(lambda: self.menu.filterMenu(self.text()))
         self.myAction = None
         self.setPlaceholderText("Enter filter term.")
-        self.menu = menu
         # Create button to clear text and add it to the right edge of the
         # input.
 
@@ -631,6 +641,9 @@ class LauncherFilterWidget(QtGui.QWidget):
 
         self.setFocusPolicy(Qt.TabFocus)
         self.setFocusProxy(self.searchInput)
+
+    def setMenu(self, menu):
+        self.searchInput.menu = menu
 
     def setMyAction(self, action):
         self.myAction = action
