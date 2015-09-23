@@ -7,20 +7,22 @@ It is distributed over PSI as an [Anaconda](http://continuum.io/downloads) packa
 
 ## Table of content
 - [Installation and usage of Launcher in Anaconda python environment](#installation-and-usage-of-launcher-in-anaconda-python-environment)
-  - [Install Launcher](#install-launcher1)
-  - [Run Launcher](#run-launcher1)
-    - [Run Launcher with custom color scheme](#run-launcher-with-custom-color-scheme)
-  - [Buidling Launcher as Anaconda package](#buidling-launcher-as-anaconda-package)
+   - [Install Launcher](#install-launcher1)
+   - [Run Launcher](#run-launcher1)
+      - [Run Launcher with custom color scheme](#run-launcher-with-custom-color-scheme)
+   - [Run menu converter](#run-menu-converter1)
+   - [Buidling Launcher as Anaconda package](#buidling-launcher-as-anaconda-package)
 - [Installation and usage of Launcher as none-conda application](#installation-and-usage-of-Launcher-as-none-conda-application)
-  - [Install Launcher](#install-launcher2)
-  - [Run Launcher](#run-launcher2)
+   - [Install Launcher](#install-launcher2)
+   - [Run Launcher](#run-launcher2)
+   - [Run menu converter](#run-menu-converter2)
 - [Defining a Launcher menu](#defining-a-launcher-menu)
-  - [Menu item types](#menu-item-types)
-  - [Styling of menu items](#styling-of-menu-items)
+   - [Menu item types](#menu-item-types)
+   - [Styling of menu items](#styling-of-menu-items)
 - [Configuration of Launcher](#configuration-of-launcher)
 - [Customize Launcher appearance](#customize-launcher-appearance)
-  - [Write Launcher style file](#write-launcher-style-file)
-  - [Write Launcher theme file](#write-launcher-theme-file)
+   - [Write Launcher style file](#write-launcher-style-file)
+   - [Write Launcher theme file](#write-launcher-theme-file)
 
 ## Installation and usage of Launcher in Anaconda python environment
 
@@ -69,6 +71,22 @@ To run a launcher with custom color scheme execute following command:
 launcher --style <style__qss_file> <config_file> <menu_file>
 ```
 
+### Run menu converter
+> This section assumes that Launcher is installed as Anaconda package and Anaconda is selected as default python environment.
+
+Launcher also provides a tool to convert old PSI Launcher menu configurations to new one.
+
+> Because of dependencies it skips any style specific configuration.
+
+Converter can be started with following command:
+
+``` bash
+launcher-convert <original_config_file> <output_dir>
+```
+
+Converter offers multiple additional features such as converting whole menu or single file, overriding converted files, etc.
+For detailed help run  `launcher -h`.
+
 ### Buidling Launcher as Anaconda package
 > This section assumes that one already has a working Anaconda environment on his machine and conda-build is installed.
 
@@ -110,8 +128,6 @@ If one wants to use Launcher with standard Python installation he must be aware 
 - pyparsing [Link](http://pyparsing.wikispaces.com/Download+and+Installation)
 
 ### Install Launcher
-> This section assumes that all dependencies are properly installed.
-
 To get a stable version of Launcher one should execute following steps:
 
  1. Clone git repository:
@@ -146,9 +162,24 @@ Launcher can be started with following command:
 
 > Detailed explanation of Launcher options can be found in section [Installation and usage of Launcher in Anaconda python environment > Run Launcher](#run-launcher-1).
 
+### Run menu converter
+> This section assumes that all dependencies are properly installed.
+
+Launcher also provides a tool to convert old PSI Launcher menu configurations to new one.
+
+> Because of dependencies it skips any style specific configuration.
+
+Converter can be started with following command:
+
+``` bash
+<launcher-git-dir>/src/convert/convert.py <original_config_file> <output_dir>
+```
+
+Converter offers multiple additional features such as converting whole menu or single file, overriding converted files, etc.
+For detailed help run  `launcher -h`.
 
 ## Defining a Launcher menu
-Each menu can be configured using predefined key value pairs in json files (check full example: [./examples/menus/menu_example.json]() directory). On top level, configuration of the menu is divided in 3 sections:
+Each menu can be configured using predefined key value pairs in json files (check full example: [./examples/menus/menu_example.json](https://github.psi.ch/projects/COS/repos/pylauncher/browse/examples/menus/menu_example.json) directory). On top level, configuration of the menu is divided in 3 sections:
  
  1. `menu-title` is an optional section to set the menu title. If no title is specified a file name is used instead.
 
@@ -310,7 +341,7 @@ One uses theme that defines `background-color: red` and text color `color: blue`
 ## Configuration of Launcher
 Launcher applications uses a configuration json file to specify the behavior of application on different systems (for now Linux, Windows and OS X are supported).
 
-Full example of configuration can be found in [.examples/config/config.json](). Configuration is split into sections, one for each operating systems. An example of configuration for Linux operating system is shown bellow:
+Full example of configuration can be found in [.examples/config/config.json](https://github.psi.ch/projects/COS/repos/pylauncher/browse/examples/config/config.json). Configuration is split into sections, one for each operating systems. An example of configuration for Linux operating system is shown bellow:
 
 ``` json
 {
