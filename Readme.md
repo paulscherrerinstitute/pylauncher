@@ -105,7 +105,12 @@ To build a last stable version of Launcher as Anaconda package one should execut
  conda build pylauncher
  ```
 
+ _Note:_ To be able to build the anaconda package you need to have the `patchelf` package installed in your anaconda installation. If it is not provided in the central installation, create a new anaconda environment and install the package in there before building:
 
+```bash
+conda create -n mybuildenvironment anaconda
+conda install patchelf
+ ```
 
 ## Installation and usage of Launcher as none-conda application
 
@@ -141,7 +146,7 @@ Launcher application is located in the ./src/ directory.
 
 ### Run Launcher
 > This section assumes that all dependencies are properly installed.
- 
+
 Launcher can be started with following command:
 
 ``` bash
@@ -168,7 +173,7 @@ For detailed help run  `launcher -h`.
 
 ## Defining a Launcher menu
 Each menu can be configured using predefined key value pairs in json files (check full example: [./examples/menus/menu_example.json](https://github.psi.ch/projects/COS/repos/pylauncher/browse/examples/menus/menu_example.json) directory). On top level, configuration of the menu is divided in 3 sections:
- 
+
  1. `menu-title` is an optional section to set the menu title. If no title is specified a file name is used instead.
 
     ``` json
@@ -177,7 +182,7 @@ Each menu can be configured using predefined key value pairs in json files (chec
         "theme": "light-blue",
         "style": "color: #000000"
     }
-    ``` 
+    ```
     > `theme` and `style` are optional settings to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of main title button. We discourage usage of `theme`.
 
  2. `file-choice` is an optional section to specify possible views of the launcher (e.g. expert, user, ...) It can be skipped if no views are defined.
@@ -188,7 +193,7 @@ Each menu can be configured using predefined key value pairs in json files (chec
             {"text": "This is view 2", "file": "menu2.json"}
         ]
 
-    ``` 
+    ```
 
     Once Launcher application is opened, one can select different view from **View** menu in menu bar. Selecting new view reloads Launcher from file specified in parameter `file`.
 
@@ -196,7 +201,7 @@ Each menu can be configured using predefined key value pairs in json files (chec
 
     ``` json
     "menu": [
-        { 
+        {
             "type": "menu",
             "text": "Submenu",
             "file": "submenu.json",
@@ -219,13 +224,13 @@ Each menu can be configured using predefined key value pairs in json files (chec
 ### Menu item types
 Following types of items are supported in launcher application:
 - **`separator`** to visually separate menu items with line.
-    
+
     ``` json
     {"type": "separator"}
     ```
 
 - **`title`** is a special separator with text. By default it is visually distinguishable from other items.
-    
+
     ``` json
     {
         "type": "title",
@@ -239,11 +244,11 @@ Following types of items are supported in launcher application:
 
 
 - **`menu`** is an element which opens sub-menu specified in a menu file defined with parameter `file`.
-    
+
     ``` json
     {
         "type": "menu",
-        "text": "This is shown text", 
+        "text": "This is shown text",
         "file": "menu_2.json",
         "tip": "Menu tip.",
         "help-link": "http://www.link.com/to/help",
@@ -255,7 +260,7 @@ Following types of items are supported in launcher application:
     > `help_link` and `tip` are optional parameters to specify user's help. `tip` is shown as standard tool-tip (on mouse hover) and `help-link`can be accessed with right mouse click on an item.
 
     > `theme` and `style` are optional parameters to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of element. We discourage usage of `theme`.
-    
+
 - **`cmd`** is a basic element which executes shell command defined with parameter `param`.
 
     ``` json
@@ -273,7 +278,7 @@ Following types of items are supported in launcher application:
 
     > `theme` and `style` are optional parameters to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of element. We discourage usage of `theme`.
 
-    
+
 - **`caqtdm`** is an element which opens a caQtDM screen defined with parameter `file`. Optionally one can also define macros with parameter `param`.
 
     ``` json
@@ -293,7 +298,7 @@ Following types of items are supported in launcher application:
 
     > `theme` and `style` are optional parameters to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of element. We discourage usage of `theme`.
 
-    
+
 - **`medm`** is an element which opens a medm screen defined with parameter `file`. Optionally one can also define macros with parameter `param`.
 
     ``` json
@@ -312,12 +317,12 @@ Following types of items are supported in launcher application:
     > `help_link` and `tip` are optional parameters to specify user's help. `tip` is shown as standard tool-tip (on mouse hover) and `help-link`can be accessed with right mouse click on an item.
 
     > `theme` and `style` are optional parameters to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of element. We discourage usage of `theme`.
-    
+
 ### Styling of menu items
 If needed one can do a per item customization of the menu appearance. For this purpose large majority of the item types (for specific item consult section [Menu item types](#menu-item-types)) exposes following parameters:
  1. `style` which enables very flexible customization with [QSS](http://doc.qt.io/qt-4.8/stylesheet-syntax.html) syntax.
  2. `theme` which enables customization using one of the predefined themes. How to define a theme is described in section [Write Launcher theme file](#write-launcher-theme-file).
- 
+
  > Note that currently no themes are defined.
 
 
@@ -348,7 +353,7 @@ Full example of configuration can be found in [.examples/config/config.json](htt
             "macro_flag": "-macro"
         }
     },
-    "Windows": { ... 
+    "Windows": { ...
     },
     "OS_X": { ...
     }
