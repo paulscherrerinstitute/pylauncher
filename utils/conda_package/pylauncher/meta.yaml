@@ -2,7 +2,7 @@ package:
     name: launcher
     version: v0.9.1
 source:
-    git_rev: v0.9.1
+    git_tag: v0.9.1
     git_url:  https://github.psi.ch/scm/cos/pylauncher.git
 requirements:
     build:
