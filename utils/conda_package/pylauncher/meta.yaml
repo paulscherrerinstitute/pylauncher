@@ -1,5 +1,5 @@
 package:
-    name: launcher
+    name: pylauncher
     version: v0.9.1
 source:
     git_tag: v0.9.1
@@ -17,8 +17,8 @@ requirements:
 
 build:
   entry_points:
-    - launcher = pylauncher.launcher:main
-    - launcher-convert = pylauncher.convert.convert:main
+    - pylauncher = pylauncher.launcher:main
+    - pylauncher-convert = pylauncher.convert.convert:main
 
 about:
     home: https://github.psi.ch/projects/COS/repos/pylauncher/browse
