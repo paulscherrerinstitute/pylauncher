@@ -2,43 +2,43 @@
     "Linux": {
         "theme_base": "../themes/",
         "cmd": {
-            "command": ""
+            "command": "{}"
         },
         "caqtdm":{
-            "command": "caqtdm",
-            "macro_flag": "-macro"
+            "command": "caqtdm {} {}",
+            "arg_flags": ["-macro ", ""]
         },
         "medm":{
-            "command": "medm -x",
-            "macro_flag": "-macro"
+            "command": "medm -x {} {}",
+            "arg_flags": ["-macro ", ""]
         }
     },
     "Windows": {
         "theme_base": "../themes/",
         "cmd": {
-            "command": ""
+            "command": "{}"
         },
         "caqtdm":{
-            "command": "caqtdm",
-            "macro_flag": "-macro"
+            "command": "caqtdm {} {}",
+            "arg_flags": ["-macro ", ""]
         },
         "medm":{
-            "command": "medm -x",
-            "macro_flag": "-macro"
+            "command": "medm -x {} {}",
+            "arg_flags": ["-macro ", ""]
         }
     },
     "OS_X": {
         "theme_base": "../themes/",
         "cmd": {
-            "command": ""
+            "command": "{}"
         },
         "caqtdm":{
-            "command": "caqtdm",
-            "macro_flag": "-macro"
+            "command": "caqtdm {} {}",
+            "arg_flags": ["-macro ", ""]
         },
         "medm":{
-            "command": "medm -x",
-            "macro_flag": "-macro"
+            "command": "medm -x {} {}",
+            "arg_flags": ["-macro ", ""]
         }
     }
 }

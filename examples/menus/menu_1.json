@@ -6,15 +6,15 @@
     ],
     "menu": [
         {"type": "title", "text": "General"},
-        {"type": "cmd", "text": "Who is online", "param": "xeyes", "tip": "List of currently connected users.", "help-link": "http://www.google.com"},
+        {"type": "cmd", "text": "Who is online", "params": ["xeyes"], "tip": "List of currently connected users.", "help-link": "http://www.google.com"},
         {"type": "title", "text": "HighLevel Applications", "theme": "green"},
-        {"type": "cmd", "text": "ScreenMonitorTool", "param": "ls", "theme": "green", "style": "color: #FF3388"},
-        {"type": "cmd", "text": "QE Measurement", "param": "ls -l", "theme": "green"},
+        {"type": "cmd", "text": "ScreenMonitorTool", "params": ["ls"], "theme": "green", "style": "color: #FF3388"},
+        {"type": "cmd", "text": "QE Measurement", "params": ["ls -l"], "theme": "green"},
         {"type": "separator"},
         {"type": "title", "text": "Utilities", "theme": "green"},
-        {"type": "cmd", "text": "Remote network access control by control room", "param": "ls"},
+        {"type": "cmd", "text": "Remote network access control by control room", "params": ["ls"]},
         {"type": "menu", "text": "Strip-tool", "file": "menu_2.json"},
-        {"type": "caqtdm", "text": "CA-screen", "file": "neki.ui", "param": "SYS=TEST" },
-        {"type": "medm", "text": "MEDM-screen", "file": "neki.adl", "param": "SYS=TEST" }
+        {"type": "caqtdm", "text": "CA-screen", "params": ["SYS=TEST", "screen.ui"] },
+        {"type": "medm", "text": "MEDM-screen", "params": ["SYS=TEST", "screen.ui"] }
     ]
 }

@@ -174,9 +174,7 @@ class LauncherMenu(QtGui.QMenu):
 
         sectionTitle = None
         for item in self.menuModel.menu_items:
-            if item.__class__.__name__ == "launcher_cmd_item" or\
-               item.__class__.__name__ == "launcher_caqtdm_item" or \
-               item.__class__.__name__ == "launcher_medm_item":
+            if item.__class__.__name__ == "launcher_cmd_item":
                 self.appendToMenu(LauncherCmdButton(item, sectionTitle, self))
             elif item.__class__.__name__ == "launcher_sub_menu_item":
                 self.appendToMenu(LauncherMenuButton(item, sectionTitle, self))
@@ -454,9 +452,7 @@ class LauncherSearchMenuView(LauncherMenu):
             addPrefix = False
             for traceItem in item.trace:
                 levelPrefix = levelPrefix + traceItem.text + " > "
-            if item.__class__.__name__ == "launcher_cmd_item" or \
-               item.__class__.__name__ == "launcher_caqtdm_item" or\
-               item.__class__.__name__ == "launcher_medm_item":
+            if item.__class__.__name__ == "launcher_cmd_item":
                 button = LauncherCmdButton(item, sectionTitle, self)
                 self.appendToMenu(button)
                 addPrefix = True

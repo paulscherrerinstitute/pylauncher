@@ -23,7 +23,7 @@
         {
             "type": "cmd",
             "text": "This is command-default style",
-            "param": "xeyes",
+            "params": ["xeyes"],
             "tip": "Opens xeyes."
         },
         {
@@ -37,9 +37,7 @@
         {
             "type": "caqtdm",
             "text": "This is caQtDM screen - changed style",
-            "file": "MY-SCREEN",
-            "param": "MACRO1=M1,MACRO2=M2",
-            "tip": "Opens MY-SCREEN.ui.",
+            "params": ["MACRO1=M1,MACRO2=M2", "MY-SCREEN.ui"],
             "help-link": "http://www.link.com/to/help",
             "theme": "green",
             "style": "color: #333333"
@@ -47,8 +45,7 @@
         {
             "type": "medm",
             "text": "This is medm screen - changed style",
-            "file": "MY-MEDM.adl",
-            "param": "MACRO1=M1,MACRO2=M2",
+            "params": ["MACRO1=M1,MACRO2=M2", "MY-MEDM.adl"],
             "tip": "Opens screen MY-MEDM.adl.",
             "help-link": "http://www.link.com/to/help",
             "theme": "green",
