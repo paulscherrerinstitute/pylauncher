@@ -7,10 +7,10 @@ here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'Readme.md')).read()
 
 setup(name='pylauncher',
-      version='1.0.00',
+      version='v0.9.2',
       description="Standard PSI tool for accessing GUIs",
       long_description=README,
-      author='PSI',
+      author='Rok Vintar',
       url='https://github.psi.ch/projects/COS/repos/pylauncher/browse',
       keywords='launcher, caqtdm, medm, PSI',
       packages=['pylauncher', 'pylauncher.convert'],
