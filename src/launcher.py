@@ -36,17 +36,8 @@ class LauncherWindow(QtGui.QMainWindow):
     of launcher menus, builds menu bar, ...
     """
 
-    def __init__(self, rootFilePath, cfgFilePath, parent=None):
+    def __init__(self, rootFilePath, cfg, parent=None):
         QtGui.QMainWindow.__init__(self, parent)
-        try:
-            cfgFile = open_launcher_file(cfgFilePath)
-        except IOError:
-            errMsg = "Configuration file \"" + cfgFilePath + \
-                "\" not found."
-            logging.error(errMsg)
-            sys.exit()
-        cfg = json.load(cfgFile)
-        cfgFile.close()
         # Get configuration for current system. platform.system() returns:
         #     - "Darwin" when OS X
         #     - "Linux" when Linux
@@ -68,10 +59,9 @@ class LauncherWindow(QtGui.QMainWindow):
             urllib2.urlopen(theme_base)
         except (urllib2.URLError, ValueError):
             # Not an url. Check if absolute path.
-            
+
             if not os.path.isabs(theme_base):
-                cfgDir = os.path.dirname(cfgFilePath)
-                self.launcherCfg["theme_base"] = os.path.join(cfgDir,
+                self.launcherCfg["theme_base"] = os.path.join(cfg["cfg_base"],
                                                               theme_base)
 
         self.menuModel = self.buildMenuModel(rootFilePath)
@@ -1055,7 +1045,7 @@ def main():
     """ Main logic """
 
     argsPars = argparse.ArgumentParser()
-    argsPars.add_argument('config',
+    argsPars.add_argument('-c', '--config',
                           help='Launcher configuration file')
     argsPars.add_argument('launcher',
                           help="Launcher menu file.")
@@ -1064,24 +1054,50 @@ def main():
     args = argsPars.parse_args()
 
     app = QtGui.QApplication(sys.argv)
-    # Load default style and theme
+
+    # Load configuration. Use default configuration defined inside package if 
+    # --config is not specified
+    currDir = os.path.dirname(os.path.realpath(__file__))
+    cfgPath = os.path.join(currDir, "resources/config/config.json")
+    cfgFile = open_launcher_file(cfgPath)
+    defaultCfg = json.load(cfgFile)
+    defaultCfg["cfg_base"] = os.path.basename(cfgPath)
+    cfgFile.close()
+
+    default = True
+    logMsg = ""
+    if args.config:
+        try:
+            cfgFile = open_launcher_file(args.config)
+            cfg = json.load(cfgFile)
+            cfg["cfg_base"] = os.path.dirname(args.config)
+            cfgFile.close()
+            default = False
+        except:
+            logMsg = "Problems opening \"" + args.config + "\". "
+
+    if default:
+        cfg = defaultCfg
+        logMsg += "Launcher will be loaded with default configuration."
+        logging.warning(logMsg)
+
+    # Create Launcher Window and load default style and theme
+    launcherWindow = LauncherWindow(args.launcher, cfg)
 
     app.setStyle("cleanlooks")
-    currDir = os.path.dirname(os.path.realpath(__file__))
     styleFile = open_launcher_file(os.path.join(currDir,
                                                 "resources/qss/default.qss"))
     app.setStyleSheet(styleFile.read())
     styleFile.close()
-    launcherWindow = LauncherWindow(args.launcher, args.config)
     if args.style:
         try:
             userStyle = open_launcher_file(args.style)
             launcherWindow.setStyleSheet(userStyle.read())
             userStyle.close()
-        except IOError:
-            errMsg = "Style file \"" + args.style + "\" not found."
-            logging.error(errMsg)
-            sys.exit()
+        except:
+            LogMsg = "Problems opening \"" + args.style + "\". " + \
+                "Launcher will be opened with default style."
+            logging.warning(logMsg)
 
     launcherWindow.setGeometry(0, 0, 150, 0)
     launcherWindow.show()

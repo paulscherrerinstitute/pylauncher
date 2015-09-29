@@ -1,0 +1,44 @@
+{
+    "Linux": {
+        "theme_base": "../themes/",
+        "cmd": {
+            "command": "{}"
+        },
+        "caqtdm":{
+            "command": "caqtdm {} {}",
+            "arg_flags": ["-macro ", ""]
+        },
+        "medm":{
+            "command": "medm -x {} {}",
+            "arg_flags": ["-macro ", ""]
+        }
+    },
+    "Windows": {
+        "theme_base": "../themes/",
+        "cmd": {
+            "command": "{}"
+        },
+        "caqtdm":{
+            "command": "caqtdm {} {}",
+            "arg_flags": ["-macro ", ""]
+        },
+        "medm":{
+            "command": "medm -x {} {}",
+            "arg_flags": ["-macro ", ""]
+        }
+    },
+    "OS_X": {
+        "theme_base": "../themes/",
+        "cmd": {
+            "command": "{}"
+        },
+        "caqtdm":{
+            "command": "caqtdm {} {}",
+            "arg_flags": ["-macro ", ""]
+        },
+        "medm":{
+            "command": "medm -x {} {}",
+            "arg_flags": ["-macro ", ""]
+        }
+    }
+}
