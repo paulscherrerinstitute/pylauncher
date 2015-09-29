@@ -223,7 +223,8 @@ Each menu can be configured using predefined key value pairs in json files (chec
     One can specify as many items as needed. Type of each item is defined with `type` property. All supported types with available parameters are described in section [Menu item types](#menu-item-types).
 
 ### Menu item types
-Following types of items are supported in launcher application:
+Following types of items are currently supported in launcher application:
+
 - **`separator`** to visually separate menu items with line.
 
     ``` json
@@ -317,6 +318,8 @@ Following types of items are supported in launcher application:
 
     > `theme` and `style` are optional parameters to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of element. We discourage usage of `theme`.
 
+_Note:_ New, custom types can be  specified within configuration file. They can be defined with rules described in section [Defining custom types](#defining-custom-types).
+
 ### Styling of menu items
 If needed one can do a per item customization of the menu appearance. For this purpose large majority of the item types (for specific item consult section [Menu item types](#menu-item-types)) exposes following parameters:
  1. `style` which enables very flexible customization with [QSS](http://doc.qt.io/qt-4.8/stylesheet-syntax.html) syntax.
@@ -376,7 +379,7 @@ Configuration for each operating system consists of:
   > **Example:** If `command`is set to `"command": "medm -x"`, `arg_flags` is set to `"arg_flags": ["-macro ", ""]` and item is defined as `{"type": "caqtdm", "params": ["MACRO1=M1,MACRO2=M2", "medm_screen.adl"]` following will be executed: `medm -x -macro "MACRO1=M1,MACRO2=M2" "medm_screen.adl"`.
 
 ### Defining custom types
-Launcher currently supports defining of optional number of types which follows rules described in this section and are executed as shell commands. To add a new Launcher item type, configuration file must be extended with a key value pair, where key is the name of the type and value is an array with two parameters defining the command.
+Launcher currently supports defining of optional number of types which follows rules described in this section. All so defined types are executed as shell commands. To add a new Launcher item type, configuration file must be extended with a key value pair, where key is the name of the type and value is an array with two parameters defining the command.
 
 ``` json
 "my-type":{
@@ -385,9 +388,11 @@ Launcher currently supports defining of optional number of types which follows r
 }
 ```
 
-Parameter `command` specifies the main layout of command, where each '{}' represents a configurable argument. In addition `arg_flags` specifies if any of this arguments has a flag (switch). Example above shows a definition of type "my-type" which opens a pylauncher application. So defined type will result in a shell command `pylauncher --style <arg1> <arg2> <arg3>`.
+Parameter `command` specifies the main layout of command, where each '{}' represents an argument. In addition parameter `arg_flags` specifies if any of this arguments has a flag (switch). Example above shows a definition of type "my-type" which opens a pylauncher application. So defined type will result in a shell command `pylauncher --style <arg1> <arg2> <arg3>`.
 
-When preparing a menu, custom item type can be included using following syntax.
+> If `arg_flags` is not defined it equals to `arg_flags= ["", "",  ... , ""]`
+
+So defined type can be used in a menu definition with following syntax.
 
 
 ``` json
@@ -398,12 +403,12 @@ When preparing a menu, custom item type can be included using following syntax.
 }
 ```
 
-> Tip, style, theme and help-link can also be defined.
+> `"tip"`, `"style"`, `"theme"` and `"help-link"` can also be defined.
 
 
-Example above will result in shell command `pylauncher --style "path/to/my/style.qss" "example/config/config.json" "example/menus/menu_example.json"` which opens an [example_menu.json]() in Launcher with custom appearance defined in file [path/to/my/style.qss](). 
+Example above will result in shell command `pylauncher --style "path/to/my/style.qss" "example/config/config.json" "example/menus/menu_example.json"`.
 
-> Parameter `--style` can easily be skipped with defining `params` as `"params": ["", "example/config/config.json", "example/menus/menu_example.json"]`
+> Switch `--style` can be skipped with defining `params` as `"params": ["", "example/config/config.json", "example/menus/menu_example.json"]` which results in shell command `pylauncher "example/config/config.json" "example/menus/menu_example.json"`.
 
 ## Customize Launcher appearance
 To customize appearance of Launcher one must be familiar with [QSS](http://doc.qt.io/qt-4.8/stylesheet-syntax.html) syntax.
