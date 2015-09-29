@@ -770,6 +770,13 @@ class LauncherButton(QtGui.QPushButton):
         if self.contextMenu.actions():
             self.contextMenu.exec_(QtGui.QCursor.pos())
 
+    def mousePressEvent(self, event):
+        """ Catch right menu clicks, to override closing of menu """
+        if event.button() == Qt.RightButton:
+            pass  # contexMenuEvent is still emitted and handled
+        else:
+            super(QtGui.QPushButton, self).mousePressEvent(event)
+
     def setMyAction(self, action):
         self.myAction = action
 
