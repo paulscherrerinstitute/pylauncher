@@ -185,7 +185,7 @@ class LauncherMenuModel(object):
 
             element['type'] = 'cmd'
             element['text'] = params[0].replace('"', r'\"')
-            element['params'] = [cmd_text]
+            element['command'] = cmd_text
 
         # Add the element dictionary to the list of menu items
         if len(element) > 0:
