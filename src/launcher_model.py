@@ -52,7 +52,14 @@ class launcher_menu_model:
     def parse_menu_json(self, menu_file, launcher_cfg):
         """Parse JSON type menu config file."""
 
-        menu = json.loads(menu_file.read())
+        try:
+            menu = json.loads(menu_file.read())
+        except Exception as e:
+            err_msg = ("In file \"" + os.path.basename(menu_file.geturl()) +
+                       "\": " + e.message)
+            logging.error(err_msg)
+            sys.exit()
+
         main_title_item = menu.get("menu-title", dict())
         self.main_title = launcher_main_title_item(
             main_title_item,
@@ -209,7 +216,7 @@ class launcher_cmd_item(launcher_menu_model_item):
             arg = arg[0]
             if item.get(arg):
                 params[arg] = arg_flags.get(arg, "") + "\"" + item.get(arg) + \
-                 "\""
+                    "\""
             else:
                 params[arg] = ""
         self.cmd = self.cmd.format(**params)
