@@ -18,6 +18,8 @@ from PyQt4.QtCore import pyqtSlot, Qt
 
 from launcher_model import *
 
+import signal
+signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 class SearchOptions(enum.Enum):
 
