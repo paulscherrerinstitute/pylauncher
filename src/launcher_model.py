@@ -5,6 +5,7 @@ import os
 import json
 import urllib2
 import logging
+import pyparsing
 
 
 def open_launcher_file(file_path):
@@ -54,7 +55,8 @@ class launcher_menu_model:
         menu = json.loads(menu_file.read())
         main_title_item = menu.get("menu-title", dict())
         self.main_title = launcher_main_title_item(
-            main_title_item, os.path.basename(menu_file.geturl()))
+            main_title_item,
+            os.path.splitext(os.path.basename(menu_file.geturl()))[0])
         # Get list of possible views (e.g. expert, user)
 
         list_of_views = menu.get("file-choice", list())
@@ -97,8 +99,8 @@ class launcher_menu_model:
 
             if launcher_cfg.get(item_type):
                 item_cfg = launcher_cfg.get(item_type)
-                self.check_item_format_json(item, item_type,
-                                            ["text", "params"])
+                # self.check_item_format_json(item, item_type,
+                #                            ["text", "params"])
                 menu_item = launcher_cmd_item(self, item_cfg, item)
 
             elif item_type == "menu":
@@ -142,16 +144,6 @@ class launcher_menu_model:
                 sys.exit()
 
 
-class launcher_main_title_item:
-
-    """ Holds description of main menu button. """
-
-    def __init__(self, item, file_name):
-        self.text = item.get("text", file_name)
-        self.theme = item.get("theme", None)
-        self.style = item.get("style", None)
-
-
 class launcher_menu_model_item:
 
     """Super class for all items in menu model.
@@ -173,12 +165,23 @@ class launcher_menu_model_item:
         # parent which is submenu item. This list contains trace of submenu
         # items to reach this item.
 
-        if parent.__class__.__name__ == "launcher_menu_model" and\
-                parent.parent.__class__.__name__ == "launcher_sub_menu_item":
-            self.trace = list(parent.parent.trace)
-            self.trace.append(parent.parent)
-        else:
-            self.trace = list()
+        if parent:
+            if parent.__class__.__name__ == "launcher_menu_model" and\
+                    parent.parent.__class__.__name__ == "launcher_sub_menu_item":
+                self.trace = list(parent.parent.trace)
+                self.trace.append(parent.parent)
+            else:
+                self.trace = list()
+
+
+class launcher_main_title_item(launcher_menu_model_item):
+
+    """ Holds description of main menu button. """
+
+    def __init__(self, item, file_name):
+        launcher_menu_model_item.__init__(self, None, item)
+        if not self.text:
+            self.text = file_name
 
 
 class launcher_item_separator(launcher_menu_model_item):
@@ -196,22 +199,20 @@ class launcher_cmd_item(launcher_menu_model_item):
     def __init__(self, parent, item_cfg, item):
         launcher_menu_model_item.__init__(self, parent, item)
         self.cmd = item_cfg.get("command")
-        arg_flags = item_cfg.get("arg_flags")
-        params = item.get("params")
+        arg_flags = item_cfg.get("arg_flags", dict())
+        expr = pyparsing.nestedExpr('{', '}')
+        args = expr.parseString("{" + self.cmd + "}")
 
-        if not arg_flags:
-            arg_flags = [""]*len(params)
+        params = dict()
+        for arg in args[0]:
 
-        i = 0
-        nparams = list()
-        for param in params:
-            if param:
-                nparams.append(arg_flags[i] + "\"" + param + "\"")
+            arg = arg[0]
+            if item.get(arg):
+                params[arg] = arg_flags.get(arg, "") + "\"" + item.get(arg) + \
+                 "\""
             else:
-                nparams.append("")
-            i += 1
-
-        self.cmd = self.cmd.format(*nparams)
+                params[arg] = ""
+        self.cmd = self.cmd.format(**params)
 
 
 class launcher_sub_menu_item(launcher_menu_model_item):

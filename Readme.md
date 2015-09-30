@@ -9,7 +9,7 @@ It is distributed over PSI as an [Anaconda](http://continuum.io/downloads) packa
 - [Installation and usage of Launcher in Anaconda python environment](#installation-and-usage-of-launcher-in-anaconda-python-environment)
    - [Install Launcher](#install-launcher1)
    - [Run Launcher](#run-launcher1)
-      - [Run Launcher with custom color scheme](#run-launcher-with-custom-color-scheme)
+      - [Run Launcher with custom configuration and color scheme](#run-launcher-with-custom-configuration-and-color-scheme)
    - [Run menu converter](#run-menu-converter1)
    - [Buidling Launcher as Anaconda package](#buidling-launcher-as-anaconda-package)
 - [Installation and usage of Launcher as none-conda application](#installation-and-usage-of-Launcher-as-none-conda-application)
@@ -52,24 +52,27 @@ _Note:_ All launcher dependencies are already part of standard Anaconda (Python 
 ### Run Launcher
 > This section assumes that Launcher is installed as Anaconda package and Anaconda is selected as default python environment.
 
-Launcher can be started with following command:
+Launcher (with default configuration and default style) can be started with following command:
 
 ``` bash
-launcher <config_file> <menu_file>
+launcher <menu_file>
 ```
-> `<config_file>` is a file which defines general behavior of Launcher on different systems. For detailed information see section [Configuration of Launcher](#configuration-of-launcher).
->
+
 > `<menu_file>` defines a Launcher 'menu' for specific facility, beamline, etc. To prepare menu files consult section [Defining a Launcher menu](#defining-a-launcher-menu)
 
-For detailed help run  `launcher -h`.
+For detailed help run `launcher -h`.
 
-#### Run Launcher with custom color scheme
-If one wants to run Launcher with custom color scheme there is a `-s (--style)` flag available to pass a new color scheme file. Color scheme must be defined in a file that follows [QSS](http://doc.qt.io/qt-4.8/stylesheet-syntax.html) syntax. For details about styling a Launcher consult section [Write Launcher style file](#write-launcher-style-file).
+#### Run Launcher with custom configuration and color scheme
+It is possible to override Launcher default configuration and/or default color scheme (style). This can be done using two switches:
+* `-c (--config) <config_file>`
+* `-s (--style) <style_qss_file>`
 
-To run a launcher with custom color scheme execute following command:
+Configuration file must follow syntax described in section [Configuration of Launcher](#configuration-of-launcher), and style file must follow [QSS](http://doc.qt.io/qt-4.8/stylesheet-syntax.html) syntax. For details about styling a Launcher consult section [Write Launcher style file](#write-launcher-style-file).
+
+To run a launcher with custom parameters execute following command:
 
 ``` bash
-launcher --style <style__qss_file> <config_file> <menu_file>
+launcher --style <style__qss_file> --config <config_file> <menu_file>
 ```
 
 ### Run menu converter
@@ -151,7 +154,7 @@ Launcher application is located in the ./src/ directory.
 Launcher can be started with following command:
 
 ``` bash
-<launcher-git-dir>/src/launcher.py <config_file> <menu_file>
+<launcher-git-dir>/src/launcher.py <menu_file>
 ```
 
 > Detailed explanation of Launcher options can be found in section [Installation and usage of Launcher in Anaconda python environment > Run Launcher](#run-launcher-1).
@@ -263,13 +266,13 @@ Following types of items are currently supported in launcher application:
 
     > `theme` and `style` are optional parameters to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of element. We discourage usage of `theme`.
 
-- **`cmd`** is a basic element which executes shell command defined with parameter `param`.
+- **`cmd`** is a basic element which executes shell command defined with parameter `command`.
 
     ``` json
     {
         "type": "cmd",
         "text": "This is shown text",
-        "params": ["shell_command"],
+        "command": "shell_command",
         "tip": "What command does.",
         "help-link": "http://www.link.com/to/help",
         "theme": "blue",
@@ -281,13 +284,14 @@ Following types of items are currently supported in launcher application:
     > `theme` and `style` are optional parameters to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of element. We discourage usage of `theme`.
 
 
-- **`caqtdm`** is an element which opens a caQtDM screen defined with parameter `file`. Optionally one can also define macros with parameter `param`.
+- **`caqtdm`** is an element which opens a caQtDM screen defined with parameter `panel`. Macros are defined with parameter `macros`.
 
     ``` json
     {
         "type": "caqtdm",
         "text": "This is shown text",
-        "params": ["MACRO1=M1,MACRO2=M2", "screen_name"],
+        "panel": "screen_name.ui",
+        "macros": "MACRO1=M1,MACRO2=M2",
         "tip": "What this screen does.",
         "help-link": "http://www.link.com/to/help",
         "theme": "blue",
@@ -300,13 +304,14 @@ Following types of items are currently supported in launcher application:
     > `theme` and `style` are optional parameters to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of element. We discourage usage of `theme`.
 
 
-- **`medm`** is an element which opens a medm screen defined with parameter `file`. Optionally one can also define macros with parameter `param`.
+- **`medm`** is an element which opens a medm screen defined with parameter `panel`. Macros are defined with parameter `macros`.
 
     ``` json
     {
         "type": "medm",
         "text": "This is shown text",
-        "params": ["MACRO1=M1,MACRO2=M2", "screen_name"],
+        "panel": "screen_name.adl",
+        "macros": "MACRO1=M1,MACRO2=M2",
         "tip": "What this screen does.",
         "help-link": "http://www.link.com/to/help",
         "theme": "blue",
@@ -344,15 +349,15 @@ Full example of configuration can be found in [.examples/config/config.json](htt
     "Linux": {
         "theme_base": "../themes/",
         "cmd": {
-            "command": "{}"
+            "command": "{command}"
         },
         "caqtdm":{
-            "command": "caqtdm {} {}",
-            "arg_flags": ["-macro ", ""]
+            "command": "caqtdm {macros} {panel}",
+            "arg_flags": {"macros": "-macro "}
         },
         "medm":{
-            "command": "medm -x {} {}",
-            "arg_flags": ["-macro ", ""]
+            "command": "medm -x {macros} {panel}",
+            "arg_flags": {"macros": "-macro "}
         }
     },
     "Windows": { ...
@@ -368,29 +373,29 @@ Configuration for each operating system consists of:
  2. Any number of type definitions. In current example configuration following types are supported (custom types can be specified with rules described in section [Defining custom types](#defining-custom-types)):
   * `cmd` for defining a behavior of menu item which executes a shell command. Parameter `command` is used as a prefix to user specified command.
 
-  > **Example:** If `command`is set to `"command": "bash -c {} "` and item is defined as `{"type": "cmd", "params": ["shell_command"}]` following will be executed: `bash -c "shell_command"`.
+  > **Example:** If `command`is set to `"command": "bash -c {command} "` and item is defined as `{"type": "cmd", "command": "shell_command"}` following will be executed: `bash -c "shell_command"`.
 
   * `caqtdm` for defining a behavior of menu item which opens a caQtDM screen. Parameter `command` defines command which opens caQtDM and parameter `arg_flags` defines a macro prefix.
 
-  > **Example:** If `command`is set to `"command": "caqtdm"`, `arg_flags` is set to `"arg_flags": ["-macro ", ""]` and item is defined as `{"type": "caqtdm", "params": ["MACRO1=M1,MACRO2=M2", "caqtdm_screen.ui"]` following will be executed: `caqtdm -macro "MACRO1=M1,MACRO2=M2" "caqtd_screen.ui"`.
+  > **Example:** If `command`is set to `"command": "caqtdm {macros} {panel}"`, `arg_flags` is set to `"arg_flags": ["macros ": "-macro"]` and item is defined as `{"type": "caqtdm", "panel": "caqtdm_screen.ui", "macros": "MACRO1=M1,MACRO2=M2"` following will be executed: `caqtdm -macro "MACRO1=M1,MACRO2=M2" "caqtd_screen.ui"`.
 
   * `medm` for defining a behavior of menu item which opens a medm screen. Parameter `command` defines command which opens medm and parameter `arg_flags` defines a macro prefix.
 
-  > **Example:** If `command`is set to `"command": "medm -x"`, `arg_flags` is set to `"arg_flags": ["-macro ", ""]` and item is defined as `{"type": "caqtdm", "params": ["MACRO1=M1,MACRO2=M2", "medm_screen.adl"]` following will be executed: `medm -x -macro "MACRO1=M1,MACRO2=M2" "medm_screen.adl"`.
+  > **Example:** If `command`is set to `"command": "medm -x {macros} {panel}"`, `arg_flags` is set to `"arg_flags": ["macros ": "-macro"]` and item is defined as {"type": "medm", "panel": "medm_screen.adl", "macros": ""` following will be executed: `medm -x "medm_screen.adl"`.
 
 ### Defining custom types
 Launcher currently supports defining of optional number of types which follows rules described in this section. All so defined types are executed as shell commands. To add a new Launcher item type, configuration file must be extended with a key value pair, where key is the name of the type and value is an array with two parameters defining the command.
 
 ``` json
 "my-type":{
-    "command": "pylauncher {} {} {}",
-    "arg_flags": ["--style ", "", ""]
+    "command": "pylauncher {style} {config} {menu}",
+    "arg_flags": {"arg1": "--style ", "arg2": "--config "}
 }
 ```
 
-Parameter `command` specifies the main layout of command, where each '{}' represents an argument. In addition parameter `arg_flags` specifies if any of this arguments has a flag (switch). Example above shows a definition of type "my-type" which opens a pylauncher application. So defined type will result in a shell command `pylauncher --style <arg1> <arg2> <arg3>`.
+Parameter `command` specifies the main layout of command, where each '{arg}' represents an argument which can be accessed with key word "arg". In addition parameter `arg_flags` specifies if any of this arguments has a flag (switch). Example above shows a definition of type "my-type" which opens a pylauncher application. So defined type will result in a shell command `pylauncher --style <style> --config <config> <menu>`.
 
-> If `arg_flags` is not defined it equals to `arg_flags= ["", "",  ... , ""]`
+> If `arg_flags` is not defined it equals to `arg_flags= {}`
 
 So defined type can be used in a menu definition with following syntax.
 
@@ -399,16 +404,18 @@ So defined type can be used in a menu definition with following syntax.
 {
     "type": "my-type",
     "text": "This is shown text",
-    "params": ["path/to/my/style.qss", "example/config/config.json", "example/menus/menu_example.json"],
+    "style": "path/to/my/style.qss",
+    "config": "example/config/config.json"
+    "menu": "example/menus/menu_example.json",
 }
 ```
 
 > `"tip"`, `"style"`, `"theme"` and `"help-link"` can also be defined.
 
 
-Example above will result in shell command `pylauncher --style "path/to/my/style.qss" "example/config/config.json" "example/menus/menu_example.json"`.
+Example above will result in shell command `pylauncher --style "path/to/my/style.qss" --config "example/config/config.json" "example/menus/menu_example.json"`.
 
-> Switch `--style` can be skipped with defining `params` as `"params": ["", "example/config/config.json", "example/menus/menu_example.json"]` which results in shell command `pylauncher "example/config/config.json" "example/menus/menu_example.json"`.
+> Switches (like `--style` and --config) can be skipped with defining them as an empty string. For example if style is not defined `"style": ""` this results in shell command `pylauncher --config "example/config/config.json" "example/menus/menu_example.json"`.
 
 ## Customize Launcher appearance
 To customize appearance of Launcher one must be familiar with [QSS](http://doc.qt.io/qt-4.8/stylesheet-syntax.html) syntax.
@@ -439,7 +446,7 @@ LauncherDetachButton{
     background-color: #666666;
 }
 ```
-- `LauncherButton` is most general and defines appearance of main title button and menu items of type: `cmd`, `caqtdm`, `medm` and `menu`.
+- `LauncherButton` is most general and defines appearance of main title button and menu items of type: `cmd`, `caqtdm`, `medm`, `menu` and possible custom types.
 
 - `LauncherMenuTitle` defines appearance of menu item of type `title`.
 

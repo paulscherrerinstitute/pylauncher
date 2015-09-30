@@ -3,9 +3,9 @@
         {"text": "F_L3"},
     "menu": [
         {"type": "title", "text": "Test 3"},
-        {"type": "cmd", "text": "Button_1 3", "params": ["ls"]},
+        {"type": "cmd", "text": "Button_1 3", "params": "ls"},
         {"type": "separator"},
-        {"type": "cmd", "text": "Button_2 3", "params": ["ls"]},
-        {"type": "cmd", "text": "Button_3 3", "params": ["ls"]}
+        {"type": "cmd", "text": "Button_2 3", "params": "ls"},
+        {"type": "cmd", "text": "Button_3 3", "params": "ls"}
     ]
 }
