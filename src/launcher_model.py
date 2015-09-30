@@ -90,9 +90,6 @@ class launcher_menu_model:
             menu_item = None
             item_type = item.get("type", "")
             # For each check mandatory parameters and exit if not all.
-
-            theme = item.get("theme", None)
-            style = item.get("style", None)
             # Custom types can be defined in launcher main config.json file.
             # Custom types are predefine shell commands. First check if on of
             # custom types, then check standard types such as menu, title,
@@ -102,27 +99,21 @@ class launcher_menu_model:
                 item_cfg = launcher_cfg.get(item_type)
                 self.check_item_format_json(item, item_type,
                                             ["text", "params"])
-                text = item.get("text").strip()
                 menu_item = launcher_cmd_item(self, item_cfg, item)
 
             elif item_type == "menu":
                 self.check_item_format_json(item, item_type, ["text", "file"])
                 try:
-                    file_path = os.path.join(launcher_cfg.get("launcher_base"),
-                                             file_name)
-
-                    sub_file = open_launcher_file(file_path)
                     menu_item = launcher_sub_menu_item(self, launcher_cfg,
                                                        item)
-                    sub_file.close()
                 except IOError:
                     warn_msg = "Parser: " + menu_file.geturl() + \
-                        ": File \"" + file_name + "\" not found. Skipped"
+                        ": File \"" + item.get("file") + "\" not found. " + \
+                        "Skipped"
                     logging.warning(warn_msg)
 
             elif item_type == "title":
                 self.check_item_format_json(item, item_type, ["text"])
-                text = item.get("text").strip()
                 menu_item = launcher_title_item(self, item)
 
             elif item_type == "separator":
