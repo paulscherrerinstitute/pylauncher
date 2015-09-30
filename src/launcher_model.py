@@ -55,8 +55,7 @@ class launcher_menu_model:
         try:
             menu = json.loads(menu_file.read())
         except Exception as e:
-            err_msg = ("In file \"" + os.path.basename(menu_file.geturl()) +
-                       "\": " + e.message)
+            err_msg = ("In file \"" + menu_file.geturl() + "\": " + e.message)
             logging.error(err_msg)
             sys.exit()
 
