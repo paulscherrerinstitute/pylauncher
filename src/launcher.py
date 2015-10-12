@@ -1047,8 +1047,8 @@ def main():
     """ Main logic """
 
     argsPars = argparse.ArgumentParser()
-    argsPars.add_argument('-c', '--config',
-                          help='Launcher configuration file')
+    argsPars.add_argument('-m', '--mapping',
+                          help='Launcher mapping file')
     argsPars.add_argument('launcher',
                           help="Launcher menu file.")
     argsPars.add_argument('-s', '--style',
@@ -1060,7 +1060,7 @@ def main():
     # Load configuration. Use default configuration defined inside package if 
     # --config is not specified
     currDir = os.path.dirname(os.path.realpath(__file__))
-    cfgPath = os.path.join(currDir, "resources/config/config.json")
+    cfgPath = os.path.join(currDir, "resources/mapping/mapping.json")
     cfgFile = open_launcher_file(cfgPath)
     defaultCfg = json.load(cfgFile)
     defaultCfg["cfg_base"] = os.path.basename(cfgPath)
@@ -1068,15 +1068,15 @@ def main():
 
     default = True
     logMsg = ""
-    if args.config:
+    if args.mapping:
         try:
-            cfgFile = open_launcher_file(args.config)
+            cfgFile = open_launcher_file(args.mapping)
             cfg = json.load(cfgFile)
-            cfg["cfg_base"] = os.path.dirname(args.config)
+            cfg["cfg_base"] = os.path.dirname(args.mapping)
             cfgFile.close()
             default = False
         except:
-            logMsg = "Problems opening \"" + args.config + "\". "
+            logMsg = "Problems opening \"" + args.mapping + "\". "
 
     if default:
         cfg = defaultCfg
