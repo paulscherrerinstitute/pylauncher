@@ -6,10 +6,10 @@
     ],
     "menu": [
         {"type": "title", "text": "Striptool"},
-        {"type": "cmd", "text": "Strip Tool Generic", "params": "ls"},
+        {"type": "cmd", "text": "Strip Tool Generic", "command": "ls"},
         {"type": "separator"},
         {"type": "menu", "text": "3rd sub menu", "file": "menu_3.json"},
-        {"type": "cmd", "text": "RF Startup", "params": "ls"},
-        {"type": "cmd", "text": "Conditioning", "params": "xeyes"}
+        {"type": "cmd", "text": "RF Startup", "command": "ls"},
+        {"type": "cmd", "text": "Conditioning", "command": "xeyes"}
     ]
 }

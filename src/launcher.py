@@ -4,7 +4,6 @@ import sys
 import os
 import platform
 import argparse
-import subprocess
 import json
 import copy
 import enum
@@ -12,6 +11,8 @@ import urllib2
 import urlparse
 import logging
 import re
+import shlex
+from multiprocessing import Process
 
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import pyqtSlot, Qt
@@ -823,7 +824,7 @@ class LauncherDetachButton(LauncherButton):
 
 class LauncherMainButton(LauncherButton):
 
-    """ Main Launcher button to expand menu
+    """Main Launcher button to expand menu
 
     This class extends LauncherButton similar as LauncherMenuButton, but
     with a different inputs.
@@ -922,8 +923,21 @@ class LauncherCmdButton(LauncherNamedButton):
         self.setToolTip(toolTip)
 
     def executeCmd(self):
-        subprocess.Popen(self.cmd, stdout=subprocess.PIPE, shell=True)
-        self.parent().hideAll()  # When done hide all popuped menus.
+        """ Run specified command as a separate process """
+
+        # Following approaches were considered:
+        #    a) using "subprocess.Popen"  --> Fails to run scripts if shebang is
+        #       not on the first line of the script (e.g. after some comments)
+        #    b) using os.fork() and os.systems(self.cmd) in shild --> os.fork
+        #       is not supported on Windows, and thre were also problems with 
+        #       X server (XInitThread has not been called)
+        #    c) creating subprocess with "multiprocessing" lib and os.system to
+        #       execute commands. --> USED approach simnce both multiprocessing
+        #       and os.system() works on Unix and Windows
+
+        self.parent().hideAll()  # First hide all popuped menus.
+        newProcess = Process(target=os.system(self.cmd))
+        newProcess.start()
 
 
 class LauncherMenuButton(LauncherNamedButton):
