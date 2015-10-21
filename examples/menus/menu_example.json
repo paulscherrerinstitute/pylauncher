@@ -39,6 +39,7 @@
             "text": "This is caQtDM screen - changed style",
             "panel": "MY-SCREEN.ui",
             "macros": "MACRO1=M1,MACRO2=M2",
+            "param": "-attach -dg +250+250",
             "help-link": "http://www.link.com/to/help",
             "theme": "green",
             "style": "color: #333333"

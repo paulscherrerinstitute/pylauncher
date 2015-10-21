@@ -5,12 +5,12 @@
             "command": "{command}"
         },
         "caqtdm":{
-            "command": "caqtdm {macros} {panel}",
-            "arg_flags": {"macros": "-macro "}
+            "command": "caqtdm {param} {macros} {panel}",
+            "arg_flags": {"macros": "-macro"}
         },
         "medm":{
-            "command": "medm -x {macros} {panel}",
-            "arg_flags": {"macros": "-macro "}
+            "command": "medm -x {param} {macros} {panel}",
+            "arg_flags": {"macros": "-macro"}
         }
     },
     "Windows": {
@@ -19,12 +19,12 @@
             "command": "{command}"
         },
         "caqtdm":{
-            "command": "caqtdm {macros} {panel}",
-            "arg_flags": {"macros": "-macro "}
+            "command": "caqtdm {param} {macros} {panel}",
+            "arg_flags": {"macros": "-macro"}
         },
         "medm":{
-            "command": "medm -x {macros} {panel}",
-            "arg_flags": {"macros": "-macro "}
+            "command": "medm -x {param} {macros} {panel}",
+            "arg_flags": {"macros": "-macro"}
         }
     },
     "OS_X": {
@@ -33,12 +33,12 @@
             "command": "{command}"
         },
         "caqtdm":{
-            "command": "caqtdm {macros} {panel}",
-            "arg_flags": {"macros": "-macro "}
+            "command": "caqtdm {param} {macros} {panel}",
+            "arg_flags": {"macros": "-macro"}
         },
         "medm":{
-            "command": "medm -x {macros} {panel}",
-            "arg_flags": {"macros": "-macro "}
+            "command": "medm -x {param} {macros} {panel}",
+            "arg_flags": {"macros": "-macro"}
         }
     }
 }

@@ -214,7 +214,7 @@ class launcher_cmd_item(launcher_menu_model_item):
 
             arg = arg[0]
             if item.get(arg):
-                params[arg] = arg_flags.get(arg, "") + item.get(arg)
+                params[arg] = arg_flags.get(arg, "") + " " + item.get(arg)
             else:
                 params[arg] = ""
         self.cmd = self.cmd.format(**params)
