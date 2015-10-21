@@ -11,6 +11,10 @@
         "medm":{
             "command": "medm -x {param} {macros} {panel}",
             "arg_flags": {"macros": "-macro"}
+        },
+        "pep":{
+            "command": "pep {param} {panel}",
+            "arg_flags": {"panel": "-f"}
         }
     },
     "Windows": {
@@ -25,6 +29,10 @@
         "medm":{
             "command": "medm -x {param} {macros} {panel}",
             "arg_flags": {"macros": "-macro"}
+        },
+        "pep":{
+            "command": "pep {param} {panel}",
+            "arg_flags": {"panel": "-f"}
         }
     },
     "OS_X": {
@@ -39,6 +47,10 @@
         "medm":{
             "command": "medm -x {param} {macros} {panel}",
             "arg_flags": {"macros": "-macro"}
+        },
+        "pep":{
+            "command": "pep {param} {panel}",
+            "arg_flags": {"panel": "-f"}
         }
     }
 }

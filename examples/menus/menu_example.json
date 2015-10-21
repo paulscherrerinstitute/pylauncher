@@ -52,6 +52,22 @@
             "help-link": "http://www.link.com/to/help",
             "theme": "green",
             "style": "color: #333333"
+        },
+        {
+            "type": "pep",
+            "text": "This is pep panel from .prc file",
+            "panel": "MY-PEP.prc",
+            "help-link": "http://www.link.com/to/help",
+            "theme": "green",
+            "style": "color: #333333"
+        },
+        {
+            "type": "pep",
+            "text": "This is pep panel defined in shell",
+            "param": "-ws TEST-PV1 -fr TEST-PV2",
+            "help-link": "http://www.link.com/to/help",
+            "theme": "green",
+            "style": "color: #333333"
         }
     ]
 }
