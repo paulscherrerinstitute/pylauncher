@@ -12,7 +12,7 @@ import urlparse
 import logging
 import re
 import shlex
-from multiprocessing import Process
+import subprocess
 
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import pyqtSlot, Qt
@@ -910,7 +910,7 @@ class LauncherNamedButton(LauncherButton):
 
 class LauncherCmdButton(LauncherNamedButton):
 
-    """LauncherCmdButton executes shell command. """
+    """ LauncherCmdButton executes shell command. """
 
     def __init__(self, itemModel, sectionTitle=None, parent=None):
         LauncherNamedButton.__init__(self, itemModel, sectionTitle, parent)
@@ -923,21 +923,19 @@ class LauncherCmdButton(LauncherNamedButton):
         self.setToolTip(toolTip)
 
     def executeCmd(self):
-        """ Run specified command as a separate process """
-
-        # Following approaches were considered:
-        #    a) using "subprocess.Popen"  --> Fails to run scripts if shebang is
-        #       not on the first line of the script (e.g. after some comments)
-        #    b) using os.fork() and os.systems(self.cmd) in shild --> os.fork
-        #       is not supported on Windows, and thre were also problems with 
-        #       X server (XInitThread has not been called)
-        #    c) creating subprocess with "multiprocessing" lib and os.system to
-        #       execute commands. --> USED approach simnce both multiprocessing
-        #       and os.system() works on Unix and Windows
-
-        self.parent().hideAll()  # First hide all popuped menus.
-        newProcess = Process(target=os.system(self.cmd))
-        newProcess.start()
+        """ Run specified command as a separate process
+        
+        Runs commands from the same environment ($PATH) as the launcher was
+        started. Apart from "bash" it aboarts scripts without shebang on
+        first line (strictly).
+        """
+        self.parent().hideAll()  # When done hide all popuped menus
+        try:
+            subprocess.Popen(shlex.split(self.cmd))
+        except OSError:
+            warn_msg = "Command \"" + self.cmd + "\" cannot be executed. " + \
+                "Wrong path or bad/no interpreter."
+            logging.warning(warn_msg)
 
 
 class LauncherMenuButton(LauncherNamedButton):

@@ -13,10 +13,11 @@
         {"type": "separator"},
         {"type": "title", "text": "Utilities", "theme": "green"},
         {"type": "cmd", "text": "Remote network access control by control room", "command": "ls"},
-        {"type": "menu", "text": "Strip-tool", "file": "menu_2.json"},
+        {"type": "menu", "text": "Strip-tool", "file": "menu_10.json"},
         {"type": "caqtdm", "text": "CA-screen", "macros": "SYS=TEST", "panel": "screen.ui" },
         {"type": "medm", "text": "MEDM-screen", "macros": "SYS=TEST", "panel": "screen.adl" },
-        {"type": "cmd", "text": "Test", "command": "pep -mc S10BC02-MBND100:I-SET &"},
+        {"type": "cmd", "text": "Test", "command": "pep -mc S10BC02-MBND100:I-SET"},
+        {"type": "cmd", "text": "Test 2", "command": "pylauncher -h"},
         {"type": "pep", "text": "Pep type test (.prc)", "panel": "S_TEST_REMOTECTRL_GUDE_SF-CTRL-TEST01.prc"},
         {"type": "pep", "text": "Pep type test (.prc)", "param": "-mc S10BC02-MBND100:I-SET"}
     ]

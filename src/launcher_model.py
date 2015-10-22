@@ -13,15 +13,11 @@ def open_launcher_file(file_path):
     try:
         launcher_file = urllib2.urlopen(file_path)
     except (urllib2.URLError, ValueError):
-        try:
-            launcher_file_path = os.path.normpath(file_path)
-            launcher_file_path = os.path.abspath(launcher_file_path)
-            launcher_file_path = 'file:///' + launcher_file_path
-            launcher_file = urllib2.urlopen(launcher_file_path)
-        except IOError:
-            raise IOError
-    except IOError:
-        raise IOError
+        # Change path to url style and try to open it
+        launcher_file_path = os.path.normpath(file_path)
+        launcher_file_path = os.path.abspath(launcher_file_path)
+        launcher_file_path = 'file:///' + launcher_file_path
+        launcher_file = urllib2.urlopen(launcher_file_path)
 
     return launcher_file
 
@@ -206,12 +202,12 @@ class launcher_cmd_item(launcher_menu_model_item):
         launcher_menu_model_item.__init__(self, parent, item)
         self.cmd = item_cfg.get("command")
         arg_flags = item_cfg.get("arg_flags", dict())
-        expr = pyparsing.nestedExpr('{', '}')
+        expr = pyparsing.nestedExpr('{', '}', ignoreExpr=None)
         args = expr.parseString("{" + self.cmd + "}")
 
         params = dict()
         for arg in args[0]:
-
+            
             arg = arg[0]
             if item.get(arg):
                 params[arg] = arg_flags.get(arg, "") + " " + item.get(arg)

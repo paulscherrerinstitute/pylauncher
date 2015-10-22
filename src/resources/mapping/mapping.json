@@ -2,7 +2,7 @@
     "Linux": {
         "theme_base": "../themes/",
         "cmd": {
-            "command": "{command}"
+            "command": "bash -c \"{command}\""
         },
         "caqtdm":{
             "command": "caqtdm {param} {macros} {panel}",
@@ -13,7 +13,7 @@
             "arg_flags": {"macros": "-macro"}
         },
         "pep":{
-            "command": "pep {param} {panel}",
+            "command": "bash -c \"pep {param} {panel}\"",
             "arg_flags": {"panel": "-f"}
         }
     },
@@ -31,14 +31,14 @@
             "arg_flags": {"macros": "-macro"}
         },
         "pep":{
-            "command": "pep {param} {panel}",
+            "command": "cmd /c \"pep {param} {panel}\"",
             "arg_flags": {"panel": "-f"}
         }
     },
     "OS_X": {
         "theme_base": "../themes/",
         "cmd": {
-            "command": "{command}"
+            "command": "bash -c \"{command}\""
         },
         "caqtdm":{
             "command": "caqtdm {param} {macros} {panel}",
@@ -49,7 +49,7 @@
             "arg_flags": {"macros": "-macro"}
         },
         "pep":{
-            "command": "pep {param} {panel}",
+            "command": "bash -c \"pep {param} {panel}\"",
             "arg_flags": {"panel": "-f"}
         }
     }
