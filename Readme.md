@@ -284,7 +284,7 @@ Following types of items are currently supported in launcher application:
     > `theme` and `style` are optional parameters to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of element. We discourage usage of `theme`.
 
 
-- **`caqtdm`** is an element which opens a caQtDM screen defined with parameter `panel`. Macros are defined with parameter `macros`.
+- **`caqtdm`** is an element which opens a caQtDM screen defined with parameter `panel`. Macros are defined with parameter `macros`. Additional arguments can be passed with parameter `param`.
 
     ``` json
     {
@@ -292,6 +292,7 @@ Following types of items are currently supported in launcher application:
         "text": "This is shown text",
         "panel": "screen_name.ui",
         "macros": "MACRO1=M1,MACRO2=M2",
+        "param": "-attach -dg +250+250",
         "tip": "What this screen does.",
         "help-link": "http://www.link.com/to/help",
         "theme": "blue",
@@ -304,7 +305,7 @@ Following types of items are currently supported in launcher application:
     > `theme` and `style` are optional parameters to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of element. We discourage usage of `theme`.
 
 
-- **`medm`** is an element which opens a medm screen defined with parameter `panel`. Macros are defined with parameter `macros`.
+- **`medm`** is an element which opens a medm screen defined with parameter `panel`. Macros are defined with parameter `macros`. Additional arguments can be passed with parameter `param`.
 
     ``` json
     {
@@ -312,6 +313,26 @@ Following types of items are currently supported in launcher application:
         "text": "This is shown text",
         "panel": "screen_name.adl",
         "macros": "MACRO1=M1,MACRO2=M2",
+        "param": "-attach -dg +250+400",
+        "tip": "What this screen does.",
+        "help-link": "http://www.link.com/to/help",
+        "theme": "blue",
+        "style": "color: #000000"
+    }
+    ```
+
+    > `help_link` and `tip` are optional parameters to specify user's help. `tip` is shown as standard tool-tip (on mouse hover) and `help-link`can be accessed with right mouse click on an item.
+
+    > `theme` and `style` are optional parameters to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of element. We discourage usage of `theme`.
+
+- **`pep`** is an element which opens a pep screen defined with parameter `panel` (for .prc files) or/and `param` (for command line difintions).
+
+    ``` json
+    {
+        "type": "pep",
+        "text": "This is shown text",
+        "panel": "screen_cfg.prc",
+        "param": "-ws PV",
         "tip": "What this screen does.",
         "help-link": "http://www.link.com/to/help",
         "theme": "blue",

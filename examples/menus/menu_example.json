@@ -49,6 +49,7 @@
             "text": "This is medm screen - changed style",
             "panel": "MY-SCREEN.adl",
             "macros": "MACRO1=M1,MACRO2=M2",
+            "param": "-attach -dg +250+400",
             "help-link": "http://www.link.com/to/help",
             "theme": "green",
             "style": "color: #333333"
