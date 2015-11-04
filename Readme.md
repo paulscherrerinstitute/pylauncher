@@ -57,22 +57,22 @@ Launcher menus are defined via JSON configuration file(s). On top level, the con
 
 * __menu__ - Main section to define launcher items. The type of each item is defined with the `type` property. All supported types with available parameters are described in the next section.
 
-  ```json
-  "menu": [
-      {
-          "type": "menu",
-          "text": "Submenu",
-          "file": "submenu.json",
-          "tip": "Menu tip.",
-          "help-link": "http://www.link.com/to/help"
-      },
-      {
-          "type": "separator"
-      },
-      { ...
-      }
-  ]
-  ```
+```json
+"menu": [
+    {
+        "type": "menu",
+        "text": "Submenu",
+        "file": "submenu.json",
+        "tip": "Menu tip.",
+        "help-link": "http://www.link.com/to/help"
+    },
+    {
+        "type": "separator"
+    },
+    { ...
+    }
+]
+```
 
 ### Menu Item Types
 There are 2 classes of item types, build-in item types and types specified in the launcher mapping file.
@@ -83,73 +83,73 @@ For any menu item the two optional parameters __help_link__ and __tip__ can be s
 
 * __separator__ - Visually separate menu items with line.
 
-  ```json
-  {
-    "type": "separator"
-  }
-  ```
+```json
+{
+  "type": "separator"
+}
+```
 
 * __title__ - A special separator with text. By default it is visually distinguishable from other items.
 
-  ```json
-  {
-    "type": "title",
-    "text": "This is shown title"
-  }
-  ```
+```json
+{
+  "type": "title",
+  "text": "This is shown title"
+}
+```
+
 * __menu__ - An element which opens a sub-menu that is specified in an external menu file that is defined with parameter _file_.
 
-  ```json
-  {
-    "type": "menu",
-    "text": "This is shown text",
-    "file": "menu_2.json"
-  }
-  ```
-
+```json
+{
+  "type": "menu",
+  "text": "This is shown text",
+  "file": "menu_2.json"
+}
+```
 
 #### Default Types
 The default mapping file of __pylauncher__ specifies following types.
 
 * __cmd__ - Executes a shell command defined with parameter __command__.
 
-  ```json
-  {
-    "type": "cmd",
-    "text": "This is shown text",
-    "command": "shell_command",
-    "tip": "What command does.",
-    "help-link": "http://www.link.com/to/help"
-  }
-  ```
+```json
+{
+  "type": "cmd",
+  "text": "This is shown text",
+  "command": "shell_command",
+  "tip": "What command does.",
+  "help-link": "http://www.link.com/to/help"
+}
+```
 
 * __caqtdm__ - Opens a caQtDM screen defined with parameter __panel__. Macros are defined with parameter __macros__. Additional arguments can be passed with parameter __param__.
 
-  ```json
-  {
-    "type": "caqtdm",
-    "text": "This is shown text",
-    "panel": "screen_name.ui",
-    "macros": "MACRO1=M1,MACRO2=M2",
-    "param": "-attach -dg +250+250",
-    "tip": "What this screen does.",
-    "help-link": "http://www.link.com/to/help"
-  }
-  ```
+```json
+{
+  "type": "caqtdm",
+  "text": "This is shown text",
+  "panel": "screen_name.ui",
+  "macros": "MACRO1=M1,MACRO2=M2",
+  "param": "-attach -dg +250+250",
+  "tip": "What this screen does.",
+  "help-link": "http://www.link.com/to/help"
+}
+```
 
 * __medm__ - Opens a medm screen defined with parameter __panel__. Macros are defined with parameter __macros__. Additional arguments can be passed with parameter __param__.
 
-  ```json
-  {
-    "type": "medm",
-    "text": "This is shown text",
-    "panel": "screen_name.adl",
-    "macros": "MACRO1=M1,MACRO2=M2",
-    "param": "-attach -dg +250+400",
-    "tip": "What this screen does.",
-    "help-link": "http://www.link.com/to/help"
-  }
-  ```
+```json
+{
+  "type": "medm",
+  "text": "This is shown text",
+  "panel": "screen_name.adl",
+  "macros": "MACRO1=M1,MACRO2=M2",
+  "param": "-attach -dg +250+400",
+  "tip": "What this screen does.",
+  "help-link": "http://www.link.com/to/help"
+}
+```
 
 * __pep__ - Opens a PEP screen defined with parameter __panel__ (i.e. .prc file). Additional arguments can be passed with parameter __param__.
 
