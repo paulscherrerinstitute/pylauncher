@@ -14,6 +14,7 @@ pylauncher <configuration>
 where __<configuration>__ is the configuration file that defines the Launcher menu e.g. for a specific facility, beamline, setup, etc. .
 
 It is possible to override the Launchers default mapping and/or default color scheme (style). This can be done using the options:
+
 * `-m (--mapping) <mapping_file>`
 * `-s (--style) <style_qss_file>`
 
@@ -57,10 +58,11 @@ conda install <path_to_launcher_package>
 
 ## Standard Python
 To use __pylauncher__ with a standard Python following requirements need to be met:
-- Python 2.7 [Link](https://www.python.org/download/releases/2.7/)
-- Qt 4 (4.8 or higher) [Link](http://www.qt.io/download/)
-- PyQt4 (4.8 or higher) [Link](https://www.riverbankcomputing.com/software/pyqt/download)
-- pyparsing [Link](http://pyparsing.wikispaces.com/Download+and+Installation)
+
+* Python 2.7 [Link](https://www.python.org/download/releases/2.7/)
+* Qt 4 (4.8 or higher) [Link](http://www.qt.io/download/)
+* PyQt4 (4.8 or higher) [Link](https://www.riverbankcomputing.com/software/pyqt/download)
+* pyparsing [Link](http://pyparsing.wikispaces.com/Download+and+Installation)
 
 To "install" the latest version clone Git repository
 
