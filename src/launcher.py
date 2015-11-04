@@ -924,7 +924,7 @@ class LauncherCmdButton(LauncherNamedButton):
 
     def executeCmd(self):
         """ Run specified command as a separate process
-        
+
         Runs commands from the same environment ($PATH) as the launcher was
         started. Apart from "bash" it aboarts scripts without shebang on
         first line (strictly).
@@ -1060,16 +1060,16 @@ def main():
 
     argsPars = argparse.ArgumentParser()
     argsPars.add_argument('-m', '--mapping',
-                          help='Launcher mapping file')
-    argsPars.add_argument('launcher',
-                          help="Launcher menu file.")
+                          help='overwrite default mapping file')
+    argsPars.add_argument('configuration',
+                          help="menu/configuration file")
     argsPars.add_argument('-s', '--style',
-                          help="Path to application style (qss file).")
+                          help="overwrite default style (qss file)")
     args = argsPars.parse_args()
 
     app = QtGui.QApplication(sys.argv)
 
-    # Load configuration. Use default configuration defined inside package if 
+    # Load configuration. Use default configuration defined inside package if
     # --config is not specified
     currDir = os.path.dirname(os.path.realpath(__file__))
     cfgPath = os.path.join(currDir, "resources/mapping/mapping.json")
