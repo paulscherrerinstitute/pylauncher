@@ -375,16 +375,16 @@ def main():
 
     args_pars = argparse.ArgumentParser()
     args_pars.add_argument('inputfile',
-                           help='Tickle configuration script to be converted.')
+                           help='TCL configuration script to be converted')
     args_pars.add_argument('outputfolder',
-                           help='Folder where the converted json file \
-                           will be stored.')
+                           help='folder where the converted json file \
+                           will be stored')
     args_pars.add_argument('-o', '--overwrite', action='store_true',
-                           help='Overwrite output files that already exist.')
+                           help='overwrite output files that already exist')
     args_pars.add_argument('-s', '--single', action='store_true',
-                           help='Convert only a single file (nonrecursive).')
+                           help='convert only a single file (nonrecursive)')
     args_pars.add_argument('-f', '--force', action='store_true',
-                           help='Continue even if some files cannot be found.')
+                           help='continue even if some files cannot be found')
 
     args = args_pars.parse_args()
 
@@ -392,7 +392,7 @@ def main():
     output_path = os.path.normpath(args.outputfolder)
 
     if not os.path.isfile(tickle_path):
-        print 'Tickle path "%s" is not a regular file!' % tickle_path
+        print 'TCL path "%s" is not a regular file!' % tickle_path
         sys.exit(-1)
 
     if not os.path.isdir(output_path):

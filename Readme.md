@@ -1,179 +1,103 @@
-# Launcher
+# Overview
 
-Launcher is a python based menu oriented application which allows users to access controls software on PSI. Launcher is very customizable tool which builds its appearance for different facilitates depending on menu-configuration files.
-
-It is distributed over PSI as an [Anaconda](http://continuum.io/downloads) package which can be found [here](https://github.psi.ch/projects/AN).
+The Launcher is a Python based, menu oriented application which allows users to launch applications and execute scripts. The Launcher is a customizable tool which builds its appearance (e.g. for different facilitates) depending on (menu) configuration files.
 
 
-## Table of content
-- [Installation and usage of Launcher in Anaconda python environment](#installation-and-usage-of-launcher-in-anaconda-python-environment)
-   - [Install Launcher](#install-launcher1)
-   - [Run Launcher](#run-launcher1)
-      - [Run Launcher with custom configuration and color scheme](#run-launcher-with-custom-configuration-and-color-scheme)
-   - [Run menu converter](#run-menu-converter1)
-   - [Buidling Launcher as Anaconda package](#buidling-launcher-as-anaconda-package)
-- [Installation and usage of Launcher as none-conda application](#installation-and-usage-of-Launcher-as-none-conda-application)
-   - [Install Launcher](#install-launcher2)
-   - [Run Launcher](#run-launcher2)
-   - [Run menu converter](#run-menu-converter2)
-- [Defining a Launcher menu](#defining-a-launcher-menu)
-   - [Menu item types](#menu-item-types)
-   - [Styling of menu items](#styling-of-menu-items)
-- [Configuration of Launcher](#configuration-of-launcher)
-   - [Defining custom types](#defining-custom-types)
-- [Customize Launcher appearance](#customize-launcher-appearance)
-   - [Write Launcher style file](#write-launcher-style-file)
-   - [Write Launcher theme file](#write-launcher-theme-file)
+# Usage
 
-## Installation and usage of Launcher in Anaconda python environment
+The Launcher can be started as follows:
 
-> To use Launcher as none-conda application consult section [Installation and usage of launcher as none-conda application](#instalaltion-and-usage-of-launcher-as-none-conda-application)
-
-Generally PSI user does not need to install neither Anaconda or Launcher by himself because they are already part of PSI infrastructure. To use it on standard PSI machine one must just execute following command, to set Anaconda python as default python environment.
-
-``` bash
-export PATH=/opt/gfa/python-2.7/2.3.0/bin:$PATH
+```bash
+pylauncher <configuration>
 ```
 
-If one still needs to install Launcher application locally consult section [Install Launcher](#install-launcher).
+where __<configuration>__ is the configuration file that defines the Launcher menu e.g. for a specific facility, beamline, setup, etc. .
 
-### Install Launcher
-_Note:_ All launcher dependencies are already part of standard Anaconda (Python 2.7. version) distribution which can be found here: [Anaconda](http://continuum.io/downloads)
-
-> This section assumes that one already has a working Anaconda environment on his machine. To additionally install Launcher following steps must be made:
-
- 1. Download prebuilt [Launcher package from PSI git](https://github.psi.ch/projects/AN)
-
- > To build Launcher as Anaconda package manually consult section [Buidling Launcher as Anaconda package](#buidling-launcher-as-anaconda-package).
-
- 2. Execute `conda install <path_to_launcher_package>`
-
-
-### Run Launcher
-> This section assumes that Launcher is installed as Anaconda package and Anaconda is selected as default python environment.
-
-Launcher (with default configuration and default style) can be started with following command:
-
-``` bash
-launcher <menu_file>
-```
-
-> `<menu_file>` defines a Launcher 'menu' for specific facility, beamline, etc. To prepare menu files consult section [Defining a Launcher menu](#defining-a-launcher-menu)
-
-For detailed help run `launcher -h`.
-
-#### Run Launcher with custom configuration and color scheme
-It is possible to override Launcher default configuration and/or default color scheme (style). This can be done using two switches:
-* `-c (--config) <config_file>`
+It is possible to override the Launchers default mapping and/or default color scheme (style). This can be done using the options:
+* `-m (--mapping) <mapping_file>`
 * `-s (--style) <style_qss_file>`
 
-Configuration file must follow syntax described in section [Configuration of Launcher](#configuration-of-launcher), and style file must follow [QSS](http://doc.qt.io/qt-4.8/stylesheet-syntax.html) syntax. For details about styling a Launcher consult section [Write Launcher style file](#write-launcher-style-file).
+For all available options and detailed help run
 
-To run a launcher with custom parameters execute following command:
+```bash
+~$ pylauncher -h
+pylauncher [-h] [-m MAPPING] [-s STYLE] configuration
 
-``` bash
-launcher --style <style__qss_file> --config <config_file> <menu_file>
+positional arguments:
+  configuration              menu/configuration file
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -m MAPPING, --mapping MAPPING
+                        overwrite default mapping
+  -s STYLE, --style STYLE
+                        overwrite default stylesheet (i.e. qss file)
 ```
 
-### Run menu converter
-> This section assumes that Launcher is installed as Anaconda package and Anaconda is selected as default python environment.
+# Configuration
 
-Launcher also provides a tool to convert old PSI Launcher menu configurations to new one.
+# Mapping
 
-> Because of dependencies it skips any style specific configuration.
+# Stylesheet
 
-Converter can be started with following command:
 
-``` bash
-launcher-convert <original_config_file> <output_dir>
+# Installation
+## Anaconda
+Anaconda comes with all required packages for __pylauncher__. To install the package that was previously deployed on a central repository use
+
+```bash
+conda install pylauncher
 ```
 
-Converter offers multiple additional features such as converting whole menu or single file, overriding converted files, etc.
-For detailed help run  `launcher -h`.
+If the package is not in a central repository use:
 
-### Buidling Launcher as Anaconda package
-> This section assumes that one already has a working Anaconda environment on his machine and conda-build is installed.
+```bash
+conda install <path_to_launcher_package>
+```
 
-To build a last stable version of Launcher as Anaconda package one should execute following steps:
-
- 1. Clone git repository:
-
- ``` bash
- git clone https://github.psi.ch/scm/cos/pylauncher.git
- ```
-
- 2. Navigate to [./utils/conda_package]() and build:
-
- ``` bash
- cd ./utils/conda_package/
- conda build pylauncher
- ```
-
- _Note:_ To be able to build the anaconda package you need to have the `patchelf` package installed in your anaconda installation. If it is not provided in the central installation, create a new anaconda environment and install the package in there before building:
-
- ```bash
- conda create -n mybuildenvironment anaconda
- conda install patchelf
- ```
-
-## Installation and usage of Launcher as none-conda application
-
-If one wants to use Launcher with standard Python installation he must be aware that Launcher requires:
+## Standard Python
+To use __pylauncher__ with a standard Python following requirements need to be met:
 - Python 2.7 [Link](https://www.python.org/download/releases/2.7/)
 - Qt 4 (4.8 or higher) [Link](http://www.qt.io/download/)
 - PyQt4 (4.8 or higher) [Link](https://www.riverbankcomputing.com/software/pyqt/download)
 - pyparsing [Link](http://pyparsing.wikispaces.com/Download+and+Installation)
 
-### Install Launcher
-To get a stable version of Launcher one should execute following steps:
+To "install" the latest version clone Git repository
 
- 1. Clone git repository:
-
- ``` bash
+ ```bash
  git clone https://github.psi.ch/scm/cos/pylauncher.git
  ```
 
- 2. List version (tag) names:
+The code is then located in the `src/` directory.
 
- ``` bash
- git tag -l
- ```
+# Development
+## Anaconda Package
+> This section assumes that one already has a working Anaconda environment on his machine and conda-build is installed.
 
- 3. Select version:
+To build an Anaconda package of the last stable version of __pylauncher__ do
 
-  ``` bash
- git checkout tags/<tag_name>
- ```
+* Clone Git repository
 
-Launcher application is located in the ./src/ directory.
-
-
-### Run Launcher
-> This section assumes that all dependencies are properly installed.
-
-Launcher can be started with following command:
-
-``` bash
-<launcher-git-dir>/src/launcher.py <menu_file>
+```bash
+git clone https://github.psi.ch/scm/cos/pylauncher.git
 ```
 
-> Detailed explanation of Launcher options can be found in section [Installation and usage of Launcher in Anaconda python environment > Run Launcher](#run-launcher-1).
-
-### Run menu converter
-> This section assumes that all dependencies are properly installed.
-
-Launcher also provides a tool to convert old PSI Launcher menu configurations to new one.
-
-> Because of dependencies it skips any style specific configuration.
-
-Converter can be started with following command:
+* Build package
 
 ``` bash
-<launcher-git-dir>/src/convert/convert.py <original_config_file> <output_dir>
+cd ./utils/conda_package
+conda build pylauncher
 ```
 
-Converter offers multiple additional features such as converting whole menu or single file, overriding converted files, etc.
-For detailed help run  `launcher -h`.
+_Note:_ To be able to build the Anaconda package you need to have the `patchelf` package installed in your Anaconda installation. If it is not provided in the central installation, create a new Anaconda environment and install the package in there before building
+
+```bash
+conda create -n build_environment python patchelf
+source activate build_environment
+```
+
+
+
 
 ## Defining a Launcher menu
 Each menu can be configured using predefined key value pairs in json files (check full example: [./examples/menus/menu_example.json](https://github.psi.ch/projects/COS/repos/pylauncher/browse/examples/menus/menu_example.json) directory). On top level, configuration of the menu is divided in 3 sections:
