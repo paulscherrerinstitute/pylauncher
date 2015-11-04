@@ -15,6 +15,6 @@ setup(name='pylauncher',
       keywords='launcher, caqtdm, medm, PSI',
       packages=['pylauncher', 'pylauncher.convert'],
       package_dir={'pylauncher': 'src'},
-      package_data={'pylauncher': ['resources/images/*.png', 'resources/qss/*.qss', 'resources/config/*.json']},
+      package_data={'pylauncher': ['resources/images/*.png', 'resources/qss/*.qss', 'resources/mapping/*.json']},
       platforms=["any"],
       )
