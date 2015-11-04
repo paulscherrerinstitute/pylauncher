@@ -36,6 +36,190 @@ optional arguments:
 ```
 
 ## Configuration
+Launcher menus are defined via JSON configuration file(s). On top level, the configuration of the menu is divided in 3 sections
+
+ * __menu-title__ - An optional section to set the menu title. If no title is specified a file name is used instead.
+
+``` json
+"menu-title": {
+    "text": "This is the menu title",
+    "theme": "light-blue",
+    "style": "color: #000000"
+}
+```
+_theme_ and _style_ are optional settings to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of main title button. We discourage usage of `theme`.
+
+* __file-choice__ - An optional section to specify possible views of the launcher (e.g. expert, user, ...) It can be omitted if no views need to be defined.
+
+```json
+"file-choice": [
+      {"text": "This is view 1", "file": "menu1.json"},
+      {"text": "This is view 2", "file": "menu2.json"}
+]
+```
+
+Once the Launcher application is opened, one can select the different views from the __View__ menu in menu bar. Selecting new view reloads Launcher from file specified in the parameter _file_.
+
+* __menu__ - Main section to define launcher items
+
+```json
+"menu": [
+    {
+        "type": "menu",
+        "text": "Submenu",
+        "file": "submenu.json",
+        "theme": "green",
+        "style": "color: #000000"
+    },
+    {
+        "type": "separator"
+    },
+    { ...
+    }
+]
+```
+
+One can specify as many items as needed. Type of each item is defined with `type` property. All supported types with available parameters are described in section [Menu item types](#menu-item-types).
+
+
+
+### Menu item types
+Following types of items are currently supported in launcher application:
+
+- **`separator`** to visually separate menu items with line.
+
+    ``` json
+    {"type": "separator"}
+    ```
+
+- **`title`** is a special separator with text. By default it is visually distinguishable from other items.
+
+    ``` json
+    {
+        "type": "title",
+        "text": "This is shown title",
+        "theme": "red",
+        "style":"color: #000000"
+    }
+    ```
+
+    > `theme` and `style` are optional parameters to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of title separator. We discourage usage of `theme`.
+
+
+- **`menu`** is an element which opens sub-menu specified in a menu file defined with parameter `file`.
+
+    ``` json
+    {
+        "type": "menu",
+        "text": "This is shown text",
+        "file": "menu_2.json",
+        "tip": "Menu tip.",
+        "help-link": "http://www.link.com/to/help",
+        "theme": "green",
+        "style": "color: #000000"
+    }
+    ```
+
+    > `help_link` and `tip` are optional parameters to specify user's help. `tip` is shown as standard tool-tip (on mouse hover) and `help-link`can be accessed with right mouse click on an item.
+
+    > `theme` and `style` are optional parameters to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of element. We discourage usage of `theme`.
+
+- **`cmd`** is a basic element which executes shell command defined with parameter `command`.
+
+    ``` json
+    {
+        "type": "cmd",
+        "text": "This is shown text",
+        "command": "shell_command",
+        "tip": "What command does.",
+        "help-link": "http://www.link.com/to/help",
+        "theme": "blue",
+        "style": "color: #000000"
+    }
+    ```
+    > `help_link` and `tip` are optional parameters to specify user's help. `tip` is shown as standard tool-tip (on mouse hover) and `help-link`can be accessed with right mouse click on an item.
+
+    > `theme` and `style` are optional parameters to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of element. We discourage usage of `theme`.
+
+
+- **`caqtdm`** is an element which opens a caQtDM screen defined with parameter `panel`. Macros are defined with parameter `macros`. Additional arguments can be passed with parameter `param`.
+
+    ``` json
+    {
+        "type": "caqtdm",
+        "text": "This is shown text",
+        "panel": "screen_name.ui",
+        "macros": "MACRO1=M1,MACRO2=M2",
+        "param": "-attach -dg +250+250",
+        "tip": "What this screen does.",
+        "help-link": "http://www.link.com/to/help",
+        "theme": "blue",
+        "style": "color: #000000"
+    }
+    ```
+
+    > `help_link` and `tip` are optional parameters to specify user's help. `tip` is shown as standard tool-tip (on mouse hover) and `help-link`can be accessed with right mouse click on an item.
+
+    > `theme` and `style` are optional parameters to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of element. We discourage usage of `theme`.
+
+
+- **`medm`** is an element which opens a medm screen defined with parameter `panel`. Macros are defined with parameter `macros`. Additional arguments can be passed with parameter `param`.
+
+    ``` json
+    {
+        "type": "medm",
+        "text": "This is shown text",
+        "panel": "screen_name.adl",
+        "macros": "MACRO1=M1,MACRO2=M2",
+        "param": "-attach -dg +250+400",
+        "tip": "What this screen does.",
+        "help-link": "http://www.link.com/to/help",
+        "theme": "blue",
+        "style": "color: #000000"
+    }
+    ```
+
+    > `help_link` and `tip` are optional parameters to specify user's help. `tip` is shown as standard tool-tip (on mouse hover) and `help-link`can be accessed with right mouse click on an item.
+
+    > `theme` and `style` are optional parameters to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of element. We discourage usage of `theme`.
+
+- **`pep`** is an element which opens a pep screen defined with parameter `panel` (for .prc files) or/and `param` (for command line difintions).
+
+    ``` json
+    {
+        "type": "pep",
+        "text": "This is shown text",
+        "panel": "screen_cfg.prc",
+        "param": "-ws PV",
+        "tip": "What this screen does.",
+        "help-link": "http://www.link.com/to/help",
+        "theme": "blue",
+        "style": "color: #000000"
+    }
+    ```
+
+    > `help_link` and `tip` are optional parameters to specify user's help. `tip` is shown as standard tool-tip (on mouse hover) and `help-link`can be accessed with right mouse click on an item.
+
+    > `theme` and `style` are optional parameters to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of element. We discourage usage of `theme`.
+
+_Note:_ New, custom types can be  specified within configuration file. They can be defined with rules described in section [Defining custom types](#defining-custom-types).
+
+### Styling of menu items
+If needed one can do a per item customization of the menu appearance. For this purpose large majority of the item types (for specific item consult section [Menu item types](#menu-item-types)) exposes following parameters:
+ 1. `style` which enables very flexible customization with [QSS](http://doc.qt.io/qt-4.8/stylesheet-syntax.html) syntax.
+ 2. `theme` which enables customization using one of the predefined themes. How to define a theme is described in section [Write Launcher theme file](#write-launcher-theme-file).
+
+ _Note:_ There are currently no themes defined.
+
+
+If both parameters are defined, both are used but `style` has a higher priority.
+
+**Example:**
+One uses theme that defines `background-color: red` and text color `color: blue`. Then he can redefine text color with setting `style` to `color: black`. This setting will result in an item with red background and black text.
+
+Example: [examples/menus/menu_example.json](examples/menus/menu_example.json)
+
+
 
 ## Mapping
 __pylauncher__ uses a mapping (json) file to specify the behavior of specific menu items on different systems. The default mapping file can be overwritten with the __-m <mapping__ option.
@@ -185,190 +369,3 @@ _Note:_ To be able to build the Anaconda package you need to have the `patchelf`
 conda create -n build_environment python patchelf
 source activate build_environment
 ```
-
-
-
-
-## Defining a Launcher menu
-Each menu can be configured using predefined key value pairs in json files (check full example: [./examples/menus/menu_example.json](https://github.psi.ch/projects/COS/repos/pylauncher/browse/examples/menus/menu_example.json) directory). On top level, configuration of the menu is divided in 3 sections:
-
- 1. `menu-title` is an optional section to set the menu title. If no title is specified a file name is used instead.
-
-    ``` json
-    "menu-title": {
-        "text": "This is menu title",
-        "theme": "light-blue",
-        "style": "color: #000000"
-    }
-    ```
-    > `theme` and `style` are optional settings to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of main title button. We discourage usage of `theme`.
-
- 2. `file-choice` is an optional section to specify possible views of the launcher (e.g. expert, user, ...) It can be skipped if no views are defined.
-
-    ``` json
-    "file-choice": [
-            {"text": "This is view 1", "file": "menu1.json"},
-            {"text": "This is view 2", "file": "menu2.json"}
-        ]
-
-    ```
-
-    Once Launcher application is opened, one can select different view from **View** menu in menu bar. Selecting new view reloads Launcher from file specified in parameter `file`.
-
- 3. `menu` is a main section to define launcher items
-
-    ``` json
-    "menu": [
-        {
-            "type": "menu",
-            "text": "Submenu",
-            "file": "submenu.json",
-            "theme": "green",
-            "style": "color: #000000"
-        },
-        {
-            "type": "separator"
-        },
-        {
-
-        ...
-
-        }
-    ]
-    ```
-
-    One can specify as many items as needed. Type of each item is defined with `type` property. All supported types with available parameters are described in section [Menu item types](#menu-item-types).
-
-### Menu item types
-Following types of items are currently supported in launcher application:
-
-- **`separator`** to visually separate menu items with line.
-
-    ``` json
-    {"type": "separator"}
-    ```
-
-- **`title`** is a special separator with text. By default it is visually distinguishable from other items.
-
-    ``` json
-    {
-        "type": "title",
-        "text": "This is shown title",
-        "theme": "red",
-        "style":"color: #000000"
-    }
-    ```
-
-    > `theme` and `style` are optional parameters to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of title separator. We discourage usage of `theme`.
-
-
-- **`menu`** is an element which opens sub-menu specified in a menu file defined with parameter `file`.
-
-    ``` json
-    {
-        "type": "menu",
-        "text": "This is shown text",
-        "file": "menu_2.json",
-        "tip": "Menu tip.",
-        "help-link": "http://www.link.com/to/help",
-        "theme": "green",
-        "style": "color: #000000"
-    }
-    ```
-
-    > `help_link` and `tip` are optional parameters to specify user's help. `tip` is shown as standard tool-tip (on mouse hover) and `help-link`can be accessed with right mouse click on an item.
-
-    > `theme` and `style` are optional parameters to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of element. We discourage usage of `theme`.
-
-- **`cmd`** is a basic element which executes shell command defined with parameter `command`.
-
-    ``` json
-    {
-        "type": "cmd",
-        "text": "This is shown text",
-        "command": "shell_command",
-        "tip": "What command does.",
-        "help-link": "http://www.link.com/to/help",
-        "theme": "blue",
-        "style": "color: #000000"
-    }
-    ```
-    > `help_link` and `tip` are optional parameters to specify user's help. `tip` is shown as standard tool-tip (on mouse hover) and `help-link`can be accessed with right mouse click on an item.
-
-    > `theme` and `style` are optional parameters to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of element. We discourage usage of `theme`.
-
-
-- **`caqtdm`** is an element which opens a caQtDM screen defined with parameter `panel`. Macros are defined with parameter `macros`. Additional arguments can be passed with parameter `param`.
-
-    ``` json
-    {
-        "type": "caqtdm",
-        "text": "This is shown text",
-        "panel": "screen_name.ui",
-        "macros": "MACRO1=M1,MACRO2=M2",
-        "param": "-attach -dg +250+250",
-        "tip": "What this screen does.",
-        "help-link": "http://www.link.com/to/help",
-        "theme": "blue",
-        "style": "color: #000000"
-    }
-    ```
-
-    > `help_link` and `tip` are optional parameters to specify user's help. `tip` is shown as standard tool-tip (on mouse hover) and `help-link`can be accessed with right mouse click on an item.
-
-    > `theme` and `style` are optional parameters to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of element. We discourage usage of `theme`.
-
-
-- **`medm`** is an element which opens a medm screen defined with parameter `panel`. Macros are defined with parameter `macros`. Additional arguments can be passed with parameter `param`.
-
-    ``` json
-    {
-        "type": "medm",
-        "text": "This is shown text",
-        "panel": "screen_name.adl",
-        "macros": "MACRO1=M1,MACRO2=M2",
-        "param": "-attach -dg +250+400",
-        "tip": "What this screen does.",
-        "help-link": "http://www.link.com/to/help",
-        "theme": "blue",
-        "style": "color: #000000"
-    }
-    ```
-
-    > `help_link` and `tip` are optional parameters to specify user's help. `tip` is shown as standard tool-tip (on mouse hover) and `help-link`can be accessed with right mouse click on an item.
-
-    > `theme` and `style` are optional parameters to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of element. We discourage usage of `theme`.
-
-- **`pep`** is an element which opens a pep screen defined with parameter `panel` (for .prc files) or/and `param` (for command line difintions).
-
-    ``` json
-    {
-        "type": "pep",
-        "text": "This is shown text",
-        "panel": "screen_cfg.prc",
-        "param": "-ws PV",
-        "tip": "What this screen does.",
-        "help-link": "http://www.link.com/to/help",
-        "theme": "blue",
-        "style": "color: #000000"
-    }
-    ```
-
-    > `help_link` and `tip` are optional parameters to specify user's help. `tip` is shown as standard tool-tip (on mouse hover) and `help-link`can be accessed with right mouse click on an item.
-
-    > `theme` and `style` are optional parameters to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of element. We discourage usage of `theme`.
-
-_Note:_ New, custom types can be  specified within configuration file. They can be defined with rules described in section [Defining custom types](#defining-custom-types).
-
-### Styling of menu items
-If needed one can do a per item customization of the menu appearance. For this purpose large majority of the item types (for specific item consult section [Menu item types](#menu-item-types)) exposes following parameters:
- 1. `style` which enables very flexible customization with [QSS](http://doc.qt.io/qt-4.8/stylesheet-syntax.html) syntax.
- 2. `theme` which enables customization using one of the predefined themes. How to define a theme is described in section [Write Launcher theme file](#write-launcher-theme-file).
-
- _Note:_ There are currently no themes defined.
-
-
-If both parameters are defined, both are used but `style` has a higher priority.
-
-**Example:**
-One uses theme that defines `background-color: red` and text color `color: blue`. Then he can redefine text color with setting `style` to `color: black`. This setting will result in an item with red background and black text.
