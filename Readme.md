@@ -69,7 +69,11 @@ A new menu item type is defined by adding a key value pair, where key is the nam
 
 The parameter __command__ specifies the main layout of command, where each _{arg}_ represents an argument which can be accessed with the keyword _arg_. In addition to this, the parameter __arg_flags__ specifies if any of this arguments has a flag (switch). If `arg_flags` is not defined it equals to `arg_flags= {}`
 
-__Note:__ The example above shows a definition of type "my-type" which opens the _my-awsome-program_ application with argument _arg1_ and _arg2_. So defined type will result in a shell command `my-awsome-program --option <arg1> --macro <arg2> <configuration>`.
+__Note:__ The example above shows a definition of type "my-type" which opens the _my-awsome-program_ application with argument _arg1_ and _arg2_. So defined type will result in a shell command
+
+```bash
+my-awsome-program --option <arg1> --macro <arg2> <configuration>
+```
 
 Menu items defined like this can be used in a launcher configuration as follows:
 
@@ -88,7 +92,43 @@ Besides the attributes shown also _"tip"_, _"style"_, _"theme"_ and _"help-link"
 A full example of a mapping file can be found in [examples/mapping/mapping.json](examples/mapping/mapping.json).
 
 ## Stylesheet
+The appearance of the Launcher or individual menu items can be customized via a [QSS](http://doc.qt.io/qt-4.8/stylesheet-syntax.html). The default appearance style can be overwritten at startup via the __--style__ option.
 
+
+The class names used in the qss file strongly depend on the Launcher implementation.
+There are 3 major classes that are used:
+
+* __LauncherButton__ - Defines the appearance of main title button and menu items of type: _cmd_, _caqtdm_, _medm_, _menu_ and possible custom types
+* __LauncherMenuTitle__ - Defines the appearance of menu item of type _title_
+* __LauncherDetachButton__ -  Defines the appearance of detached button
+
+The style configuration needs to be saved to a file with the suffix .qss. The file name of the file defines the theme name that can be used in the menu item configuration. For example, the stylesheed named __green.qss__ defines the theme with name __green__.
+
+Example:
+
+```css
+LauncherButton{
+    background-color: #e9e9e9;
+    text-align:left;
+    border-image: none;
+    border: none;
+}
+
+LauncherButton:focus, LauncherButton:pressed {
+    background-color: #bdbdbd;
+    outline: none
+}
+
+LauncherMenuTitle{
+    background-color: #e9e9e9;
+    text-align:left;
+    color: #0000FF
+}
+
+LauncherDetachButton{
+    background-color: #666666;
+}
+```
 
 # Installation
 ## Anaconda
@@ -332,57 +372,3 @@ If both parameters are defined, both are used but `style` has a higher priority.
 
 **Example:**
 One uses theme that defines `background-color: red` and text color `color: blue`. Then he can redefine text color with setting `style` to `color: black`. This setting will result in an item with red background and black text.
-
-
-## Customize Launcher appearance
-To customize appearance of Launcher one must be familiar with [QSS](http://doc.qt.io/qt-4.8/stylesheet-syntax.html) syntax.
-
-### Write Launcher style file
-At startup of launcher default appearance of launcher can be set as mentioned in section [Installation and usage of Launcher in Anaconda python environment > Run Launcher](#run-launcher-1). Such styling (.qss) file must use class names that strongly depend on Launcher implementation. Example can be found bellow:
-
-``` css
-LauncherButton{
-    background-color: #e9e9e9;
-    text-align:left;
-    border-image: none;
-    border: none;
-}
-
-LauncherButton:focus, LauncherButton:pressed {
-    background-color: #bdbdbd;
-    outline: none
-}
-
-LauncherMenuTitle{
-    background-color: #e9e9e9;
-    text-align:left;
-    color: #0000FF
-}
-
-LauncherDetachButton{
-    background-color: #666666;
-}
-```
-- `LauncherButton` is most general and defines appearance of main title button and menu items of type: `cmd`, `caqtdm`, `medm`, `menu` and possible custom types.
-
-- `LauncherMenuTitle` defines appearance of menu item of type `title`.
-
-- `LauncherDetachButton` defines appearance of detached button.
-
-
-### Write Launcher theme file
-For custom theme to work following must be done:
-
- 1. Theme file must be created. Basic one should look similar to:
-
- ``` css
- LauncherButton, LauncherMenuTitle{
-     background-color: #0f9d58
- }
- ```
-
- > Class names strongly depend on Launcher implementation so they should not be changed.
-
- 2. Theme file must be saved into directory defined by configuration file (consult [Configuration of Launcher](#configuration-of-launcher)). File name defines a theme name.
-
- > **Example:** File named [green.qss] defines theme with name *green*.
