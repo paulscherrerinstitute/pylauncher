@@ -35,11 +35,59 @@ optional arguments:
                         overwrite default stylesheet (i.e. qss file)
 ```
 
-# Configuration
+## Configuration
 
-# Mapping
+## Mapping
+__pylauncher__ uses a mapping (json) file to specify the behavior of specific menu items on different systems. The default mapping file can be overwritten with the __-m <mapping__ option.
 
-# Stylesheet
+The mapping file has sections for each operating system, for Linux, Windows and OS_X right now.
+
+```json
+{
+    "Linux": { ...
+    },
+    "Windows": { ...
+    },
+    "OS_X": { ...
+    }
+}
+```
+
+For each operating system following options can be configured:
+
+* `theme_base` for defining a path to a directory where applicable themes are stored
+* Any number of menu item type definitions that are according to following rules.
+
+A new menu item type is defined by adding a key value pair, where key is the name of the type and value is a structure with two parameters defining the command to be executed on the shell as well as possible arguments.
+
+```json
+"my-type":{
+    "command": "my-awsome-program {arg1} {arg2} {configuration}",
+    "arg_flags": {"arg1": "--option ", "arg2": "--macro "}
+}
+```
+
+The parameter __command__ specifies the main layout of command, where each _{arg}_ represents an argument which can be accessed with the keyword _arg_. In addition to this, the parameter __arg_flags__ specifies if any of this arguments has a flag (switch). If `arg_flags` is not defined it equals to `arg_flags= {}`
+
+__Note:__ The example above shows a definition of type "my-type" which opens the _my-awsome-program_ application with argument _arg1_ and _arg2_. So defined type will result in a shell command `my-awsome-program --option <arg1> --macro <arg2> <configuration>`.
+
+Menu items defined like this can be used in a launcher configuration as follows:
+
+```json
+{
+    "type": "my-type",
+    "text": "This is the text shown as label",
+    "arg1": "myoption",
+    "arg2": "example/my-macros.json"
+    "configuration": "example/menus/menu_example.json"
+}
+```
+
+Besides the attributes shown also _"tip"_, _"style"_, _"theme"_ and _"help-link"_ can be defined as well.
+
+A full example of a mapping file can be found in [examples/mapping/mapping.json](examples/mapping/mapping.json).
+
+## Stylesheet
 
 
 # Installation
@@ -285,84 +333,6 @@ If both parameters are defined, both are used but `style` has a higher priority.
 **Example:**
 One uses theme that defines `background-color: red` and text color `color: blue`. Then he can redefine text color with setting `style` to `color: black`. This setting will result in an item with red background and black text.
 
-## Configuration of Launcher
-Launcher applications uses a configuration json file to specify the behavior of application on different systems (for now Linux, Windows and OS X are supported).
-
-Full example of configuration can be found in [.examples/config/config.json](https://github.psi.ch/projects/COS/repos/pylauncher/browse/examples/config/config.json). Configuration is split into sections, one for each operating systems. An example of configuration for Linux operating system is shown bellow:
-
-``` json
-{
-
-    "Linux": {
-        "theme_base": "../themes/",
-        "cmd": {
-            "command": "{command}"
-        },
-        "caqtdm":{
-            "command": "caqtdm {macros} {panel}",
-            "arg_flags": {"macros": "-macro "}
-        },
-        "medm":{
-            "command": "medm -x {macros} {panel}",
-            "arg_flags": {"macros": "-macro "}
-        }
-    },
-    "Windows": { ...
-    },
-    "OS_X": { ...
-    }
-}
-```
-
-Configuration for each operating system consists of:
- 1. `theme_base` for defining a path to a directory where all possible themes are stored. For details about usage of themes consult section [Styling of menu items](#styling-of-menu-items).
-
- 2. Any number of type definitions. In current example configuration following types are supported (custom types can be specified with rules described in section [Defining custom types](#defining-custom-types)):
-  * `cmd` for defining a behavior of menu item which executes a shell command. Parameter `command` is used as a prefix to user specified command.
-
-  > **Example:** If `command`is set to `"command": "bash -c {command} "` and item is defined as `{"type": "cmd", "command": "shell_command"}` following will be executed: `bash -c "shell_command"`.
-
-  * `caqtdm` for defining a behavior of menu item which opens a caQtDM screen. Parameter `command` defines command which opens caQtDM and parameter `arg_flags` defines a macro prefix.
-
-  > **Example:** If `command`is set to `"command": "caqtdm {macros} {panel}"`, `arg_flags` is set to `"arg_flags": ["macros ": "-macro"]` and item is defined as `{"type": "caqtdm", "panel": "caqtdm_screen.ui", "macros": "MACRO1=M1,MACRO2=M2"` following will be executed: `caqtdm -macro "MACRO1=M1,MACRO2=M2" "caqtd_screen.ui"`.
-
-  * `medm` for defining a behavior of menu item which opens a medm screen. Parameter `command` defines command which opens medm and parameter `arg_flags` defines a macro prefix.
-
-  > **Example:** If `command`is set to `"command": "medm -x {macros} {panel}"`, `arg_flags` is set to `"arg_flags": ["macros ": "-macro"]` and item is defined as {"type": "medm", "panel": "medm_screen.adl", "macros": ""` following will be executed: `medm -x "medm_screen.adl"`.
-
-### Defining custom types
-Launcher currently supports defining of optional number of types which follows rules described in this section. All so defined types are executed as shell commands. To add a new Launcher item type, configuration file must be extended with a key value pair, where key is the name of the type and value is an array with two parameters defining the command.
-
-``` json
-"my-type":{
-    "command": "pylauncher {style} {config} {menu}",
-    "arg_flags": {"arg1": "--style ", "arg2": "--config "}
-}
-```
-
-Parameter `command` specifies the main layout of command, where each '{arg}' represents an argument which can be accessed with key word "arg". In addition parameter `arg_flags` specifies if any of this arguments has a flag (switch). Example above shows a definition of type "my-type" which opens a pylauncher application. So defined type will result in a shell command `pylauncher --style <style> --config <config> <menu>`.
-
-> If `arg_flags` is not defined it equals to `arg_flags= {}`
-
-So defined type can be used in a menu definition with following syntax.
-
-
-``` json
-{
-    "type": "my-type",
-    "text": "This is shown text",
-    "style": "path/to/my/style.qss",
-    "config": "example/config/config.json"
-    "menu": "example/menus/menu_example.json",
-}
-```
-
-> `"tip"`, `"style"`, `"theme"` and `"help-link"` can also be defined.
-
-
-Example above will result in shell command `pylauncher --style "path/to/my/style.qss" --config "example/config/config.json" "example/menus/menu_example.json"`.
-
-> Switches (like `--style` and --config) can be skipped with defining them as an empty string. For example if style is not defined `"style": ""` this results in shell command `pylauncher --config "example/config/config.json" "example/menus/menu_example.json"`.
 
 ## Customize Launcher appearance
 To customize appearance of Launcher one must be familiar with [QSS](http://doc.qt.io/qt-4.8/stylesheet-syntax.html) syntax.
