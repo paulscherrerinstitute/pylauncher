@@ -36,31 +36,26 @@ optional arguments:
 ```
 
 ## Configuration
-Launcher menus are defined via JSON configuration file(s). On top level, the configuration of the menu is divided in 3 sections
+Launcher menus are defined via JSON configuration file(s). On top level, the configuration of the menu is divided in the following 3 sections:
 
  * __menu-title__ - An optional section to set the menu title. If no title is specified a file name is used instead.
 
-``` json
+```json
 "menu-title": {
-    "text": "This is the menu title",
-    "theme": "light-blue",
-    "style": "color: #000000"
+  "text": "This is the menu title",
 }
 ```
-_theme_ and _style_ are optional settings to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of main title button. We discourage usage of `theme`.
 
-* __file-choice__ - An optional section to specify possible views of the launcher (e.g. expert, user, ...) It can be omitted if no views need to be defined.
+* __file-choice__ - An optional section to specify possible views of the launcher (e.g. expert, user, ...) It can be omitted if no views need to be defined. Once the Launcher application is opened, one can select the different views from the __View__ menu in menu bar. Selecting new view reloads Launcher from file specified in the parameter _file_.
 
 ```json
 "file-choice": [
-      {"text": "This is view 1", "file": "menu1.json"},
-      {"text": "This is view 2", "file": "menu2.json"}
+  { "text": "This is view 1", "file": "menu1.json" },
+  { "text": "This is view 2", "file": "menu2.json" }
 ]
 ```
 
-Once the Launcher application is opened, one can select the different views from the __View__ menu in menu bar. Selecting new view reloads Launcher from file specified in the parameter _file_.
-
-* __menu__ - Main section to define launcher items
+* __menu__ - Main section to define launcher items. The type of each item is defined with the `type` property. All supported types with available parameters are described in the next section.
 
 ```json
 "menu": [
@@ -68,8 +63,8 @@ Once the Launcher application is opened, one can select the different views from
         "type": "menu",
         "text": "Submenu",
         "file": "submenu.json",
-        "theme": "green",
-        "style": "color: #000000"
+        "tip": "Menu tip.",
+        "help-link": "http://www.link.com/to/help"
     },
     {
         "type": "separator"
@@ -79,68 +74,54 @@ Once the Launcher application is opened, one can select the different views from
 ]
 ```
 
-One can specify as many items as needed. Type of each item is defined with `type` property. All supported types with available parameters are described in section [Menu item types](#menu-item-types).
+### Menu Item Types
+There are 2 classes of item types, build-in item types and types specified in the launcher mapping file.
+
+For any menu item the two optional parameters __help_link__ and __tip__ can be specified to provide user help. __tip__ is shown as standard tool-tip (on mouse hover) and __help-link__ can be accessed with right mouse click on an item.
+
+#### Build-in Types
+
+* __separator__ - Visually separate menu items with line.
+
+```json
+{
+  "type": "separator"
+}
+```
+
+* __title__ - A special separator with text. By default it is visually distinguishable from other items.
+
+```json
+{
+  "type": "title",
+  "text": "This is shown title"
+}
+```
+* __menu__ - An element which opens a sub-menu that is specified in an external menu file that is defined with parameter _file_.
+
+```json
+{
+  "type": "menu",
+  "text": "This is shown text",
+  "file": "menu_2.json"
+}
+```
 
 
+#### Default Types
+The default mapping file of __pylauncher__ specifies following types.
 
-### Menu item types
-Following types of items are currently supported in launcher application:
+* __cmd__ - Execute a shell command defined with parameter `command`.
 
-- **`separator`** to visually separate menu items with line.
-
-    ``` json
-    {"type": "separator"}
-    ```
-
-- **`title`** is a special separator with text. By default it is visually distinguishable from other items.
-
-    ``` json
-    {
-        "type": "title",
-        "text": "This is shown title",
-        "theme": "red",
-        "style":"color: #000000"
-    }
-    ```
-
-    > `theme` and `style` are optional parameters to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of title separator. We discourage usage of `theme`.
-
-
-- **`menu`** is an element which opens sub-menu specified in a menu file defined with parameter `file`.
-
-    ``` json
-    {
-        "type": "menu",
-        "text": "This is shown text",
-        "file": "menu_2.json",
-        "tip": "Menu tip.",
-        "help-link": "http://www.link.com/to/help",
-        "theme": "green",
-        "style": "color: #000000"
-    }
-    ```
-
-    > `help_link` and `tip` are optional parameters to specify user's help. `tip` is shown as standard tool-tip (on mouse hover) and `help-link`can be accessed with right mouse click on an item.
-
-    > `theme` and `style` are optional parameters to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of element. We discourage usage of `theme`.
-
-- **`cmd`** is a basic element which executes shell command defined with parameter `command`.
-
-    ``` json
-    {
-        "type": "cmd",
-        "text": "This is shown text",
-        "command": "shell_command",
-        "tip": "What command does.",
-        "help-link": "http://www.link.com/to/help",
-        "theme": "blue",
-        "style": "color: #000000"
-    }
-    ```
-    > `help_link` and `tip` are optional parameters to specify user's help. `tip` is shown as standard tool-tip (on mouse hover) and `help-link`can be accessed with right mouse click on an item.
-
-    > `theme` and `style` are optional parameters to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of element. We discourage usage of `theme`.
-
+```json
+{
+  "type": "cmd",
+  "text": "This is shown text",
+  "command": "shell_command",
+  "tip": "What command does.",
+  "help-link": "http://www.link.com/to/help"
+}
+```
 
 - **`caqtdm`** is an element which opens a caQtDM screen defined with parameter `panel`. Macros are defined with parameter `macros`. Additional arguments can be passed with parameter `param`.
 
@@ -158,7 +139,6 @@ Following types of items are currently supported in launcher application:
     }
     ```
 
-    > `help_link` and `tip` are optional parameters to specify user's help. `tip` is shown as standard tool-tip (on mouse hover) and `help-link`can be accessed with right mouse click on an item.
 
     > `theme` and `style` are optional parameters to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of element. We discourage usage of `theme`.
 
@@ -207,7 +187,7 @@ _Note:_ New, custom types can be  specified within configuration file. They can 
 ### Styling of menu items
 If needed one can do a per item customization of the menu appearance. For this purpose large majority of the item types (for specific item consult section [Menu item types](#menu-item-types)) exposes following parameters:
  1. `style` which enables very flexible customization with [QSS](http://doc.qt.io/qt-4.8/stylesheet-syntax.html) syntax.
- 2. `theme` which enables customization using one of the predefined themes. How to define a theme is described in section [Write Launcher theme file](#write-launcher-theme-file).
+ 2. `theme` which enables customization using one of the predefined themes. How to define a theme is described in section [Write Launcher theme file](#write-launcher-theme-file). We strongly discourage the use of theme.
 
  _Note:_ There are currently no themes defined.
 
@@ -217,8 +197,8 @@ If both parameters are defined, both are used but `style` has a higher priority.
 **Example:**
 One uses theme that defines `background-color: red` and text color `color: blue`. Then he can redefine text color with setting `style` to `color: black`. This setting will result in an item with red background and black text.
 
-Example: [examples/menus/menu_example.json](examples/menus/menu_example.json)
 
+Example: [examples/menus/menu_example.json](examples/menus/menu_example.json)
 
 
 ## Mapping
