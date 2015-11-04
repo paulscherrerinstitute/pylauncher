@@ -38,22 +38,22 @@ optional arguments:
 ## Configuration
 Launcher menus are defined via JSON configuration file(s). On top level, the configuration of the menu is divided in the following 3 sections:
 
- * __menu-title__ - An optional section to set the menu title. If no title is specified a file name is used instead.
+* __menu-title__ - An optional section to set the menu title. If no title is specified a file name is used instead.
 
-  ```json
-  "menu-title": {
-    "text": "This is the menu title",
-  }
-  ```
+```json
+"menu-title": {
+  "text": "This is the menu title",
+}
+```
 
 * __file-choice__ - An optional section to specify possible views of the launcher (e.g. expert, user, ...) It can be omitted if no views need to be defined. Once the Launcher application is opened, one can select the different views from the __View__ menu in menu bar. Selecting new view reloads Launcher from file specified in the parameter _file_.
 
-  ```json
-  "file-choice": [
-    { "text": "This is view 1", "file": "menu1.json" },
-    { "text": "This is view 2", "file": "menu2.json" }
-  ]
-  ```
+```json
+"file-choice": [
+  { "text": "This is view 1", "file": "menu1.json" },
+  { "text": "This is view 2", "file": "menu2.json" }
+]
+```
 
 * __menu__ - Main section to define launcher items. The type of each item is defined with the `type` property. All supported types with available parameters are described in the next section.
 
@@ -74,12 +74,43 @@ Launcher menus are defined via JSON configuration file(s). On top level, the con
 ]
 ```
 
-### Menu Item Types
+An detailed example can be found at [examples/menus/menu_example.json](examples/menus/menu_example.json).
+
+### Menu Items
+
+#### Help
+For any menu item the two optional parameters __help_link__ and __tip__ can be specified to provide user help.
+
+* __tip__ - Shows as standard tool-tip (on mouse hover)
+* __help-link__ - Can be accessed with right mouse click on an item
+
+
+#### Styles
+The appearance of a menu item can be customized via styles and themes. Therefore each menu item has following 2 optional paramters:
+
+* __style__ - Enables very flexible customization with [QSS](http://doc.qt.io/qt-4.8/stylesheet-syntax.html) syntax
+* __theme__ - Enables customization using one of the predefined themes. How to define a theme is described in section [Stylesheet](#stylesheet). However we strongly discourage the use of theme on a per menu item basis.
+
+ _Note:_ There are currently no themes defined.
+
+If both parameters are defined, both are used but `style` has a higher priority.
+
+```json
+{
+  "type": "title",
+  "text": "Title 2 - changed style",
+  "style":"color: #ff0000",
+  "theme":"green"
+}
+```
+
+
+#### Types
 There are 2 classes of item types, build-in item types and types specified in the launcher mapping file.
 
-For any menu item the two optional parameters __help_link__ and __tip__ can be specified to provide user help. __tip__ is shown as standard tool-tip (on mouse hover) and __help-link__ can be accessed with right mouse click on an item.
+Other/New, custom types can be specified within a launcher mapping file. See section [Mapping](#mapping) for details.
 
-#### Build-in Types
+##### Build-in
 
 * __separator__ - Visually separate menu items with line.
 
@@ -108,7 +139,7 @@ For any menu item the two optional parameters __help_link__ and __tip__ can be s
 }
 ```
 
-#### Default Types
+##### Default
 The default mapping file of __pylauncher__ specifies following types.
 
 * __cmd__ - Executes a shell command defined with parameter __command__.
@@ -164,25 +195,6 @@ The default mapping file of __pylauncher__ specifies following types.
 }
 ```
 
-__Note:__ Other/New, custom types can be specified within a launcher mapping file. See section [Mapping](#mapping) for details.
-
-
-
-### Styling of menu items
-If needed one can do a per item customization of the menu appearance. For this purpose large majority of the item types (for specific item consult section [Menu item types](#menu-item-types)) exposes following parameters:
- 1. `style` which enables very flexible customization with [QSS](http://doc.qt.io/qt-4.8/stylesheet-syntax.html) syntax.
- 2. `theme` which enables customization using one of the predefined themes. How to define a theme is described in section [Write Launcher theme file](#write-launcher-theme-file). We strongly discourage the use of theme.
-
- _Note:_ There are currently no themes defined.
-
-
-If both parameters are defined, both are used but `style` has a higher priority.
-
-**Example:**
-One uses theme that defines `background-color: red` and text color `color: blue`. Then he can redefine text color with setting `style` to `color: black`. This setting will result in an item with red background and black text.
-
-
-Example: [examples/menus/menu_example.json](examples/menus/menu_example.json)
 
 
 ## Mapping
