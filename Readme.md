@@ -40,39 +40,39 @@ Launcher menus are defined via JSON configuration file(s). On top level, the con
 
  * __menu-title__ - An optional section to set the menu title. If no title is specified a file name is used instead.
 
-```json
-"menu-title": {
-  "text": "This is the menu title",
-}
-```
+  ```json
+  "menu-title": {
+    "text": "This is the menu title",
+  }
+  ```
 
 * __file-choice__ - An optional section to specify possible views of the launcher (e.g. expert, user, ...) It can be omitted if no views need to be defined. Once the Launcher application is opened, one can select the different views from the __View__ menu in menu bar. Selecting new view reloads Launcher from file specified in the parameter _file_.
 
-```json
-"file-choice": [
-  { "text": "This is view 1", "file": "menu1.json" },
-  { "text": "This is view 2", "file": "menu2.json" }
-]
-```
+  ```json
+  "file-choice": [
+    { "text": "This is view 1", "file": "menu1.json" },
+    { "text": "This is view 2", "file": "menu2.json" }
+  ]
+  ```
 
 * __menu__ - Main section to define launcher items. The type of each item is defined with the `type` property. All supported types with available parameters are described in the next section.
 
-```json
-"menu": [
-    {
-        "type": "menu",
-        "text": "Submenu",
-        "file": "submenu.json",
-        "tip": "Menu tip.",
-        "help-link": "http://www.link.com/to/help"
-    },
-    {
-        "type": "separator"
-    },
-    { ...
-    }
-]
-```
+  ```json
+  "menu": [
+      {
+          "type": "menu",
+          "text": "Submenu",
+          "file": "submenu.json",
+          "tip": "Menu tip.",
+          "help-link": "http://www.link.com/to/help"
+      },
+      {
+          "type": "separator"
+      },
+      { ...
+      }
+  ]
+  ```
 
 ### Menu Item Types
 There are 2 classes of item types, build-in item types and types specified in the launcher mapping file.
@@ -83,106 +83,90 @@ For any menu item the two optional parameters __help_link__ and __tip__ can be s
 
 * __separator__ - Visually separate menu items with line.
 
-```json
-{
-  "type": "separator"
-}
-```
+  ```json
+  {
+    "type": "separator"
+  }
+  ```
 
 * __title__ - A special separator with text. By default it is visually distinguishable from other items.
 
-```json
-{
-  "type": "title",
-  "text": "This is shown title"
-}
-```
+  ```json
+  {
+    "type": "title",
+    "text": "This is shown title"
+  }
+  ```
 * __menu__ - An element which opens a sub-menu that is specified in an external menu file that is defined with parameter _file_.
 
-```json
-{
-  "type": "menu",
-  "text": "This is shown text",
-  "file": "menu_2.json"
-}
-```
+  ```json
+  {
+    "type": "menu",
+    "text": "This is shown text",
+    "file": "menu_2.json"
+  }
+  ```
 
 
 #### Default Types
 The default mapping file of __pylauncher__ specifies following types.
 
-* __cmd__ - Execute a shell command defined with parameter `command`.
+* __cmd__ - Executes a shell command defined with parameter __command__.
+
+  ```json
+  {
+    "type": "cmd",
+    "text": "This is shown text",
+    "command": "shell_command",
+    "tip": "What command does.",
+    "help-link": "http://www.link.com/to/help"
+  }
+  ```
+
+* __caqtdm__ - Opens a caQtDM screen defined with parameter __panel__. Macros are defined with parameter __macros__. Additional arguments can be passed with parameter __param__.
+
+  ```json
+  {
+    "type": "caqtdm",
+    "text": "This is shown text",
+    "panel": "screen_name.ui",
+    "macros": "MACRO1=M1,MACRO2=M2",
+    "param": "-attach -dg +250+250",
+    "tip": "What this screen does.",
+    "help-link": "http://www.link.com/to/help"
+  }
+  ```
+
+* __medm__ - Opens a medm screen defined with parameter __panel__. Macros are defined with parameter __macros__. Additional arguments can be passed with parameter __param__.
+
+  ```json
+  {
+    "type": "medm",
+    "text": "This is shown text",
+    "panel": "screen_name.adl",
+    "macros": "MACRO1=M1,MACRO2=M2",
+    "param": "-attach -dg +250+400",
+    "tip": "What this screen does.",
+    "help-link": "http://www.link.com/to/help"
+  }
+  ```
+
+* __pep__ - Opens a PEP screen defined with parameter __panel__ (i.e. .prc file). Additional arguments can be passed with parameter __param__.
 
 ```json
 {
-  "type": "cmd",
+  "type": "pep",
   "text": "This is shown text",
-  "command": "shell_command",
-  "tip": "What command does.",
+  "panel": "screen_cfg.prc",
+  "param": "-ws PV",
+  "tip": "What this screen does.",
   "help-link": "http://www.link.com/to/help"
 }
 ```
 
-- **`caqtdm`** is an element which opens a caQtDM screen defined with parameter `panel`. Macros are defined with parameter `macros`. Additional arguments can be passed with parameter `param`.
-
-    ``` json
-    {
-        "type": "caqtdm",
-        "text": "This is shown text",
-        "panel": "screen_name.ui",
-        "macros": "MACRO1=M1,MACRO2=M2",
-        "param": "-attach -dg +250+250",
-        "tip": "What this screen does.",
-        "help-link": "http://www.link.com/to/help",
-        "theme": "blue",
-        "style": "color: #000000"
-    }
-    ```
+__Note:__ Other/New, custom types can be specified within a launcher mapping file. See section [Mapping](#mapping) for details.
 
 
-    > `theme` and `style` are optional parameters to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of element. We discourage usage of `theme`.
-
-
-- **`medm`** is an element which opens a medm screen defined with parameter `panel`. Macros are defined with parameter `macros`. Additional arguments can be passed with parameter `param`.
-
-    ``` json
-    {
-        "type": "medm",
-        "text": "This is shown text",
-        "panel": "screen_name.adl",
-        "macros": "MACRO1=M1,MACRO2=M2",
-        "param": "-attach -dg +250+400",
-        "tip": "What this screen does.",
-        "help-link": "http://www.link.com/to/help",
-        "theme": "blue",
-        "style": "color: #000000"
-    }
-    ```
-
-    > `help_link` and `tip` are optional parameters to specify user's help. `tip` is shown as standard tool-tip (on mouse hover) and `help-link`can be accessed with right mouse click on an item.
-
-    > `theme` and `style` are optional parameters to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of element. We discourage usage of `theme`.
-
-- **`pep`** is an element which opens a pep screen defined with parameter `panel` (for .prc files) or/and `param` (for command line difintions).
-
-    ``` json
-    {
-        "type": "pep",
-        "text": "This is shown text",
-        "panel": "screen_cfg.prc",
-        "param": "-ws PV",
-        "tip": "What this screen does.",
-        "help-link": "http://www.link.com/to/help",
-        "theme": "blue",
-        "style": "color: #000000"
-    }
-    ```
-
-    > `help_link` and `tip` are optional parameters to specify user's help. `tip` is shown as standard tool-tip (on mouse hover) and `help-link`can be accessed with right mouse click on an item.
-
-    > `theme` and `style` are optional parameters to modify appearance (consult [Styling of menu items](#styling-of-menu-items)) of element. We discourage usage of `theme`.
-
-_Note:_ New, custom types can be  specified within configuration file. They can be defined with rules described in section [Defining custom types](#defining-custom-types).
 
 ### Styling of menu items
 If needed one can do a per item customization of the menu appearance. For this purpose large majority of the item types (for specific item consult section [Menu item types](#menu-item-types)) exposes following parameters:
