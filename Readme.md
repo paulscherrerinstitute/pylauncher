@@ -11,7 +11,7 @@ The Launcher can be started as follows:
 pylauncher <configuration>
 ```
 
-where __<configuration>__ is the configuration file that defines the Launcher menu e.g. for a specific facility, beamline, setup, etc. .
+where __configuration__ is the configuration file that defines the Launcher menu e.g. for a specific facility, beamline, setup, etc. .
 
 It is possible to override the Launchers default mapping and/or default color scheme (style). This can be done using the options:
 
