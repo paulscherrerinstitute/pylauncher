@@ -81,7 +81,7 @@ An detailed example can be found at [examples/menus/menu_example.json](examples/
 #### Help
 For any menu item the two optional parameters __help_link__ and __tip__ can be specified to provide user help.
 
-* __tip__ - Shows as standard tool-tip (on mouse hover)
+* __tip__ - Shows as standard tool-tip (on mouse hover). If not defined, default tool-tip is applied, showing text representation of corresponding command.
 * __help-link__ - Can be accessed with right mouse click on an item
 
 
