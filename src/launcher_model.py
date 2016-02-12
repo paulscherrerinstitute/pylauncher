@@ -159,7 +159,7 @@ class launcher_menu_model_item:
         self.parent = parent
         self.text = item.get("text", None)
         self.help_link = item.get("help-link", None)
-        self.tip = item.get("tip", None)
+        self.tip = item.get("tip", "").strip()
         self.theme = item.get("theme", None)
         self.style = item.get("style", None)
         # Track history of menus to reach this item in the tree. Every item has
