@@ -1096,7 +1096,7 @@ def main():
         logging.warning(logMsg)
 
     # Create Launcher Window and load default style and theme
-    launcherWindow = LauncherWindow(args.launcher, cfg)
+    launcherWindow = LauncherWindow(args.configuration, cfg)
 
     app.setStyle("cleanlooks")
     styleFile = open_launcher_file(os.path.join(currDir,
