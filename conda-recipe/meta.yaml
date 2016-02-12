@@ -2,8 +2,9 @@ package:
     name: pylauncher
     version: v0.9.7
 source:
-    git_tag: v0.9.7
-    git_url: https://github.psi.ch/scm/cos/pylauncher.git
+    # git_tag: v0.9.7
+    # git_url: https://github.psi.ch/scm/cos/pylauncher.git
+    path: ..
 requirements:
     build:
         - python
