@@ -1,6 +1,14 @@
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import object
 #!/usr/bin/env python
 
-# Developed by Rok Vintar (rok.vinta@cosylab.com), Cosylab d.d. for Paul
+# Developed by Rok Vintar (rok.vintar@cosylab.com), Cosylab d.d. for Paul
 # Scherrer Institute (PSI)
 # Copyright (C) 2016
 #
@@ -11,7 +19,7 @@
 import sys
 import os
 import json
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import logging
 import pyparsing
 
@@ -19,18 +27,18 @@ import pyparsing
 def open_launcher_file(file_path):
     launcher_file = None
     try:
-        launcher_file = urllib2.urlopen(file_path)
-    except (urllib2.URLError, ValueError):
+        launcher_file = urllib.request.urlopen(file_path)
+    except (urllib.error.URLError, ValueError):
         # Change path to url style and try to open it
         launcher_file_path = os.path.normpath(file_path)
         launcher_file_path = os.path.abspath(launcher_file_path)
         launcher_file_path = 'file:///' + launcher_file_path
-        launcher_file = urllib2.urlopen(launcher_file_path)
+        launcher_file = urllib.request.urlopen(launcher_file_path)
 
     return launcher_file
 
 
-class launcher_menu_model:
+class launcher_menu_model(object):
 
     """Parse configuration and build menu model.
 
@@ -57,9 +65,9 @@ class launcher_menu_model:
         """Parse JSON type menu config file."""
 
         try:
-            menu = json.loads(menu_file.read())
+            menu = json.loads(menu_file.read().decode('utf-8'))
         except Exception as e:
-            err_msg = ("In file \"" + menu_file.geturl() + "\": " + e.message)
+            err_msg = ("In file \"" + menu_file.geturl() + "\": " + e.args[0])
             logging.error(err_msg)
             sys.exit()
 
@@ -154,7 +162,7 @@ class launcher_menu_model:
                 sys.exit()
 
 
-class launcher_menu_model_item:
+class launcher_menu_model_item(object):
 
     """Super class for all items in menu model.
 

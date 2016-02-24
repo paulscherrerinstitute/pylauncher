@@ -1,12 +1,24 @@
 #!/usr/bin/env python
 
-# Developed by Rok Vintar (rok.vinta@cosylab.com), Cosylab d.d. for Paul
+# Developed by Rok Vintar (rok.vintar@cosylab.com), Cosylab d.d. for Paul
 # Scherrer Institute (PSI)
 # Copyright (C) 2016
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+# ---------python 2/3 compatibility imports---------
+from __future__ import absolute_import
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import object
+# ------end of python 2/3 compatibility imports-----
+
 
 import sys
 import os
@@ -15,8 +27,8 @@ import argparse
 import json
 import copy
 import enum
-import urllib2
-import urlparse
+import urllib.request, urllib.error, urllib.parse
+import urllib.parse
 import logging
 import re
 import shlex
@@ -25,10 +37,48 @@ import subprocess
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import pyqtSlot, Qt
 
-from launcher_model import *
+from .launcher_model import *
 
 import signal
 signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+
+# ---------python 2/3 compatibility stuff---------
+def useQLatin1String(string):
+    try:
+        latinString = QtCore.QLatin1String(string)
+    except:
+        # Using python 3 QString is not implemented. Native python
+        # string should be used
+        return extendedStr(string)
+
+    return latinString
+
+
+def useQString(string):
+    try:
+        qString = QtCore.QString(string)
+    except:
+        # Using python 3 QString is not implemented. Native python
+        # string should be used
+        return extendedStr(string)
+
+    return qString
+
+
+class extendedStr(str):
+    # Extend native python string to have a contains method such as QString
+    # extendedString is used in py3, QString in py2
+    def contains(self, text, caseSensitive):
+        if caseSensitive and text in self:
+            return True
+        elif not caseSensitive and text.lower() in self.lower():
+            return True
+        else:
+            return False
+
+# -----end of python 2/3 compatibility stuff------
+
 
 class SearchOptions(enum.Enum):
 
@@ -67,8 +117,8 @@ class LauncherWindow(QtGui.QMainWindow):
         # relative to config file.
         theme_base = self.launcherCfg["theme_base"]
         try:
-            urllib2.urlopen(theme_base)
-        except (urllib2.URLError, ValueError):
+            urllib.request.urlopen(theme_base)
+        except (urllib.error.URLError, ValueError):
             # Not an url. Check if absolute path.
 
             if not os.path.isabs(theme_base):
@@ -249,13 +299,13 @@ class LauncherMenu(QtGui.QMenu):
                 # search view).
 
                 if isinstance(widget, LauncherNamedButton):
-                    text = QtCore.QString(widget.itemModel.text)
+                    text = useQString(widget.itemModel.text)
 
                 widgetType = widget.__class__.__name__
             else:
                 widget = None
                 widgetType = None
-                text = QtCore.QString("")
+                text = useQString("")
 
             if action.__class__.__name__ == "LauncherSeparator":
                 action.setVisibility(False)
@@ -287,7 +337,7 @@ class LauncherMenu(QtGui.QMenu):
                 hasVisible = True
 
             elif widgetType == "LauncherCmdButton" and cmdFilter and\
-                QtCore.QString(widget.cmd).contains(filterTerm,
+                useQString(widget.cmd).contains(filterTerm,
                                                     sensitivityFilter):
 
                 action.setVisibility(True)
@@ -1023,14 +1073,14 @@ class LauncherFileChoiceAction(QtGui.QAction):
         candidate.setNewView(self.itemModel.root_menu_file)
 
 
-class LauncherStyle:
+class LauncherStyle(object):
 
     """ Class which handles qss style sheet from multiple sources """
 
     def __init__(self, item, theme=None, style=None):
         self.item = item
         self.styleString = ""
-        self.style = QtCore.QLatin1String(self.styleString)
+        self.style = useQLatin1String(self.styleString)
         if theme:
             self.appendThemeStyle(theme)
         if style and item:
@@ -1047,7 +1097,8 @@ class LauncherStyle:
                              theme + ".qss"))
             self.styleString = self.styleString + theme_file.read()
             theme_file.close()
-            self.style = QtCore.QLatin1String(self.styleString)
+            self.style = useQLatin1String(self.styleString)
+
         except IOError:
             warnMsg = "Theme \"" + theme + \
                 "\" was not found. Theme ignored."
@@ -1056,11 +1107,11 @@ class LauncherStyle:
     def appendStyle(self, style, item):
         self.styleString = self.styleString + item.__class__.__name__ +\
             "{" + style + "}"
-        self.style = QtCore.QLatin1String(self.styleString)
+        self.style = useQLatin1String(self.styleString)
 
     def appendClassStyle(self, style):
         self.styleString = self.styleString + style
-        self.style = QtCore.QLatin1String(self.styleString)
+        self.style = useQLatin1String(self.styleString)
 
 
 def main():
@@ -1082,7 +1133,8 @@ def main():
     currDir = os.path.dirname(os.path.realpath(__file__))
     cfgPath = os.path.join(currDir, "resources/mapping/mapping.json")
     cfgFile = open_launcher_file(cfgPath)
-    defaultCfg = json.load(cfgFile)
+    cfgString = cfgFile.read(-1).decode('utf-8')
+    defaultCfg = json.loads(cfgString)
     defaultCfg["cfg_base"] = os.path.basename(cfgPath)
     cfgFile.close()
 
@@ -1091,7 +1143,8 @@ def main():
     if args.mapping:
         try:
             cfgFile = open_launcher_file(args.mapping)
-            cfg = json.load(cfgFile)
+            cfgString = cfgFile.read(-1).decode('utf-8')
+            cfg = json.loads(cfgString)
             cfg["cfg_base"] = os.path.dirname(args.mapping)
             cfgFile.close()
             default = False
@@ -1109,7 +1162,7 @@ def main():
     app.setStyle("cleanlooks")
     styleFile = open_launcher_file(os.path.join(currDir,
                                                 "resources/qss/default.qss"))
-    app.setStyleSheet(styleFile.read())
+    app.setStyleSheet(styleFile.read().decode('utf-8'))
     styleFile.close()
     if args.style:
         try:
