@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 import sys
 import os
 import json
@@ -111,9 +112,9 @@ class LauncherMenuModel(object):
             self.json_config['menu-title']['text'] = params[0]
 
             if len(params) > 0:
-                print ('Inf: Skipping additional parameters in '
+                print(('Inf: Skipping additional parameters in '
                        'file "%s", line line %d') \
-                    % (self.file_path, self.line_number)
+                    % (self.file_path, self.line_number))
 
         # Add the file choice element to the configuration list
         elif command[0] == '@FileChoice':
@@ -123,18 +124,18 @@ class LauncherMenuModel(object):
             self.json_config['file-choice'] = file_choice
 
             if len(params) > 1:
-                print ('Inf: Skipping additional parameters in '
+                print(('Inf: Skipping additional parameters in '
                        'file "%s", line line %d') \
-                    % (self.file_path, self.line_number)
+                    % (self.file_path, self.line_number))
 
         # The command dictates that a separator is added
         elif command[0] == '@separator':
             element['type'] = 'separator'
 
             if len(params) > 0:
-                print ('Inf: Skipping additional parameters in '
+                print(('Inf: Skipping additional parameters in '
                        'file "%s", line line %d') \
-                    % (self.file_path, self.line_number)
+                    % (self.file_path, self.line_number))
 
         # The commands translates into the title element
         elif command[0] == '@title':
@@ -142,9 +143,9 @@ class LauncherMenuModel(object):
             element['text'] = params[0]
 
             if len(params) > 1:
-                print ('Inf: Skipping additional parameters in '
+                print(('Inf: Skipping additional parameters in '
                        'file "%s", line line %d') \
-                    % (self.file_path, self.line_number)
+                    % (self.file_path, self.line_number))
 
         # The command loads a new menu from another file
         elif command[0] == '>launcher':
@@ -153,11 +154,11 @@ class LauncherMenuModel(object):
             # Don't add the menu if the file does not exist
             if not os.path.isfile(filepath):
                 if self.force:
-                    print 'Wrn: File "%s" does not exist. Skipping...' % \
-                        filepath
+                    print('Wrn: File "%s" does not exist. Skipping...' % \
+                        filepath)
                     return
                 else:
-                    print 'Err: File "%s" does not exist.' % filepath
+                    print('Err: File "%s" does not exist.' % filepath)
                     sys.exit(-1)
 
             element['type'] = 'menu'
@@ -165,17 +166,17 @@ class LauncherMenuModel(object):
             element['file'] = command[1] + '.json'
 
             if len(params) > 1:
-                print ('Inf: Skipping additional parameters in '
+                print(('Inf: Skipping additional parameters in '
                        'file "%s", line line %d') \
-                    % (self.file_path, self.line_number)
+                    % (self.file_path, self.line_number))
 
             # Track all additional files that need to be parsed
             self.file_list.append(command[1] + '.config')
 
         # Skip over lines where the command starts with a hash (comment)
         elif command[0].startswith('#'):
-            print 'Inf: Skipping line %d in file "%s" - comment' \
-                % (self.line_number, self.file_path)
+            print('Inf: Skipping line %d in file "%s" - comment' \
+                % (self.line_number, self.file_path))
 
         # If nothing else this is a command
         else:
@@ -249,21 +250,21 @@ class LauncherMenuModel(object):
         """
         split = os.path.splitext(self.file_path)
         if not split[1]:
-            print 'Err: Unable to parse extension from file name: %s' \
-                % self.file_path
+            print('Err: Unable to parse extension from file name: %s' \
+                % self.file_path)
             return
 
         out_file = os.path.join(out_path, split[0] + '.json')
-        print 'Inf: Writing file: %s' % out_file
+        print('Inf: Writing file: %s' % out_file)
 
         if os.path.isdir(out_file):
-            print 'Err: Output file "%s" is a directory!' % out_file
+            print('Err: Output file "%s" is a directory!' % out_file)
             return
 
         if os.path.isfile(out_file):
             if not overwrite:
-                print 'Wrn: Output file "%s" already exists!' \
-                    % out_file
+                print('Wrn: Output file "%s" already exists!' \
+                    % out_file)
 
                 user_input = ''
                 while True:
@@ -329,7 +330,7 @@ class LauncherMenuModelParser(object):
 
             # Check if we parsed all files and get the next
             # in line to be parsed
-            for key, value in self.input_files.iteritems():
+            for key, value in self.input_files.items():
                 if not value:
                     input_name = key
                     break
@@ -337,7 +338,7 @@ class LauncherMenuModelParser(object):
             # If we parsed all of them, stop
             if not input_name:
                 finished = True
-                print 'Inf: Successfully finished parsing!'
+                print('Inf: Successfully finished parsing!')
                 continue
 
             # Parse the current file
@@ -392,11 +393,11 @@ def main():
     output_path = os.path.normpath(args.outputfolder)
 
     if not os.path.isfile(tickle_path):
-        print 'TCL path "%s" is not a regular file!' % tickle_path
+        print('TCL path "%s" is not a regular file!' % tickle_path)
         sys.exit(-1)
 
     if not os.path.isdir(output_path):
-        print 'Output path "%s" is not a directory!' % output_path
+        print('Output path "%s" is not a directory!' % output_path)
         sys.exit(-1)
 
     parser = LauncherMenuModelParser(tickle_path, output_path, args.overwrite)
