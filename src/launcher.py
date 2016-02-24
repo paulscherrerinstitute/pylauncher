@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Developed by Rok Vintar (rok.vinta@cosylab.com), Cosylab d.d. for Paul
+# Developed by Rok Vintar (rok.vintar@cosylab.com), Cosylab d.d. for Paul
 # Scherrer Institute (PSI)
 # Copyright (C) 2016
 #
@@ -8,6 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
+from __future__ import absolute_import
 import sys
 import os
 import platform
@@ -25,10 +26,11 @@ import subprocess
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import pyqtSlot, Qt
 
-from launcher_model import *
+from .launcher_model import *
 
 import signal
 signal.signal(signal.SIGINT, signal.SIG_DFL)
+
 
 class SearchOptions(enum.Enum):
 

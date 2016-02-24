@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Developed by Rok Vintar (rok.vinta@cosylab.com), Cosylab d.d. for Paul
+# Developed by Rok Vintar (rok.vintar@cosylab.com), Cosylab d.d. for Paul
 # Scherrer Institute (PSI)
 # Copyright (C) 2016
 #
