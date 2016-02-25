@@ -37,7 +37,7 @@ import subprocess
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import pyqtSlot, Qt
 
-from .launcher_model import *
+from launcher_model import *
 
 import signal
 signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -308,7 +308,7 @@ class LauncherMenu(QtGui.QMenu):
                 text = useQString("")
 
             if action.__class__.__name__ == "LauncherSeparator":
-                action.setVisibility(False)
+                action.setVisibility(not filterTerm and self.initFilterVisibility)
             elif not filterTerm:
                 # Empty filter. Show depending on type. If submenu recursively
                 # empty  filter.
@@ -420,12 +420,9 @@ class LauncherSubMenu(LauncherMenu):
                                             self.getMainMenu())
         detachedMenu.setWindowTitle(self.menuModel.main_title.text)
         detachedMenu.searchInput.setText(self.filterTerm)
-        detachedMenu.setWindowFlags(Qt.Window | Qt.Tool)
-        detachedMenu.setAttribute(Qt.WA_DeleteOnClose, True)
-        detachedMenu.setAttribute(Qt.WA_X11NetWmWindowTypeMenu, True)
-        detachedMenu.setEnabled(True)
         detachedMenu.show()
-        detachedMenu.move(self.pos().x(), self.pos().y())
+        # Takes care of showing on the right place with right size
+        detachedMenu.popup(QtCore.QPoint(self.pos().x(), self.pos().y()))
         self.hideAll()
 
     def hideAll(self):
@@ -454,6 +451,11 @@ class LauncherDetachedMenu(LauncherMenu):
         self.searchInput = LauncherFilterWidget(self, self)
         self.insertToMenu(self.searchInput, 0)
 
+        self.setWindowFlags(Qt.Window | Qt.Tool)
+        self.setAttribute(Qt.WA_DeleteOnClose, True)
+        self.setAttribute(Qt.WA_X11NetWmWindowTypeMenu, True)
+        self.setEnabled(True)
+
     def hide(self):
         pass  # Detached menu should not be hidden at any action (left key).
 
@@ -470,7 +472,7 @@ class LauncherDetachedMenu(LauncherMenu):
     def keyPressEvent(self, event):
         """Catch escape (originally closes the window) and skip actions."""
 
-        if event.key() == Qt.Key_Escape:
+        if event.key() == Qt.Key_Escape or event.key() == Qt.Key_Alt:
             pass
         else:
             LauncherMenu.keyPressEvent(self, event)
