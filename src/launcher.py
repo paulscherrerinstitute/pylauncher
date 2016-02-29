@@ -37,7 +37,7 @@ import subprocess
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import pyqtSlot, Qt
 
-from launcher_model import *
+from .launcher_model import *
 
 import signal
 signal.signal(signal.SIGINT, signal.SIG_DFL)
