@@ -3,7 +3,7 @@
 At PSI, the __pylauncher__ is distributed as an [Anaconda](http://continuum.io/downloads) package and is installed by default in the PSI Controls central Python installation located at `/opt/gfa/`. For the time being the Launcher can be used by bringing this Python into your PATH as follows:
 
 ```bash
-export PATH=/opt/gfa/python-2.7/2.3.0/bin:$PATH
+source /opt/gfa/python
 ```
 
 Please refer to the generic [Readme](Readme.md) regarding the usage.
