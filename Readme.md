@@ -292,16 +292,10 @@ LauncherDetachButton{
 
 # Installation
 ## Anaconda
-Anaconda comes with all required packages for __pylauncher__. To install the package that was previously deployed on a central repository use
+Anaconda comes with all required packages for __pylauncher__. To install the package use
 
 ```bash
-conda install pylauncher
-```
-
-If the package is not in a central repository use:
-
-```bash
-conda install <path_to_launcher_package>
+conda install -c https://conda.anaconda.org/paulscherrerinstitute pylauncher
 ```
 
 ## Standard Python
