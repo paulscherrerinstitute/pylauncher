@@ -7,7 +7,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'Readme.md')).read()
 
 setup(name='pylauncher',
-      version='v0.9.8',
+      version='1.0.0',
       description="Standard PSI tool for accessing GUIs",
       long_description=README,
       author='Rok Vintar, Cosylab d.d. for Paul Scherrer Institute (PSI)',

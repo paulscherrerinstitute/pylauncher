@@ -307,15 +307,14 @@ conda install <path_to_launcher_package>
 ## Standard Python
 To use __pylauncher__ with a standard Python following requirements need to be met:
 
-* Python 2.7 [Link](https://www.python.org/download/releases/2.7/)
-* Qt 4 (4.8 or higher) [Link](http://www.qt.io/download/)
-* PyQt4 (4.8 or higher) [Link](https://www.riverbankcomputing.com/software/pyqt/download)
-* pyparsing [Link](http://pyparsing.wikispaces.com/Download+and+Installation)
+* [Qt 4](http://www.qt.io/download/) (4.8 or higher)
+* [PyQt4](https://www.riverbankcomputing.com/software/pyqt/download) (4.8 or higher)
+* [pyparsing](http://pyparsing.wikispaces.com/Download+and+Installation)
 
 To "install" the latest version clone Git repository
 
  ```bash
- git clone https://github.psi.ch/scm/cos/pylauncher.git
+ git clone https://github.com/paulscherrerinstitute/pylauncher.git
  ```
 
 The code is then located in the `src/` directory.
@@ -329,7 +328,7 @@ To build an Anaconda package of the last stable version of __pylauncher__ do
 * Clone Git repository
 
 ```bash
-git clone https://github.psi.ch/scm/cos/pylauncher.git
+git clone https://github.com/paulscherrerinstitute/pylauncher.git
 ```
 
 * Build package
