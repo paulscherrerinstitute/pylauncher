@@ -1115,7 +1115,6 @@ class LauncherStyle(object):
         self.styleString = self.styleString + style
         self.style = useQLatin1String(self.styleString)
 
-
 def main():
     """ Main logic """
 
@@ -1126,6 +1125,8 @@ def main():
                           help="menu/configuration file")
     argsPars.add_argument('-s', '--style',
                           help="overwrite default style (qss file)")
+    argsPars.add_argument('--position', type=int, nargs=2, metavar=('POS_X', 'POS_Y'),
+                          help="set inital position of launcher on screen")
     args = argsPars.parse_args()
 
     app = QtGui.QApplication(sys.argv)
@@ -1176,7 +1177,23 @@ def main():
                 "Launcher will be opened with default style."
             logging.warning(logMsg)
 
-    launcherWindow.setGeometry(0, 0, 150, 0)
+    # Set to desired position
+    position = args.position
+
+    if not position: # Set defaults
+        position = [0, 0]
+
+    screenGeometry = app.desktop().availableGeometry()
+
+    # Negative values should be treated as starting from oposite corner
+    if position[0] < 0:  # X
+        position[0] = screenGeometry.width()+position[0]
+
+    if position[1] < 0:  # Y
+        position[1] = screenGeometry.height()+position[1]
+
+    launcherWindow.setGeometry(position[0], position[1], 0, 0)
+    launcherWindow.setMinimumWidth(250)
     launcherWindow.show()
     sys.exit(app.exec_())
 
