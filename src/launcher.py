@@ -1119,14 +1119,14 @@ def main():
     """ Main logic """
 
     argsPars = argparse.ArgumentParser()
-    argsPars.add_argument('-m', '--mapping',
-                          help='overwrite default mapping file')
     argsPars.add_argument('configuration',
                           help="menu/configuration file")
+    argsPars.add_argument('-m', '--mapping',
+                          help='overwrite default mapping file')
     argsPars.add_argument('-s', '--style',
                           help="overwrite default style (qss file)")
-    argsPars.add_argument('--position', type=int, nargs=2, metavar=('POS_X', 'POS_Y'),
-                          help="set inital position of launcher on screen")
+    argsPars.add_argument('--position', type=int, nargs=2, metavar=('X', 'Y'),
+                          help="set initial position on the screen")
     args = argsPars.parse_args()
 
     app = QtGui.QApplication(sys.argv)

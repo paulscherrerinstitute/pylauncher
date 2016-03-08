@@ -22,17 +22,18 @@ For all available options and detailed help run
 
 ```bash
 ~$ pylauncher -h
-pylauncher [-h] [-m MAPPING] [-s STYLE] configuration
+usage: pylauncher [-h] [-m MAPPING] [-s STYLE] [--position X Y] configuration
 
 positional arguments:
-  configuration              menu/configuration file
+  configuration         menu/configuration file
 
 optional arguments:
   -h, --help            show this help message and exit
   -m MAPPING, --mapping MAPPING
-                        overwrite default mapping
+                        overwrite default mapping file
   -s STYLE, --style STYLE
-                        overwrite default stylesheet (i.e. qss file)
+                        overwrite default style (qss file)
+  --position X Y        set initial position on the screen
 ```
 
 ## Configuration
