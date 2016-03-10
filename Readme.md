@@ -36,6 +36,8 @@ optional arguments:
   --position X Y        set initial position on the screen
 ```
 
+_Note:_ `--position` - 0 0 is on the top left, -1 -1 is on the lower right. 
+
 ## Configuration
 Launcher menus are defined via JSON configuration file(s). On top level, the configuration of the menu is divided in the following 3 sections:
 
