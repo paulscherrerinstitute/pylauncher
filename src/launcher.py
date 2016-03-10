@@ -1177,24 +1177,27 @@ def main():
                 "Launcher will be opened with default style."
             logging.warning(logMsg)
 
+    launcherWindow.setMinimumWidth(250)
+    launcherWindow.show()
+    geometry = launcherWindow.geometry()
+    
     # Set to desired position
     position = args.position
 
     if not position: # Set defaults
         position = [0, 0]
 
-    screenGeometry = app.desktop().availableGeometry()
-
+    screenGeometry = app.desktop().geometry()
     # Negative values should be treated as starting from oposite corner
     if position[0] < 0:  # X
-        position[0] = screenGeometry.width()+position[0]
+        position[0] = screenGeometry.width()-geometry.width()+position[0]
 
     if position[1] < 0:  # Y
-        position[1] = screenGeometry.height()+position[1]
-
+        position[1] = screenGeometry.height()-geometry.height()+position[1]
+    
+    # Update x/y coordinates of window
     launcherWindow.setGeometry(position[0], position[1], 0, 0)
-    launcherWindow.setMinimumWidth(250)
-    launcherWindow.show()
+    
     sys.exit(app.exec_())
 
 # Start program here
