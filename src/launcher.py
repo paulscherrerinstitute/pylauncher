@@ -964,7 +964,7 @@ class LauncherNamedButton(LauncherButton):
         """ Open help link in default browser. """
 
         url = QtCore.QUrl(
-            self.sender().data().toString(), QtCore.QUrl.TolerantMode)
+            self.sender().data(), QtCore.QUrl.TolerantMode)
         QtGui.QDesktopServices.openUrl(url)
 
 
@@ -1180,7 +1180,7 @@ def main():
     launcherWindow.setMinimumWidth(250)
     launcherWindow.show()
     geometry = launcherWindow.geometry()
-    
+
     # Set to desired position
     position = args.position
 
@@ -1194,10 +1194,10 @@ def main():
 
     if position[1] < 0:  # Y
         position[1] = screenGeometry.height()-geometry.height()+position[1]
-    
+
     # Update x/y coordinates of window
     launcherWindow.setGeometry(position[0], position[1], 0, 0)
-    
+
     sys.exit(app.exec_())
 
 # Start program here
