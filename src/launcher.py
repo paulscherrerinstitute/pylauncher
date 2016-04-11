@@ -1068,6 +1068,7 @@ class LauncherViewMenu(QtGui.QMenu):
         QtGui.QMenu.__init__(self, text, parent)
         self.historyMenu = QtGui.QMenu("History", self)
         self.initHistoryMenu()
+        self.maxHistoryLength = 10
 
     def buildViewMenu(self, menuModel):
         self.menuModel = menuModel
@@ -1095,14 +1096,17 @@ class LauncherViewMenu(QtGui.QMenu):
 
     def addToHistory(self, itemModel):
         action = LauncherFileChoiceAction(itemModel, self)
+        history_list = self.historyMenu.actions()
+        if len(history_list)-2 >= self.maxHistoryLength:
+            # Remove first action which is not separator or clear action
+            self.historyMenu.removeAction(history_list[-3])
         self.historyMenu.insertAction(self.historyMenu.actions()[0], action)
         self.historyMenu.menuAction().setVisible(True)
 
     def openSearch(self):
         searchMenu = LauncherSearchMenuView(self.menuModel,
                                             self.parent().parent().mainButton,
-                                            self.parent().parent().launcherMenu
-                                            )
+                                            self.parent().parent().launcherMenu)
         searchMenu.exposeMenu("")
 
 
