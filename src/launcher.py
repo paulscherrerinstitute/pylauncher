@@ -168,6 +168,7 @@ class LauncherWindow(QtGui.QMainWindow):
         Destroy previous model and create new one. Build menus and edit main
         window elements.
         """
+        self.viewMenu.addToHistory(self.menuModel.choice_element)
         del self.menuModel
 
         self.menuModel = self.buildMenuModel(rootMenuFile)
@@ -1059,21 +1060,39 @@ class LauncherViewMenu(QtGui.QMenu):
 
     """ View menu for menu bar """
 
-    def __int__(self, text, parent=None):
+    def __init__(self, text, parent=None):
         QtGui.QMenu.__init__(self, text, parent)
+        self.historyMenu = QtGui.QMenu("History", self)
+        self.initHistoryMenu()
 
     def buildViewMenu(self, menuModel):
         self.menuModel = menuModel
         self.clear()
         for view in menuModel.file_choices:
-            buttonAction = LauncherFileChoiceAction(view, self)
-            self.addAction(buttonAction)
+            action = LauncherFileChoiceAction(view, self)
+            self.addAction(action)
+
         self.addSeparator()
+        self.addMenu(self.historyMenu)
+        self.addSeparator()
+
         searchAction = QtGui.QAction("Search", self)
         searchAction.setShortcuts(QtGui.QKeySequence("Ctrl+F"))
         searchAction.setStatusTip("Search launcher items")
         searchAction.triggered.connect(self.openSearch)
         self.addAction(searchAction)
+
+    def initHistoryMenu(self):
+        self.historyMenu.clear()
+        self.historyMenu.addSeparator()
+        clearHistory = self.historyMenu.addAction("Clear history")
+        clearHistory.triggered.connect(self.initHistoryMenu)
+        self.historyMenu.menuAction().setVisible(False)
+
+    def addToHistory(self, itemModel):
+        action = LauncherFileChoiceAction(itemModel, self)
+        self.historyMenu.insertAction(self.historyMenu.actions()[0], action)
+        self.historyMenu.menuAction().setVisible(True)
 
     def openSearch(self):
         searchMenu = LauncherSearchMenuView(self.menuModel,

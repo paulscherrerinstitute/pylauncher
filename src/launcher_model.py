@@ -75,6 +75,10 @@ class launcher_menu_model(object):
         self.main_title = launcher_main_title_item(
             main_title_item,
             os.path.splitext(os.path.basename(menu_file.geturl()))[0])
+
+        # Create file choice element that represents this menu
+        self.choice_element = launcher_file_choice_item(
+                self, {"text": self.main_title.text, "file": os.path.basename(menu_file.geturl())})
         # Get list of possible views (e.g. expert, user)
 
         list_of_views = menu.get("file-choice", list())
@@ -91,7 +95,7 @@ class launcher_menu_model(object):
                 choice_file = open_launcher_file(file_path)
                 choice_file.close()
                 self.file_choices.append(launcher_file_choice_item(
-                    self, file_name, view))
+                    self, view))
             except IOError:
                 warn_msg = "Parser: " + menu_file.geturl() + ": File \"" +\
                     file_name + "\" not found. Skipped"
@@ -261,9 +265,9 @@ class launcher_file_choice_item(launcher_menu_model_item):
     (root_menu_file).
     """
 
-    def __init__(self, parent, root_menu_file, item):
+    def __init__(self, parent, item):
         launcher_menu_model_item.__init__(self, parent, item)
-        self.root_menu_file = root_menu_file
+        self.root_menu_file = item.get("file").strip()
 
 
 class launcher_title_item(launcher_menu_model_item):
