@@ -976,10 +976,12 @@ class LauncherCmdButton(LauncherNamedButton):
         LauncherNamedButton.__init__(self, itemModel, sectionTitle, parent)
         self.cmd = itemModel.cmd
         self.clicked.connect(self.executeCmd)
-        if not itemModel.tip:
-            toolTip = "Command: " + self.cmd
-        else:
-            toolTip = itemModel.tip
+
+        toolTip = ""
+        if itemModel.tip:
+            toolTip = itemModel.tip + " "
+        toolTip = toolTip + "[Command: " + self.cmd + "]"
+
         self.setToolTip(toolTip)
 
     def executeCmd(self):
@@ -1010,10 +1012,12 @@ class LauncherMenuButton(LauncherNamedButton):
         LauncherNamedButton.__init__(self, itemModel, sectionTitle, parent)
         menu = LauncherSubMenu(itemModel.sub_menu, self, self.parent())
         self.setMenu(menu)
-        if not itemModel.tip:
-            toolTip = "Menu: " + menu.menuModel.main_title.text
-        else:
-            toolTip = itemModel.tip
+
+        toolTip = ""
+        if itemModel.tip:
+            toolTip = itemModel.tip + " "
+        toolTip = toolTip + "[Menu: " + menu.menuModel.main_title.text + "]"
+
         self.setToolTip(toolTip)
 
     def keyPressEvent(self, event):
