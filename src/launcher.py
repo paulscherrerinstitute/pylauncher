@@ -156,6 +156,12 @@ class LauncherWindow(QtGui.QMainWindow):
         self.viewMenu.buildViewMenu(self.menuModel)
         menuBar.addMenu(self.viewMenu)
 
+        # Set mouse tracking
+        self.setMouseTracking(True)
+        mainWidget.setMouseTracking(True)
+        self.mainButton.setMouseTracking(True)
+        self.searchInput.setMouseTracking(True)
+
     def setNewView(self, rootMenuFile):
         """Rebuild launcher from new config file.
 
@@ -180,6 +186,12 @@ class LauncherWindow(QtGui.QMainWindow):
         if changeEvent.type() == QtCore.QEvent.ActivationChange and \
                 self.isActiveWindow():
             self.searchInput.setFocus()
+
+    def mouseMoveEvent(self, event):
+        """ Activate window whenever mouse is over to get keyboard focus and show tooltips """
+        if not self.isActiveWindow():
+            self.activateWindow()
+            self.raise_()  # Raise above other windows
 
     def buildMenuModel(self, rootMenuPath):
         """Return model of a menu defined in rootMenuFile."""
@@ -477,6 +489,11 @@ class LauncherDetachedMenu(LauncherMenu):
         else:
             LauncherMenu.keyPressEvent(self, event)
 
+    def mouseMoveEvent(self, event):
+        # Activate window whenever mouse is over to get keyboard focus and show tooltips
+        if not self.isActiveWindow():
+            self.activateWindow()
+            self.raise_()  # Raise above other windows
 
 class LauncherSearchMenuView(LauncherMenu):
 
@@ -657,6 +674,9 @@ class LauncherFilterLineEdit(QtGui.QLineEdit):
                                             menu)
         searchMenu.exposeMenu(self.text())
 
+    def mouseMoveEvent(self, event):
+        self.parent().mouseMoveEvent(event)
+
 
 class LauncherFilterWidget(QtGui.QWidget):
 
@@ -672,6 +692,7 @@ class LauncherFilterWidget(QtGui.QWidget):
         self.searchInput = LauncherFilterLineEdit(menu, self)
         self.searchInput.searchPolicy = True
         self.searchButton = QtGui.QToolButton(self)
+        self.searchButton.setMouseTracking(True)
 
         self.searchButton.setFixedSize(27, 27)
         currDir = os.path.dirname(os.path.realpath(__file__))
@@ -699,6 +720,9 @@ class LauncherFilterWidget(QtGui.QWidget):
 
     def setText(self, text):
         self.searchInput.setText(text)
+
+    def mouseMoveEvent(self, event):
+        self.parent().mouseMoveEvent(event)
 
 
 class LauncherSearchWidget(QtGui.QWidget):
@@ -866,6 +890,7 @@ class LauncherButton(QtGui.QPushButton):
     def mouseMoveEvent(self, event):
         self.setFocus()
         self.parent().setActiveAction(self.myAction)
+        self.parent().mouseMoveEvent(event)
 
 
 class LauncherDetachButton(LauncherButton):
@@ -913,6 +938,7 @@ class LauncherMainButton(LauncherButton):
         self.setStyleSheet(style.style)
 
     def mouseMoveEvent(self, event):
+        self.parent().mouseMoveEvent(event)
         self.setFocus()
 
     def keyPressEvent(self, event):
