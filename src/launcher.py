@@ -162,17 +162,21 @@ class LauncherWindow(QtGui.QMainWindow):
         self.mainButton.setMouseTracking(True)
         self.searchInput.setMouseTracking(True)
 
-    def setNewView(self, rootMenuFile):
+    def setNewView(self, rootMenuFile, text=None):
         """Rebuild launcher from new config file.
 
         Destroy previous model and create new one. Build menus and edit main
         window elements.
         """
+        self.menuModel.choice_element.text = self.windowTitle()
         self.viewMenu.addToHistory(self.menuModel.choice_element)
         del self.menuModel
 
         self.menuModel = self.buildMenuModel(rootMenuFile)
-        self.setWindowTitle(self.menuModel.main_title.text)
+        if text:
+            self.setWindowTitle(text)
+        else:
+            self.setWindowTitle(self.menuModel.main_title.text)
         self.mainButton.restyle(self.menuModel.main_title)
         self.launcherMenu.deleteLater()
         self.launcherMenu = LauncherSubMenu(self.menuModel, self.mainButton,
@@ -1121,7 +1125,7 @@ class LauncherFileChoiceAction(QtGui.QAction):
         candidate = self
         while candidate.__class__.__name__ is not "LauncherWindow":
             candidate = candidate.parent()
-        candidate.setNewView(self.itemModel.root_menu_file)
+        candidate.setNewView(self.itemModel.root_menu_file, self.itemModel.text)
 
 
 class LauncherStyle(object):
