@@ -926,7 +926,7 @@ class LauncherMainButton(LauncherButton):
         self.setMenu(menu)
 
     def restyle(self, itemModel):
-        self.setText(itemModel.text)
+        self.setText(itemModel.text.replace('&', '&&'))  # For QButton &X means that X is shortcut, && gives &
         style = LauncherStyle(self, itemModel.theme, itemModel.style)
         # Add menu arrow indicator. Added here to use right path and avoid
         # compiling python code
@@ -968,8 +968,7 @@ class LauncherNamedButton(LauncherButton):
 
     def __init__(self, itemModel, sectionTitle=None, parent=None):
         LauncherButton.__init__(self, sectionTitle, parent)
-        self.itemModel = itemModel
-        self.setText(itemModel.text)
+        self.setText(itemModel.text.replace('&', '&&'))  # For QButton &X means that X is shortcut, && gives &
         style = LauncherStyle(self, itemModel.theme, itemModel.style)
         # Add menu arrow indicator. Added here to use right path and avoid
         # compiling python code
@@ -1119,7 +1118,8 @@ class LauncherFileChoiceAction(QtGui.QAction):
     """
 
     def __init__(self, itemModel, parent=None):
-        QtGui.QAction.__init__(self, itemModel.text, parent)
+        # For QAction &X means that X is shortcut, && gives &
+        QtGui.QAction.__init__(self, itemModel.text.replace('&', '&&'), parent)
         self.itemModel = itemModel
         self.triggered.connect(self.changeView)
 
