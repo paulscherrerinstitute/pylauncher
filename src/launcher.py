@@ -989,6 +989,8 @@ class LauncherNamedButton(LauncherButton):
             self.contextMenu.addAction(helpAction)
             helpAction.triggered.connect(self.openHelp)
 
+        self.itemModel = itemModel
+
     def openHelp(self):
         """ Open help link in default browser. """
 
