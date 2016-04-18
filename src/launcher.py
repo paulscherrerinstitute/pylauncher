@@ -1068,9 +1068,26 @@ class LauncherViewMenu(QtGui.QMenu):
         self.initHistoryMenu()
         self.maxHistoryLength = 10
 
+        # When creating menu first time (for the main root menu), a special
+        # menu entry should be created, which will allow user to alwayas return
+        # to that very first/main menu. It should always be the top choice in the
+        # View menu, except when main menu is already loaded.
+        self.rootMenuElement = None
+
+
     def buildViewMenu(self, menuModel):
         self.menuModel = menuModel
+        if not self.rootMenuElement:
+            # This executes only first time
+            self.rootMenuElement = self.menuModel.choice_element
         self.clear()
+
+        # Option to go to the root menu if not already at it.
+        if not self.menuModel.choice_element.root_menu_file == self.rootMenuElement.root_menu_file:
+            action = LauncherFileChoiceAction(self.rootMenuElement, self)
+            self.addAction(action)
+            self.addSeparator()
+
         for view in menuModel.file_choices:
             action = LauncherFileChoiceAction(view, self)
             self.addAction(action)
