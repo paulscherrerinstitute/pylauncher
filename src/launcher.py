@@ -467,8 +467,7 @@ class LauncherDetachedMenu(LauncherMenu):
         LauncherMenu.__init__(self, menuModel, None, parent)
         self.searchInput = LauncherFilterWidget(self, self)
         self.insertToMenu(self.searchInput, 0)
-
-        self.setWindowFlags(Qt.Window | Qt.Tool)
+        self.setWindowFlags(Qt.Window)
         self.setAttribute(Qt.WA_DeleteOnClose, True)
         self.setAttribute(Qt.WA_X11NetWmWindowTypeMenu, True)
         self.setEnabled(True)
