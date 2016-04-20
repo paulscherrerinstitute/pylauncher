@@ -5,8 +5,8 @@
         "style": "color: #000000"
     },
     "file-choice": [
-        
-        {"text": "SUB-MENU2", "file": "/Users/ebner/Git/pylauncher/examples/menus2/menu_example.json"},
+
+        {"text": "SUB-MENU2", "file": "../menus2/menu_example.json"},
         {"text": "SUB-MENU", "file": "menu_2.json"}
     ],
     "menu": [
