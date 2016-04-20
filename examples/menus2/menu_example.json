@@ -1,0 +1,26 @@
+{
+    "menu-title": {
+        "text": ">>>> MENU 2 <<<<",
+        "theme": "green",
+        "style": "color: #000000"
+    },
+    "menu": [
+        {
+            "type": "title",
+            "text": "Title 1 - default style"
+        },
+        {
+            "type": "menu",
+            "text": "Menu 5",
+            "file": "menu_5.json",
+            "tip": "Menu tip.",
+            "help-link": "http://www.link.com/to/help"
+        },
+        {
+            "type": "cmd",
+            "text": "This is command-default style",
+            "command": "xeyes",
+            "tip": "Opens xeyes."
+        }
+    ]
+}
