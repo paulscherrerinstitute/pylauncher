@@ -200,11 +200,13 @@ class LauncherWindow(QtGui.QMainWindow):
 
     def buildMenuModel(self, rootMenuPath):
         """Return model of a menu defined in rootMenuFile."""
-
-        rootMeniFullPath = os.path.join(self.launcherCfg.get("launcher_base"),
+        rootMenuFullPath = join_launcher_path(self.launcherCfg.get("launcher_base"),
                                         rootMenuPath)
+
+        self.launcherCfg["launcher_base"] = os.path.dirname(rootMenuFullPath)
+
         try:
-            rootMenuFile = open_launcher_file(rootMeniFullPath)
+            rootMenuFile = open_launcher_file(rootMenuFullPath)
         except IOError:
             errMsg = "File \"" + rootMenuPath + "\" not found."
             logging.error(errMsg)
@@ -822,7 +824,7 @@ class LauncherMenuTitle(QtGui.QLabel):
 
     def setMyAction(self, action):
         self.myAction = action
-        self.myAction.setSeparator(True)  # TODO check if is ok on all systems
+        self.myAction.setSeparator(True)
 
 
 class LauncherButton(QtGui.QPushButton):

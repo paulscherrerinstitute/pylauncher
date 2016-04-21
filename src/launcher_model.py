@@ -23,6 +23,15 @@ import urllib.request, urllib.error, urllib.parse
 import logging
 import pyparsing
 
+def join_launcher_path(base, file):
+    try:
+        urllib.request.urlopen(file)
+        joined_path = file
+
+    except (urllib.error.URLError, ValueError):
+        joined_path = os.path.join(base, file)
+
+    return joined_path
 
 def open_launcher_file(file_path):
     launcher_file = None
@@ -78,7 +87,7 @@ class launcher_menu_model(object):
 
         # Create file choice element that represents this menu
         self.choice_element = launcher_file_choice_item(
-                self, {"text": self.main_title.text, "file": os.path.basename(menu_file.geturl())})
+                self, {"text": self.main_title.text, "file": menu_file.geturl()})
         # Get list of possible views (e.g. expert, user)
 
         list_of_views = menu.get("file-choice", list())
@@ -89,8 +98,8 @@ class launcher_menu_model(object):
             # LauncherWindow._buildMenuModel
 
             file_name = view.get("file").strip()
-            file_path = os.path.join(launcher_cfg.get("launcher_base"),
-                                     file_name)
+            file_path = join_launcher_path(launcher_cfg.get("launcher_base"),
+                                           file_name)
             try:
                 choice_file = open_launcher_file(file_path)
                 choice_file.close()
@@ -249,7 +258,7 @@ class launcher_sub_menu_item(launcher_menu_model_item):
         launcher_menu_model_item.__init__(self, parent, item)
         file_name = item.get("file").strip()
 
-        file_path = os.path.join(launcher_cfg.get("launcher_base"), file_name)
+        file_path = join_launcher_path(launcher_cfg.get("launcher_base"), file_name)
         sub_menu_file = open_launcher_file(file_path)
         self.sub_menu = launcher_menu_model(self, sub_menu_file,
                                             parent.level+1, launcher_cfg)
