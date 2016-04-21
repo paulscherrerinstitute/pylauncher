@@ -5,8 +5,9 @@
         "style": "color: #000000"
     },
     "file-choice": [
-        {"text": "This is view 1", "file": "menu_1.json"},
-        {"text": "This is view 2", "file": "menu_2.json"}
+
+        {"text": "SUB-MENU2", "file": "../menus2/menu_example.json"},
+        {"text": "SUB-MENU", "file": "menu_2.json"}
     ],
     "menu": [
         {
@@ -15,7 +16,7 @@
         },
         {
             "type": "menu",
-            "text": "This is  sub-menu -default style", 
+            "text": "This is  sub-menu -default style",
             "file": "menu_2.json",
             "tip": "Menu tip.",
             "help-link": "http://www.link.com/to/help"
