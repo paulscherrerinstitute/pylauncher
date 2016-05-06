@@ -341,3 +341,9 @@ _Note:_ To be able to build the Anaconda package you need to have the `patchelf`
 conda create -n build_environment python patchelf
 source activate build_environment
 ```
+
+
+
+# Authors 
+
+- Rok Vintar (rok.vintar@cosylab.com)
