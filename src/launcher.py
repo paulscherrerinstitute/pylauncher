@@ -203,13 +203,11 @@ class LauncherWindow(QtGui.QMainWindow):
         self.launcherCfg["launcher_base"] = os.path.dirname(rootMenuFullPath)
 
         try:
-            rootMenuFile = open_launcher_file(rootMenuFullPath)
+            rootMenu = launcher_menu_model(None, rootMenuFullPath, 0, self.launcherCfg)
         except IOError:
             errMsg = "File \"" + rootMenuPath + "\" not found."
             logging.error(errMsg)
             sys.exit()
-        rootMenu = launcher_menu_model(None, rootMenuFile, 0, self.launcherCfg)
-        rootMenuFile.close()
         return rootMenu
 
 

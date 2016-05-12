@@ -5,7 +5,7 @@
             "command": "{command}"
         },
         "caqtdm":{
-            "command": "caqtdm {param} {macros} {panel}",
+            "command": "caqtdm {param} \"{macros}\" {panel}",
             "arg_flags": {"macros": "-macro"}
         },
         "medm":{

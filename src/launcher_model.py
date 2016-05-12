@@ -61,11 +61,15 @@ class launcher_menu_model(object):
         list of menu_items: list of all launcher_menu_model_items
     """
 
-    def __init__(self, parent, menu_file, level, launcher_cfg):
+    def __init__(self, parent, menu_file_path, level, launcher_cfg):
         self.menu_items = list()
         self.parent = parent
         self.level = level
+
+        # open file
+        menu_file = open_launcher_file(menu_file_path)
         self.parse_menu_json(menu_file, launcher_cfg)
+        menu_file.close()
 
     def parse_menu_json(self, menu_file, launcher_cfg):
         """Parse JSON type menu config file."""
@@ -252,14 +256,17 @@ class launcher_sub_menu_item(launcher_menu_model_item):
     """
 
     def __init__(self, parent, launcher_cfg, item):
+        
         launcher_menu_model_item.__init__(self, parent, item)
         file_name = item.get("file").strip()
 
+        # TODO If file is specified with the whole path/url, avoid using launcher base,
+        # and load all its items from there
+
         file_path = join_launcher_path(launcher_cfg.get("launcher_base"), file_name)
-        sub_menu_file = open_launcher_file(file_path)
-        self.sub_menu = launcher_menu_model(self, sub_menu_file,
+
+        self.sub_menu = launcher_menu_model(self, file_path,
                                             parent.level+1, launcher_cfg)
-        sub_menu_file.close()
 
 
 class launcher_file_choice_item(launcher_menu_model_item):

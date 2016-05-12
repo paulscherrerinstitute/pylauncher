@@ -17,7 +17,7 @@
         {
             "type": "menu",
             "text": "This is  sub-menu -default style",
-            "file": "menu_2.json",
+            "file": "../menus2/menu_5.json",
             "tip": "Menu tip.",
             "help-link": "http://www.link.com/to/help"
         },
@@ -45,6 +45,8 @@
             "theme": "green",
             "style": "color: #333333"
         },
+        {"type": "caqtdm",  "text": "T&S racks",           "param":"-stylefile sfop.qss",  "macros": "GROUP=TS,ALIAS=ALIAS,TITLE=TS-racks",     "panel": "S_GUDE_DisplayGroup.ui"},
+        {"type": "caqtdm",  "text": "T&S racks",           "param":"-stylefile sfop.qss",  "macros": "GROUP=TS,ALIAS=ALIAS,TITLE=T&S-racks",     "panel": "S_GUDE_DisplayGroup.ui"},
         {
             "type": "medm",
             "text": "This is medm screen - changed style",
