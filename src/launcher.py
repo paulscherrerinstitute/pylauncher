@@ -112,6 +112,7 @@ class LauncherWindow(QtGui.QMainWindow):
         rootFilePath = path_tuple[1]
         # Get defined theme base. If it is not url or absolute dir, make it
         # relative to config file.
+
         theme_base = self.launcherCfg["theme_base"]
         try:
             urllib.request.urlopen(theme_base)
@@ -1169,7 +1170,8 @@ class LauncherStyle(object):
             theme_file = open_launcher_file(
                 os.path.join(mainWindow.launcherCfg.get("theme_base"),
                              theme + ".qss"))
-            self.styleString = self.styleString + theme_file.read()
+            self.styleString = self.styleString + theme_file.read().decode('utf-8')
+
             theme_file.close()
             self.style = useQLatin1String(self.styleString)
 
@@ -1210,7 +1212,7 @@ def main():
     cfgFile = open_launcher_file(cfgPath)
     cfgString = cfgFile.read(-1).decode('utf-8')
     defaultCfg = json.loads(cfgString)
-    defaultCfg["cfg_base"] = os.path.basename(cfgPath)
+    defaultCfg["cfg_base"] = os.path.dirname(cfgPath)
     cfgFile.close()
 
     default = True
@@ -1242,7 +1244,7 @@ def main():
     if args.style:
         try:
             userStyle = open_launcher_file(args.style)
-            launcherWindow.setStyleSheet(userStyle.read())
+            launcherWindow.setStyleSheet(userStyle.read().decode('utf-8'))
             userStyle.close()
         except:
             LogMsg = "Problems opening \"" + args.style + "\". " + \
