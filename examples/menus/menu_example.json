@@ -17,7 +17,7 @@
         {
             "type": "menu",
             "text": "This is  sub-menu -default style",
-            "file": "../menus2/menu_5.json",
+            "file": "file:///home/rvintar/workspace/CSL/launcher_req/git/pylauncher/examples/menus2/menu_5.json",
             "tip": "Menu tip.",
             "help-link": "http://www.link.com/to/help"
         },

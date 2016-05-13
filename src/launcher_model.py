@@ -21,12 +21,17 @@ import logging
 import pyparsing
 
 def join_launcher_path(base, file):
+    # In case file is absolute path ora full url, base will be ignored
     try:
         urllib.request.urlopen(file)
         joined_path = file
 
     except (urllib.error.URLError, ValueError):
-        joined_path = os.path.join(base, file)
+        try:
+            urllib.request.urlopen(base)
+            urllib.parse.urljoin(base, file)
+        except (urllib.error.URLError, ValueError):
+            joined_path = os.path.join(base, file)
 
     return joined_path
 
@@ -65,6 +70,7 @@ class launcher_menu_model(object):
         self.menu_items = list()
         self.parent = parent
         self.level = level
+        self.menu_path = menu_file_path
 
         # open file
         menu_file = open_launcher_file(menu_file_path)
@@ -99,7 +105,7 @@ class launcher_menu_model(object):
             # LauncherWindow._buildMenuModel
 
             file_name = view.get("file").strip()
-            file_path = join_launcher_path(launcher_cfg.get("launcher_base"),
+            file_path = join_launcher_path(os.path.dirname(self.menu_path),
                                            file_name)
             try:
                 choice_file = open_launcher_file(file_path)
@@ -256,14 +262,12 @@ class launcher_sub_menu_item(launcher_menu_model_item):
     """
 
     def __init__(self, parent, launcher_cfg, item):
-        
+
         launcher_menu_model_item.__init__(self, parent, item)
         file_name = item.get("file").strip()
 
-        # TODO If file is specified with the whole path/url, avoid using launcher base,
-        # and load all its items from there
-
-        file_path = join_launcher_path(launcher_cfg.get("launcher_base"), file_name)
+        # relative paths to the menu file where this item is defined
+        file_path = join_launcher_path(os.path.dirname(parent.menu_path), file_name)
 
         self.sub_menu = launcher_menu_model(self, file_path,
                                             parent.level+1, launcher_cfg)

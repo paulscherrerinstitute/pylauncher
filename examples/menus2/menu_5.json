@@ -2,7 +2,7 @@
     "menu-title":
         {"text": "F_L1","theme": "green", "style": "color: #FF3388"},
     "file-choice": [
-        {"text": "Load F_L2", "file": "menu_2.json"}
+        {"text": "Load F_L2", "file": "../menus/menu_2.json"}
     ],
     "menu": [
         {"type": "title", "text": "General"},
