@@ -75,7 +75,12 @@ class LauncherMenuModel(object):
                     parse_line += line
                     # Skip over comment lines
                     if line[0] != '#':
-                        self.parse_line(parse_line)
+                        try:
+                            self.parse_line(parse_line)
+                        except:
+                            print("ERR: Following line can not be parsed:")
+                            print(parse_line)
+                            sys.exit(-1)
                     parse_line = ''
 
     def parse_line(self, line):
