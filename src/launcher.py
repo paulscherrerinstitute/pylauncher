@@ -371,29 +371,31 @@ class LauncherMenu(QtGui.QMenu):
         """
         # TODO handle cases when to close to the edge of screen.
 
-        if self.button:
-            width = self.button.width()
-            height = self.button.height()
-        else:
-            width = self.parent().width()
-            height = self.parent().height()
-        position = self.pos()
-        position.setX(position.x()+width)
-        position.setY(position.y()-height)
-        self.move(position)
+        # Do nothing if the event comes from outside the application
+        if not showEvent.spontaneous():
+            if self.button:
+                width = self.button.width()
+                height = self.button.height()
+            else:
+                width = self.parent().width()
+                height = self.parent().height()
+            position = self.pos()
+            position.setX(position.x()+width)
+            position.setY(position.y()-height)
+            self.move(position)
 
-        # Set focus on first button (skip separators (also titles) and detach
-        # button) If empty menu focus on detach button
-        i = 1
-        try:
-            while self.actions()[i].isSeparator():
-                i += 1
+            # Set focus on first button (skip separators (also titles) and detach
+            # button) If empty menu focus on detach button
+            i = 1
+            try:
+                while self.actions()[i].isSeparator():
+                    i += 1
 
-        except LookupError:
-            i = 0
+            except LookupError:
+                i = 0
 
-        self.actions()[i].defaultWidget().setFocus()
-        self.setActiveAction(self.actions()[i])
+            self.actions()[i].defaultWidget().setFocus()
+            self.setActiveAction(self.actions()[i])
 
     def getMainMenu(self):
         """Return menu of mainButton from which all menus expand.
