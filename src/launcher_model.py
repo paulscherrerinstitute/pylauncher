@@ -181,6 +181,13 @@ class launcher_menu_model(object):
                 logging.error(err_msg)
                 sys.exit()
 
+    def __repr__(self):
+        s = "{} (nelm: {})\n".format(self.main_title, len(self.menu_items))
+        tabs = "\t" *self.level
+        strings = map(repr,self.menu_items)
+        strings = [tabs + str for str in strings]
+        s += "\n".join(strings)
+        return s
 
 class launcher_menu_model_item(object):
 
@@ -211,6 +218,8 @@ class launcher_menu_model_item(object):
             else:
                 self.trace = list()
 
+    def __repr__(self):
+        return "{}: {}".format(self.__class__.__name__, self.text)
 
 class launcher_main_title_item(launcher_menu_model_item):
 
@@ -271,6 +280,9 @@ class launcher_sub_menu_item(launcher_menu_model_item):
 
         self.sub_menu = launcher_menu_model(self, file_path,
                                             parent.level+1, launcher_cfg)
+
+    def __repr__(self):
+        return repr(launcher_menu_model_item.__repr__(self))+" : "+repr(self.sub_menu)
 
 
 class launcher_file_choice_item(launcher_menu_model_item):
