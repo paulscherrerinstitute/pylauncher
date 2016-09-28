@@ -269,7 +269,7 @@ class LauncherMenu(QtGui.QMenu):
         """
 
         self.action = LauncherMenuWidgetAction(widget, self)
-        if self.actions()[index]:
+        if (len(self.actions()) > index):
             self.insertAction(self.actions()[index], self.action)
         else:
             self.addAction(self.action)
@@ -1230,7 +1230,7 @@ def main():
 
     if default:
         cfg = defaultCfg
-        logMsg += "Launcher will be loaded with default configuration."
+        logMsg += "Launcher will be loaded with default mapping."
         logging.warning(logMsg)
 
     # Create Launcher Window and load default style and theme
@@ -1270,7 +1270,7 @@ def main():
         position[1] = screenGeometry.height()-geometry.height()+position[1]
 
     # Update x/y coordinates of window
-    launcherWindow.setGeometry(position[0], position[1], 0, 0)
+    launcherWindow.move(position[0], position[1])
 
     sys.exit(app.exec_())
 
