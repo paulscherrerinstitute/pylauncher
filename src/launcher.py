@@ -40,6 +40,7 @@ import signal
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 
+
 # ---------python 2/3 compatibility stuff---------
 def useQLatin1String(string):
     try:
@@ -408,7 +409,6 @@ class LauncherMenu(QtGui.QMenu):
         """
 
         return self.getLauncherWindow().mainButton.menu()
-
 
 class LauncherSubMenu(LauncherMenu):
 
@@ -876,6 +876,7 @@ class LauncherButton(QtGui.QPushButton):
 
         elif event.key() == Qt.Key_Left:
             self.parent().hide()
+            self.parent().button.activate()
 
         elif event.key() == Qt.Key_Right:
             pass
@@ -890,9 +891,14 @@ class LauncherButton(QtGui.QPushButton):
             QtGui.QPushButton.keyPressEvent(self, event)
 
     def mouseMoveEvent(self, event):
-        self.setFocus()
-        self.parent().setActiveAction(self.myAction)
+        self.activate()
         self.parent().mouseMoveEvent(event)
+
+    def activate(self):
+        self.setFocus()
+        if isinstance(self.parent(), QtGui.QMenu):
+            # only menus have actions
+            self.parent().setActiveAction(self.myAction)
 
 
 class LauncherDetachButton(LauncherButton):
@@ -1217,6 +1223,7 @@ def main():
                           help="set initial position on the screen")
     args = argsPars.parse_args()
 
+
     app = QtGui.QApplication(sys.argv)
 
     # Load configuration. Use default configuration defined inside package if
@@ -1246,6 +1253,7 @@ def main():
         cfg = defaultCfg
         logMsg += "Launcher will be loaded with default mapping."
         logging.warning(logMsg)
+
 
     # Create Launcher Window and load default style and theme
     launcherWindow = LauncherWindow(args.configuration, cfg)
