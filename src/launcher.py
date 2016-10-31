@@ -40,6 +40,9 @@ import signal
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 
+# ------ Globals ------
+only_clicks = True
+
 
 # ---------python 2/3 compatibility stuff---------
 def useQLatin1String(string):
@@ -1076,6 +1079,10 @@ class LauncherMenuButton(LauncherNamedButton):
             self.click()
         else:
             LauncherNamedButton.keyPressEvent(self, event)
+
+    def mouseMoveEvent(self, event):
+        self.click()
+        self.super().mouseMoveEvent(event)
 
 
 class LauncherViewMenu(QtGui.QMenu):
