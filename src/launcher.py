@@ -1013,6 +1013,20 @@ class LauncherCmdButton(LauncherNamedButton):
 
         self.setToolTip(toolTip)
 
+        copyAction = QtGui.QAction("Copy command", self)
+        copyAction.triggered.connect(self.copyCmd)
+        # If actions (Help) already exist put above them
+        if self.contextMenu.actions():
+            self.contextMenu.insertAction(self.contextMenu.actions()[0], copyAction)
+        else:
+            self.contextMenu.addAction(copyAction)
+
+    def copyCmd(self):
+        cb = QtGui.QApplication.clipboard()
+        cb.clear(mode=cb.Clipboard)
+        cb.setText(self.cmd, mode=cb.Clipboard)
+
+
     def executeCmd(self):
         """ Run specified command as a separate process
 
