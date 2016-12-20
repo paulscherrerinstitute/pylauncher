@@ -1,3 +1,5 @@
+[![Build status](https://ci.appveyor.com/api/projects/status/cs8vtkbqk1qp5799?svg=true)](https://ci.appveyor.com/project/simongregorebner/pylauncher)
+
 # Overview
 
 The Launcher is a Python based, menu oriented application which allows users to launch applications and execute scripts. The Launcher is a customizable tool which builds its appearance (e.g. for different facilitates) depending on (menu) configuration files.
