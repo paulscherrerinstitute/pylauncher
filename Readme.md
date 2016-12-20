@@ -1,4 +1,4 @@
-[![Build status](https://ci.appveyor.com/api/projects/status/cs8vtkbqk1qp5799?svg=true)](https://ci.appveyor.com/project/simongregorebner/pylauncher)
+[![Build Status](https://travis-ci.org/paulscherrerinstitute/pylauncher.svg?branch=master)](https://travis-ci.org/paulscherrerinstitute/pylauncher) [![Build status](https://ci.appveyor.com/api/projects/status/cs8vtkbqk1qp5799?svg=true)](https://ci.appveyor.com/project/simongregorebner/pylauncher)
 
 # Overview
 
