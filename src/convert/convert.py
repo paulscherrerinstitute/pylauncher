@@ -7,6 +7,10 @@ import json
 import codecs
 import argparse
 import pyparsing
+try:
+    raw_input
+except NameError:
+    raw_input = input
 
 
 class LauncherMenuModel(object):
