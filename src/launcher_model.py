@@ -71,6 +71,7 @@ class launcher_menu_model(object):
         self.parent = parent
         self.level = level
         self.menu_path = menu_file_path
+        self.flags = {}
 
         # open file
         menu_file = open_launcher_file(menu_file_path)
@@ -86,6 +87,9 @@ class launcher_menu_model(object):
             err_msg = ("In file \"" + menu_file.geturl() + "\": " + e.args[0])
             logging.error(err_msg)
             sys.exit()
+
+        if 0 == self.level:
+            self.flags = menu.get("flags", dict())
 
         main_title_item = menu.get("menu-title", dict())
         self.main_title = launcher_main_title_item(
