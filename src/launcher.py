@@ -140,9 +140,10 @@ class LauncherWindow(QtGui.QMainWindow):
         self.launcherMenu.button = self.mainButton
         # Create Filter/search item. Add it and main button to the layout.
 
-        self.searchInput = LauncherFilterWidget(self.launcherMenu,
-                                                mainWidget)
-        self.mainLayout.addWidget(self.searchInput)
+        self.use_sbox = self.menuModel.flags.get('search-box-enabled', True)
+        if self.use_sbox:
+            self.searchInput = LauncherFilterWidget(self.launcherMenu, mainWidget)
+            self.mainLayout.addWidget(self.searchInput)
         self.mainLayout.addWidget(self.mainButton)
         # Create menu bar. In current visualization menu bar exposes all
         # LauncherFileChoiceItem items from the model. They are exposed in
@@ -158,7 +159,9 @@ class LauncherWindow(QtGui.QMainWindow):
         self.setMouseTracking(True)
         mainWidget.setMouseTracking(True)
         self.mainButton.setMouseTracking(True)
-        self.searchInput.setMouseTracking(True)
+
+        if self.use_sbox:
+            self.searchInput.setMouseTracking(True)
 
     def setNewView(self, rootMenuFile, text=None):
         """Rebuild launcher from new config file.
@@ -181,13 +184,16 @@ class LauncherWindow(QtGui.QMainWindow):
                                             self)
         self.mainButton.setMenu(self.launcherMenu)
         self.viewMenu.buildViewMenu(self.menuModel)
-        self.searchInput.setMenu(self.launcherMenu)
+
+        self.use_sbox = self.menuModel.flags.get('search-box-enabled', True)
+        if self.use_sbox:
+           self.searchInput.setMenu(self.launcherMenu)
 
     def changeEvent(self, changeEvent):
         """Catch when main window is selected and set focus to search."""
 
         if changeEvent.type() == QtCore.QEvent.ActivationChange and \
-                self.isActiveWindow():
+                self.isActiveWindow() and self.use_sbox:
             self.searchInput.setFocus()
 
     def mouseMoveEvent(self, event):
