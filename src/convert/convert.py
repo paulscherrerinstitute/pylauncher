@@ -82,8 +82,9 @@ class LauncherMenuModel(object):
                         try:
                             self.parse_line(parse_line)
                         except:
-                            print("ERR: Following line can not be parsed:")
-                            print(parse_line)
+                            print('Err: Following line can not be parsed:')
+                            print('File: "%s", line %d' % (self.path, self.line_number))
+                            print('    ', parse_line)
                             sys.exit(-1)
                     parse_line = ''
 
@@ -122,7 +123,7 @@ class LauncherMenuModel(object):
 
             if len(params) > 0:
                 print(('Inf: Skipping additional parameters in '
-                       'file "%s", line line %d') \
+                       'file "%s", line %d') \
                     % (self.file_path, self.line_number))
 
         # Add the file choice element to the configuration list
@@ -134,7 +135,7 @@ class LauncherMenuModel(object):
 
             if len(params) > 1:
                 print(('Inf: Skipping additional parameters in '
-                       'file "%s", line line %d') \
+                       'file "%s", line %d') \
                     % (self.file_path, self.line_number))
 
         # The command dictates that a separator is added
@@ -143,7 +144,7 @@ class LauncherMenuModel(object):
 
             if len(params) > 0:
                 print(('Inf: Skipping additional parameters in '
-                       'file "%s", line line %d') \
+                       'file "%s", line %d') \
                     % (self.file_path, self.line_number))
 
         # The commands translates into the title element
@@ -153,7 +154,7 @@ class LauncherMenuModel(object):
 
             if len(params) > 1:
                 print(('Inf: Skipping additional parameters in '
-                       'file "%s", line line %d') \
+                       'file "%s", line %d') \
                     % (self.file_path, self.line_number))
 
         # The command loads a new menu from another file
@@ -176,7 +177,7 @@ class LauncherMenuModel(object):
 
             if len(params) > 1:
                 print(('Inf: Skipping additional parameters in '
-                       'file "%s", line line %d') \
+                       'file "%s", line %d') \
                     % (self.file_path, self.line_number))
 
             # Track all additional files that need to be parsed
