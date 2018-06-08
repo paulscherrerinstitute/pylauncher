@@ -215,6 +215,8 @@ class LauncherMenuModel(object):
         the paramters match the criteria, None is returned.
         """
         for param in parameters:
+            if not param:
+                continue
             part = param.split()[0]
             if (part == 'obj:' or
                     part == 'fltr:' or
