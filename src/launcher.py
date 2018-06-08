@@ -10,22 +10,23 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
-from builtins import *
-from future import standard_library
-standard_library.install_aliases()
-from builtins import object
+
+import sys
+if sys.hexversion >= 0x03000000:
+    from urllib.request import urlopen
+    from urllib.error import URLError
+else:
+    from urllib2 import urlopen
+    from urllib2 import URLError
 # ------end of python 2/3 compatibility imports-----
 
 
-import sys
 import os
 import platform
 import argparse
 import json
 import copy
 import enum
-import urllib.request, urllib.error, urllib.parse
-import urllib.parse
 import logging
 import re
 import shlex
@@ -115,8 +116,8 @@ class LauncherWindow(QtGui.QMainWindow):
 
         theme_base = self.launcherCfg["theme_base"]
         try:
-            urllib.request.urlopen(theme_base)
-        except (urllib.error.URLError, ValueError):
+            urlopen(theme_base)
+        except (URLError, ValueError):
             # Not an url. Check if absolute path.
 
             if not os.path.isabs(theme_base):

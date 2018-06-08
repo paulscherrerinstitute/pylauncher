@@ -19,9 +19,10 @@ install:
   - "set PATH=%MINICONDA%;%MINICONDA%\\Scripts;%PATH%"
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q --all
-  - conda install conda-build numpy anaconda-client
+  - conda config --add channels defaults
+  - conda install conda-build anaconda-client
   # build
   - conda build -c %CONDA_CHANNEL% --skip-existing conda-recipe
 
 on_success:
-  - anaconda -t %CONDA_TOKEN% upload %MINICONDA%\\conda-bld\\win-%PYTHON_ARCH%\\*.tar.bz2
+  - if defined CONDA_TOKEN (anaconda -t %CONDA_TOKEN% upload %MINICONDA%\\conda-bld\\win-%PYTHON_ARCH%\\*.tar.bz2)

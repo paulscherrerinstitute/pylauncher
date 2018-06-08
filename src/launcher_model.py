@@ -1,36 +1,42 @@
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import division
-from __future__ import absolute_import
-from builtins import *
-from future import standard_library
-standard_library.install_aliases()
-from builtins import object
 #!/usr/bin/env python
-
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
+# ---------python 2/3 compatibility imports---------
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+
 import sys
+if sys.hexversion >= 0x03000000:
+    from urllib.request import urlopen
+    from urllib.parse import urljoin
+    from urllib.error import URLError
+else:
+    from urllib2 import urlopen
+    from urlparse import urljoin
+    from urllib2 import URLError
+# ------end of python 2/3 compatibility imports-----
+
 import os
 import json
-import urllib.request, urllib.error, urllib.parse
 import logging
 import pyparsing
 
 def join_launcher_path(base, file):
     # In case file is absolute path ora full url, base will be ignored
     try:
-        urllib.request.urlopen(file)
+        urlopen(file)
         joined_path = file
 
-    except (urllib.error.URLError, ValueError):
+    except (URLError, ValueError):
         try:
-            urllib.request.urlopen(base)
-            urllib.parse.urljoin(base, file)
-        except (urllib.error.URLError, ValueError):
+            urlopen(base)
+            urljoin(base, file)
+        except (URLError, ValueError):
             joined_path = os.path.join(base, file)
 
     return joined_path
@@ -38,13 +44,13 @@ def join_launcher_path(base, file):
 def open_launcher_file(file_path):
     launcher_file = None
     try:
-        launcher_file = urllib.request.urlopen(file_path)
-    except (urllib.error.URLError, ValueError):
+        launcher_file = urlopen(file_path)
+    except (URLError, ValueError):
         # Change path to url style and try to open it
         launcher_file_path = os.path.normpath(file_path)
         launcher_file_path = os.path.abspath(launcher_file_path)
         launcher_file_path = 'file:///' + launcher_file_path
-        launcher_file = urllib.request.urlopen(launcher_file_path)
+        launcher_file = urlopen(launcher_file_path)
 
     return launcher_file
 
