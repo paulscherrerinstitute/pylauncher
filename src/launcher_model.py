@@ -22,9 +22,9 @@ else:
 # ------end of python 2/3 compatibility imports-----
 
 import os
+import re
 import json
 import logging
-import pyparsing
 
 def join_launcher_path(base, file):
     # In case file is absolute path ora full url, base will be ignored
@@ -257,17 +257,15 @@ class launcher_cmd_item(launcher_menu_model_item):
         launcher_menu_model_item.__init__(self, parent, item)
         self.cmd = item_cfg.get("command")
         arg_flags = item_cfg.get("arg_flags", dict())
-        expr = pyparsing.nestedExpr('{', '}', ignoreExpr=None)
-        args = expr.parseString("{" + self.cmd + "}")
+        args = re.findall('{(\w+)}', self.cmd)
 
         params = dict()
-        for arg in args[0]:
-            
-            arg = arg[0]
+        for arg in args:
             if item.get(arg):
                 params[arg] = arg_flags.get(arg, "") + " " + item.get(arg)
             else:
                 params[arg] = ""
+
         self.cmd = self.cmd.format(**params)
 
 
