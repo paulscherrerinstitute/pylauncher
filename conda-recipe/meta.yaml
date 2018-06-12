@@ -7,11 +7,13 @@ source:
     path: ..
 requirements:
     build:
+        - python
         - setuptools
         - pyqt
         - pyparsing
         - future
     run:
+        - python
         - pyqt
         - pyparsing
         - future
