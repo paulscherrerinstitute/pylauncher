@@ -134,7 +134,7 @@ class launcher_menu_model(object):
             err_msg = "Parser: " + menu_file.geturl() +\
                 ": Launcher menu is empty."
             logging.error(err_msg)
-            sys.exit()
+            # sys.exit() # We should not return in this case
 
         for item in list_of_menu_items:
             menu_item = None
