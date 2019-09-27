@@ -11,29 +11,17 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
 
-import sys
-if sys.hexversion >= 0x03000000:
-    from urllib.request import urlopen
-    from urllib.error import URLError
-else:
-    from urllib2 import urlopen
-    from urllib2 import URLError
-# ------end of python 2/3 compatibility imports-----
-
-
-import os
 import platform
 import argparse
-import json
 import copy
 import enum
-import logging
-import re
 import shlex
 import subprocess
 
-from PyQt4 import QtGui, QtCore
-from PyQt4.QtCore import pyqtSlot, Qt
+from PyQt5 import QtCore
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QDesktopServices, QIcon, QCursor, QKeySequence
+from PyQt5.QtWidgets import QMainWindow, QMenu, QWidgetAction, QLineEdit, QWidget, QHBoxLayout, QToolButton, QVBoxLayout, QCheckBox, QAction, QLabel, QPushButton, QApplication
 
 from .launcher_model import *
 
@@ -87,7 +75,7 @@ class SearchOptions(enum.Enum):
     cmd = 2
 
 
-class LauncherWindow(QtGui.QMainWindow):
+class LauncherWindow(QMainWindow):
 
     """Launcher main window.
 
@@ -96,7 +84,7 @@ class LauncherWindow(QtGui.QMainWindow):
     """
 
     def __init__(self, rootFilePath, cfg, parent=None):
-        QtGui.QMainWindow.__init__(self, parent)
+        QMainWindow.__init__(self, parent)
         # Get configuration for current system. platform.system() returns:
         #     - "Darwin" when OS X
         #     - "Linux" when Linux
@@ -129,8 +117,8 @@ class LauncherWindow(QtGui.QMainWindow):
         # QMainWindow has predefined layout. Content should be in the central
         # widget. Create widget with a QVBoxLayout and set it as central.
 
-        mainWidget = QtGui.QWidget(self)
-        self.mainLayout = QtGui.QVBoxLayout(mainWidget)
+        mainWidget = QWidget(self)
+        self.mainLayout = QVBoxLayout(mainWidget)
         self.mainLayout.setContentsMargins(0, 0, 0, 0)
         self.setCentralWidget(mainWidget)
         # Main window consist of filter/serach entry and a main button which
@@ -219,7 +207,7 @@ class LauncherWindow(QtGui.QMainWindow):
         return rootMenu
 
 
-class LauncherMenu(QtGui.QMenu):
+class LauncherMenu(QMenu):
 
     """Super class of all menu visualizations.
 
@@ -229,7 +217,7 @@ class LauncherMenu(QtGui.QMenu):
     """
 
     def __init__(self, menuModel, button=None, parent=None):
-        QtGui.QMenu.__init__(self, parent)
+        QMenu.__init__(self, parent)
         self.setSeparatorsCollapsible(False)
         self.filterTerm = ""
         self.menuModel = menuModel
@@ -583,7 +571,7 @@ class LauncherSearchMenuView(LauncherMenu):
         pass
 
 
-class LauncherMenuWidgetAction(QtGui.QWidgetAction):
+class LauncherMenuWidgetAction(QWidgetAction):
 
     """Wrap widgets to be added to menu.
 
@@ -594,7 +582,7 @@ class LauncherMenuWidgetAction(QtGui.QWidgetAction):
     """
 
     def __init__(self, widget, parent=None):
-        QtGui.QWidgetAction.__init__(self, parent)
+        QWidgetAction.__init__(self, parent)
         self.widget = widget
         self.setDefaultWidget(self.widget)
         widget.setMyAction(self)  # Let widget know about action.
@@ -608,7 +596,7 @@ class LauncherMenuWidgetAction(QtGui.QWidgetAction):
             self.widget.sectionTitle.myAction.setVisibility(True)
 
 
-class LauncherFilterLineEdit(QtGui.QLineEdit):
+class LauncherFilterLineEdit(QLineEdit):
 
     """Input field with an option to clear it.
 
@@ -619,7 +607,7 @@ class LauncherFilterLineEdit(QtGui.QLineEdit):
     """
 
     def __init__(self, menu, parent=None):
-        QtGui.QLineEdit.__init__(self, parent)
+        QLineEdit.__init__(self, parent)
         self.menu = menu
         self.textChanged.connect(lambda: self.menu.filterMenu(self.text()))
         self.myAction = None
@@ -627,11 +615,11 @@ class LauncherFilterLineEdit(QtGui.QLineEdit):
         # Create button to clear text and add it to the right edge of the
         # input.
 
-        self.clearButton = QtGui.QToolButton(self)
+        self.clearButton = QToolButton(self)
         self.clearButton.setFixedSize(27, 27)
         self.setTextMargins(0, 0, 30, 0)
         currDir = os.path.dirname(os.path.realpath(__file__))
-        icon = QtGui.QIcon(os.path.join(currDir, "resources/images/delete-2x.png"))
+        icon = QIcon(os.path.join(currDir, "resources/images/delete-2x.png"))
         self.clearButton.setIcon(icon)
 
         self.clearButton.setStyleSheet("background-color: transparent; \
@@ -673,7 +661,7 @@ class LauncherFilterLineEdit(QtGui.QLineEdit):
         elif event.key() == Qt.Key_Up:
             self.focusNextPrevChild(False)
         else:
-            QtGui.QLineEdit.keyPressEvent(self, event)
+            QLineEdit.keyPressEvent(self, event)
 
     def openSearch(self):
         """ Do a search on full menu (root menu)."""
@@ -686,25 +674,26 @@ class LauncherFilterLineEdit(QtGui.QLineEdit):
         self.parent().mouseMoveEvent(event)
 
 
-class LauncherFilterWidget(QtGui.QWidget):
+class LauncherFilterWidget(QWidget):
 
     """ Filter menu widget which opens search when return is pressed"""
 
     def __init__(self, menu, parent=None):
-        QtGui.QWidget.__init__(self, parent)
-        mainLayout = QtGui.QHBoxLayout(self)
-        mainLayout.setMargin(0)
+        QWidget.__init__(self, parent)
+        mainLayout = QHBoxLayout(self)
+        # mainLayout.setMargin(0) # not any more in qt5
         mainLayout.setSpacing(0)
+
         self.setLayout(mainLayout)
 
         self.searchInput = LauncherFilterLineEdit(menu, self)
         self.searchInput.searchPolicy = True
-        self.searchButton = QtGui.QToolButton(self)
+        self.searchButton = QToolButton(self)
         self.searchButton.setMouseTracking(True)
 
         self.searchButton.setFixedSize(27, 27)
         currDir = os.path.dirname(os.path.realpath(__file__))
-        icon = QtGui.QIcon(os.path.join(currDir,
+        icon = QIcon(os.path.join(currDir,
                                         "resources/images/magnifying-glass-2x.png"))
         self.searchButton.setIcon(icon)
 
@@ -733,7 +722,7 @@ class LauncherFilterWidget(QtGui.QWidget):
         self.parent().mouseMoveEvent(event)
 
 
-class LauncherSearchWidget(QtGui.QWidget):
+class LauncherSearchWidget(QWidget):
 
     """ Search menu widget
 
@@ -742,9 +731,9 @@ class LauncherSearchWidget(QtGui.QWidget):
     """
 
     def __init__(self, menu, parent=None):
-        QtGui.QWidget.__init__(self, parent)
-        mainLayout = QtGui.QVBoxLayout(self)
-        mainLayout.setMargin(0)
+        QWidget.__init__(self, parent)
+        mainLayout = QVBoxLayout(self)
+        # mainLayout.setMargin(0)
         self.setLayout(mainLayout)
         # Prepare components and add them to layout:
         #    - search field
@@ -753,7 +742,7 @@ class LauncherSearchWidget(QtGui.QWidget):
         #    - menu
 
         self.searchInput = LauncherFilterLineEdit(menu, self)
-        caseSensitive = QtGui.QCheckBox("Case sensitive", self)
+        caseSensitive = QCheckBox("Case sensitive", self)
         caseSensitive.setChecked(False)
         caseSensitive.stateChanged.connect(lambda: menu.setFilterCondition(
             SearchOptions.sensitivity, caseSensitive.isChecked()))
@@ -761,15 +750,15 @@ class LauncherSearchWidget(QtGui.QWidget):
                                 caseSensitive.isChecked())
         mainLayout.addWidget(self.searchInput)
         mainLayout.addWidget(caseSensitive)
-        options = QtGui.QWidget(self)
-        optionsLayout = QtGui.QHBoxLayout(options)
-        searchText = QtGui.QCheckBox("Title search", options)
+        options = QWidget(self)
+        optionsLayout = QHBoxLayout(options)
+        searchText = QCheckBox("Title search", options)
         searchText.setChecked(True)
         searchText.stateChanged.connect(
             lambda: menu.setFilterCondition(SearchOptions.text,
                                             searchText.isChecked()))
         menu.setFilterCondition(SearchOptions.text, searchText.isChecked())
-        searchCmd = QtGui.QCheckBox("Command search", options)
+        searchCmd = QCheckBox("Command search", options)
         searchCmd.setChecked(False)
         searchCmd.stateChanged.connect(
             lambda: menu.setFilterCondition(SearchOptions.cmd,
@@ -795,24 +784,24 @@ class LauncherSearchWidget(QtGui.QWidget):
         self.myAction = action
 
 
-class LauncherSeparator(QtGui.QAction):
+class LauncherSeparator(QAction):
 
     """Just wrapped normal menu separator."""
 
     def __init__(self, itemModel, parent=None):
-        QtGui.QAction.__init__(self, parent)
+        QAction.__init__(self, parent)
         self.setSeparator(True)
 
     def setVisibility(self, visibility):
         self.setVisible(visibility)
 
 
-class LauncherMenuTitle(QtGui.QLabel):
+class LauncherMenuTitle(QLabel):
 
     """Passive element with no action and no key focus."""
 
     def __init__(self, itemModel, sectionTitle=None, parent=None):
-        QtGui.QLabel.__init__(self, itemModel.text, parent)
+        QLabel.__init__(self, itemModel.text, parent)
         self.myAction = None
         self.setFocusPolicy(Qt.NoFocus)
         # For title element sectionTitle is menu button that owns menu with
@@ -829,7 +818,7 @@ class LauncherMenuTitle(QtGui.QLabel):
         self.myAction.setSeparator(True)
 
 
-class LauncherButton(QtGui.QPushButton):
+class LauncherButton(QPushButton):
 
     """Super class for active menu items (buttons).
 
@@ -842,25 +831,25 @@ class LauncherButton(QtGui.QPushButton):
     """
 
     def __init__(self, sectionTitle=None, parent=None):
-        QtGui.QPushButton.__init__(self, parent)
+        QPushButton.__init__(self, parent)
         self.setMouseTracking(True)
         self.myAction = None
         self.sectionTitle = sectionTitle
 
-        self.contextMenu = QtGui.QMenu(self)
+        self.contextMenu = QMenu(self)
 
     def contextMenuEvent(self, event):
         """ Show context menu if context exists"""
 
         if self.contextMenu.actions():
-            self.contextMenu.exec_(QtGui.QCursor.pos())
+            self.contextMenu.exec_(QCursor.pos())
 
     def mousePressEvent(self, event):
         """ Catch right menu clicks, to override closing of menu """
         if event.button() == Qt.RightButton:
             pass  # contexMenuEvent is still emitted and handled
         else:
-            super(QtGui.QPushButton, self).mousePressEvent(event)
+            super(QPushButton, self).mousePressEvent(event)
 
     def setMyAction(self, action):
         self.myAction = action
@@ -894,7 +883,7 @@ class LauncherButton(QtGui.QPushButton):
             self.focusNextPrevChild(False)
 
         else:
-            QtGui.QPushButton.keyPressEvent(self, event)
+            QPushButton.keyPressEvent(self, event)
 
     def mouseMoveEvent(self, event):
         self.activate()
@@ -902,7 +891,7 @@ class LauncherButton(QtGui.QPushButton):
 
     def activate(self):
         self.setFocus()
-        if isinstance(self.parent(), QtGui.QMenu):
+        if isinstance(self.parent(), QMenu):
             # only menus have actions
             self.parent().setActiveAction(self.myAction)
 
@@ -994,7 +983,7 @@ class LauncherNamedButton(LauncherButton):
         self.setStyleSheet(style.style)
 
         if itemModel.help_link:
-            helpAction = QtGui.QAction("&Help", self)
+            helpAction = QAction("&Help", self)
             helpAction.setData(itemModel.help_link)
             self.contextMenu.addAction(helpAction)
             helpAction.triggered.connect(self.openHelp)
@@ -1006,7 +995,7 @@ class LauncherNamedButton(LauncherButton):
 
         url = QtCore.QUrl(
             self.sender().data(), QtCore.QUrl.TolerantMode)
-        QtGui.QDesktopServices.openUrl(url)
+        QDesktopServices.openUrl(url)
 
 
 class LauncherCmdButton(LauncherNamedButton):
@@ -1025,7 +1014,7 @@ class LauncherCmdButton(LauncherNamedButton):
 
         self.setToolTip(toolTip)
 
-        copyAction = QtGui.QAction("Copy command", self)
+        copyAction = QAction("Copy command", self)
         copyAction.triggered.connect(self.copyCmd)
         # If actions (Help) already exist put above them
         if self.contextMenu.actions():
@@ -1034,7 +1023,7 @@ class LauncherCmdButton(LauncherNamedButton):
             self.contextMenu.addAction(copyAction)
 
     def copyCmd(self):
-        cb = QtGui.QApplication.clipboard()
+        cb = QApplication.clipboard()
         cb.clear(mode=cb.Clipboard)
         cb.setText(self.cmd, mode=cb.Clipboard)
 
@@ -1084,13 +1073,13 @@ class LauncherMenuButton(LauncherNamedButton):
             LauncherNamedButton.keyPressEvent(self, event)
 
 
-class LauncherViewMenu(QtGui.QMenu):
+class LauncherViewMenu(QMenu):
 
     """ View menu for menu bar """
 
     def __init__(self, text, parent=None):
-        QtGui.QMenu.__init__(self, text, parent)
-        self.historyMenu = QtGui.QMenu("History", self)
+        QMenu.__init__(self, text, parent)
+        self.historyMenu = QMenu("History", self)
         self.initHistoryMenu()
         self.maxHistoryLength = 10
 
@@ -1122,8 +1111,8 @@ class LauncherViewMenu(QtGui.QMenu):
         self.addMenu(self.historyMenu)
         self.addSeparator()
 
-        searchAction = QtGui.QAction("Search", self)
-        searchAction.setShortcuts(QtGui.QKeySequence("Ctrl+F"))
+        searchAction = QAction("Search", self)
+        searchAction.setShortcuts(QKeySequence("Ctrl+F"))
         searchAction.setStatusTip("Search launcher items")
         searchAction.triggered.connect(self.openSearch)
         self.addAction(searchAction)
@@ -1151,7 +1140,7 @@ class LauncherViewMenu(QtGui.QMenu):
         searchMenu.exposeMenu("")
 
 
-class LauncherFileChoiceAction(QtGui.QAction):
+class LauncherFileChoiceAction(QAction):
 
     """Action to change the root menu of the launcher.
 
@@ -1161,7 +1150,7 @@ class LauncherFileChoiceAction(QtGui.QAction):
 
     def __init__(self, itemModel, parent=None):
         # For QAction &X means that X is shortcut, && gives &
-        QtGui.QAction.__init__(self, itemModel.text.replace('&', '&&'), parent)
+        QAction.__init__(self, itemModel.text.replace('&', '&&'), parent)
         self.itemModel = itemModel
         self.triggered.connect(self.changeView)
 
@@ -1230,7 +1219,7 @@ def main():
     args = argsPars.parse_args()
 
 
-    app = QtGui.QApplication(sys.argv)
+    app = QApplication(sys.argv)
 
     # Load configuration. Use default configuration defined inside package if
     # --config is not specified
