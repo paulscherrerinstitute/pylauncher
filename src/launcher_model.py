@@ -11,14 +11,9 @@ from __future__ import division
 from __future__ import absolute_import
 
 import sys
-# if sys.hexversion >= 0x03000000:
-from urllib.request import urlopen
-from urllib.parse import urljoin
-from urllib.error import URLError
-# else:
-#     from urllib2 import urlopen
-#     from urlparse import urljoin
-#     from urllib2 import URLError
+from urllib2 import urlopen
+from urlparse import urljoin
+from urllib2 import URLError
 # ------end of python 2/3 compatibility imports-----
 
 import os
