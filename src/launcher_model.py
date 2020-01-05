@@ -5,15 +5,10 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 # ---------python 2/3 compatibility imports---------
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import division
-from __future__ import absolute_import
-
 import sys
-from urllib2 import urlopen
-from urlparse import urljoin
-from urllib2 import URLError
+from urllib.request import urlopen
+from urllib.parse import urljoin
+from urllib.error import URLError
 # ------end of python 2/3 compatibility imports-----
 
 import os
@@ -189,7 +184,7 @@ class launcher_menu_model(object):
     def __repr__(self):
         s = "{} (nelm: {})\n".format(self.main_title, len(self.menu_items))
         tabs = "\t" *self.level
-        strings = map(repr,self.menu_items)
+        strings = list(map(repr,self.menu_items))
         strings = [tabs + str for str in strings]
         s += "\n".join(strings)
         return s

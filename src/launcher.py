@@ -6,10 +6,6 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 # ---------python 2/3 compatibility imports---------
-from __future__ import absolute_import
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import division
 
 import platform
 import argparse
@@ -28,42 +24,11 @@ from .launcher_model import *
 import signal
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-
-# ---------python 2/3 compatibility stuff---------
-def useQLatin1String(string):
-    try:
-        latinString = QtCore.QLatin1String(string)
-    except:
-        # Using python 3 QString is not implemented. Native python
-        # string should be used
-        return extendedStr(string)
-
-    return latinString
-
-
-def useQString(string):
-    try:
-        qString = QtCore.QString(string)
-    except:
-        # Using python 3 QString is not implemented. Native python
-        # string should be used
-        return extendedStr(string)
-
-    return qString
-
-
-class extendedStr(str):
-    # Extend native python string to have a contains method such as QString
-    # extendedString is used in py3, QString in py2
-    def contains(self, text, caseSensitive):
-        if caseSensitive and text in self:
-            return True
-        elif not caseSensitive and text.lower() in self.lower():
-            return True
-        else:
-            return False
-
-# -----end of python 2/3 compatibility stuff------
+def stringContains(string, substring, caseSensitive):
+    if caseSensitive:
+        return substring in string
+    else:
+        return substring.lower() in string.lower()
 
 
 class SearchOptions(enum.Enum):
@@ -272,7 +237,7 @@ class LauncherMenu(QMenu):
     def setFilterCondition(self, condition, value):
         """ Set one condition to given value."""
 
-        self.filterConditions[condition] = value
+        self.filterConditions[condition.value] = value
         self.filterMenu(self.filterTerm)
 
     def getLauncherWindow(self):
@@ -296,9 +261,9 @@ class LauncherMenu(QMenu):
         # Read filters
 
         sensitivityFilter = self.filterConditions[
-            SearchOptions.sensitivity]
-        textFilter = self.filterConditions[SearchOptions.text]
-        cmdFilter = self.filterConditions[SearchOptions.cmd]
+            SearchOptions.sensitivity.value]
+        textFilter = self.filterConditions[SearchOptions.text.value]
+        cmdFilter = self.filterConditions[SearchOptions.cmd.value]
         # Skip first item since it is either search entry or detach button.
 
         for action in self.actions()[1:len(self.actions())]:
@@ -309,13 +274,13 @@ class LauncherMenu(QMenu):
                 # search view).
 
                 if isinstance(widget, LauncherNamedButton):
-                    text = useQString(widget.itemModel.text)
+                    text = widget.itemModel.text
 
                 widgetType = widget.__class__.__name__
             else:
                 widget = None
                 widgetType = None
-                text = useQString("")
+                text = ""
 
             if action.__class__.__name__ == "LauncherSeparator":
                 action.setVisibility(not filterTerm and self.initFilterVisibility)
@@ -341,14 +306,13 @@ class LauncherMenu(QMenu):
                 hasVisible = hasVisible or subHasVisible
                 action.setVisibility(subHasVisible)
 
-            elif textFilter and text.contains(filterTerm,
+            elif textFilter and stringContains(text, filterTerm,
                                               sensitivityFilter):
                 action.setVisibility(True)
                 hasVisible = True
 
             elif widgetType == "LauncherCmdButton" and cmdFilter and\
-                useQString(widget.cmd).contains(filterTerm,
-                                                    sensitivityFilter):
+                stringContains(widget.cmd, filterTerm, sensitivityFilter):
 
                 action.setVisibility(True)
                 hasVisible = True
@@ -1149,7 +1113,7 @@ class LauncherStyle(object):
     def __init__(self, item, theme=None, style=None):
         self.item = item
         self.styleString = ""
-        self.style = useQLatin1String(self.styleString)
+        self.style = self.styleString
         if theme:
             self.appendThemeStyle(theme)
         if style and item:
@@ -1167,7 +1131,7 @@ class LauncherStyle(object):
             self.styleString = self.styleString + theme_file.read().decode('utf-8')
 
             theme_file.close()
-            self.style = useQLatin1String(self.styleString)
+            self.style = self.styleString
 
         except IOError:
             warnMsg = "Theme \"" + theme + \
@@ -1177,11 +1141,11 @@ class LauncherStyle(object):
     def appendStyle(self, style, item):
         self.styleString = self.styleString + item.__class__.__name__ +\
             "{" + style + "}"
-        self.style = useQLatin1String(self.styleString)
+        self.style = self.styleString
 
     def appendClassStyle(self, style):
         self.styleString = self.styleString + style
-        self.style = useQLatin1String(self.styleString)
+        self.style = self.styleString
 
 def main():
     """ Main logic """
