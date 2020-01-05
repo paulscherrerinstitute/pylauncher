@@ -612,25 +612,10 @@ class LauncherFilterLineEdit(QLineEdit):
         self.textChanged.connect(lambda: self.menu.filterMenu(self.text()))
         self.myAction = None
         self.setPlaceholderText("Enter filter term.")
+        self.setClearButtonEnabled(True)
         # Create button to clear text and add it to the right edge of the
         # input.
-
-        self.clearButton = QToolButton(self)
-        self.clearButton.setFixedSize(27, 27)
-        self.setTextMargins(0, 0, 30, 0)
-        currDir = os.path.dirname(os.path.realpath(__file__))
-        icon = QIcon(os.path.join(currDir, "resources/images/delete-2x.png"))
-        self.clearButton.setIcon(icon)
-
-        self.clearButton.setStyleSheet("background-color: transparent; \
-                                        border: none")
-        self.clearButton.setFocusPolicy(Qt.NoFocus)
-
         self.setMinimumWidth(200)
-        position = QtCore.QPoint(self.pos().x()+self.width(), 0)
-        self.clearButton.move(position)
-        self.clearButton.setCursor(Qt.ArrowCursor)
-        self.clearButton.clicked.connect(lambda: self.clear())
         # Set search policy (default False). If True it opens search when
         # Enter is pressed
 
@@ -638,12 +623,6 @@ class LauncherFilterLineEdit(QLineEdit):
 
     def setMyAction(self, action):
         self.myAction = action
-
-    def resizeEvent(self, event):
-        position = QtCore.QPoint(self.pos().x()+self.width() -
-                                 self.clearButton.width(), 
-                                 self.pos().y()+0.5*self.height()-self.clearButton.height())
-        self.clearButton.move(position)
 
     def keyPressEvent(self, event):
         """Catch key pressed event.
@@ -682,8 +661,6 @@ class LauncherFilterWidget(QWidget):
     def __init__(self, menu, parent=None):
         QWidget.__init__(self, parent)
         mainLayout = QHBoxLayout(self)
-        mainLayout.setContentsMargins(0,0,0,0)
-        mainLayout.setSpacing(0)
 
         self.setLayout(mainLayout)
 
@@ -753,6 +730,7 @@ class LauncherSearchWidget(QWidget):
         mainLayout.addWidget(caseSensitive)
         options = QWidget(self)
         optionsLayout = QHBoxLayout(options)
+        optionsLayout.setContentsMargins(0, 0, 0, 0)
         searchText = QCheckBox("Title search", options)
         searchText.setChecked(True)
         searchText.stateChanged.connect(
@@ -1157,7 +1135,7 @@ class LauncherFileChoiceAction(QAction):
 
     def changeView(self):
         """Find LauncherWindow and set new view."""
-     
+
         candidate = self
         while candidate.__class__.__name__ !=  "LauncherWindow":
            candidate = candidate.parent()
