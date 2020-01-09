@@ -121,7 +121,7 @@ class LauncherWindow(QMainWindow):
         self.mainLayout = QVBoxLayout(mainWidget)
         self.mainLayout.setContentsMargins(0, 0, 0, 0)
         self.setCentralWidget(mainWidget)
-        # Main window consist of filter/serach entry and a main button which
+        # Main window consist of filter/search entry and a main button which
         # pops up the root menu. Create a layout and add the items.
 
         self.launcherMenu = LauncherSubMenu(self.menuModel, None, mainWidget)
@@ -272,14 +272,14 @@ class LauncherMenu(QMenu):
     def setFilterCondition(self, condition, value):
         """ Set one condition to given value."""
 
-        self.filterConditions[condition.value] = value
+        self.filterConditions[condition] = value
         self.filterMenu(self.filterTerm)
 
     def getLauncherWindow(self):
         """ Search and return application main window object"""
 
         candidate = self
-        while type(candidate) is not LauncherWindow:
+        while type(candidate) != LauncherWindow:
             candidate = candidate.parent()
 
         return candidate
@@ -296,9 +296,9 @@ class LauncherMenu(QMenu):
         # Read filters
 
         sensitivityFilter = self.filterConditions[
-            SearchOptions.sensitivity.value]
-        textFilter = self.filterConditions[SearchOptions.text.value]
-        cmdFilter = self.filterConditions[SearchOptions.cmd.value]
+            SearchOptions.sensitivity]
+        textFilter = self.filterConditions[SearchOptions.text]
+        cmdFilter = self.filterConditions[SearchOptions.cmd]
         # Skip first item since it is either search entry or detach button.
 
         for action in self.actions()[1:len(self.actions())]:
@@ -555,7 +555,7 @@ class LauncherSearchMenuView(LauncherMenu):
         self.setEnabled(True)
         self.show()
         self.searchWidget.setFocus()
-        # self.move(self.pos().x(), self.pos().y()) TODO
+        #self.move(self.pos().x(), self.pos().y()) TODO
 
     def changeEvent(self, changeEvent):
         """Catch when menu window is selected and focus to search."""
@@ -612,25 +612,10 @@ class LauncherFilterLineEdit(QLineEdit):
         self.textChanged.connect(lambda: self.menu.filterMenu(self.text()))
         self.myAction = None
         self.setPlaceholderText("Enter filter term.")
+        self.setClearButtonEnabled(True)
         # Create button to clear text and add it to the right edge of the
         # input.
-
-        self.clearButton = QToolButton(self)
-        self.clearButton.setFixedSize(27, 27)
-        self.setTextMargins(0, 0, 30, 0)
-        currDir = os.path.dirname(os.path.realpath(__file__))
-        icon = QIcon(os.path.join(currDir, "resources/images/delete-2x.png"))
-        self.clearButton.setIcon(icon)
-
-        self.clearButton.setStyleSheet("background-color: transparent; \
-                                        border: none")
-        self.clearButton.setFocusPolicy(Qt.NoFocus)
-
         self.setMinimumWidth(200)
-        position = QtCore.QPoint(self.pos().x()+self.width(), 0)
-        self.clearButton.move(position)
-        self.clearButton.setCursor(Qt.ArrowCursor)
-        self.clearButton.clicked.connect(lambda: self.clear())
         # Set search policy (default False). If True it opens search when
         # Enter is pressed
 
@@ -638,11 +623,6 @@ class LauncherFilterLineEdit(QLineEdit):
 
     def setMyAction(self, action):
         self.myAction = action
-
-    def resizeEvent(self, event):
-        position = QtCore.QPoint(self.pos().x()+self.width() -
-                                 self.clearButton.width(), 0)
-        self.clearButton.move(position)
 
     def keyPressEvent(self, event):
         """Catch key pressed event.
@@ -681,8 +661,6 @@ class LauncherFilterWidget(QWidget):
     def __init__(self, menu, parent=None):
         QWidget.__init__(self, parent)
         mainLayout = QHBoxLayout(self)
-        # mainLayout.setMargin(0) # not any more in qt5
-        mainLayout.setSpacing(0)
 
         self.setLayout(mainLayout)
 
@@ -733,7 +711,7 @@ class LauncherSearchWidget(QWidget):
     def __init__(self, menu, parent=None):
         QWidget.__init__(self, parent)
         mainLayout = QVBoxLayout(self)
-        # mainLayout.setMargin(0)
+        mainLayout.setContentsMargins(0,0,0,0)
         self.setLayout(mainLayout)
         # Prepare components and add them to layout:
         #    - search field
@@ -752,6 +730,7 @@ class LauncherSearchWidget(QWidget):
         mainLayout.addWidget(caseSensitive)
         options = QWidget(self)
         optionsLayout = QHBoxLayout(options)
+        optionsLayout.setContentsMargins(0, 0, 0, 0)
         searchText = QCheckBox("Title search", options)
         searchText.setChecked(True)
         searchText.stateChanged.connect(
@@ -1158,8 +1137,8 @@ class LauncherFileChoiceAction(QAction):
         """Find LauncherWindow and set new view."""
 
         candidate = self
-        while candidate.__class__.__name__ is not "LauncherWindow":
-            candidate = candidate.parent()
+        while candidate.__class__.__name__ !=  "LauncherWindow":
+           candidate = candidate.parent()
         candidate.setNewView(self.itemModel.root_menu_file, self.itemModel.text)
 
 
