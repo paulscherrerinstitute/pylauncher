@@ -1,6 +1,6 @@
 package:
     name: pylauncher
-    version: 1.4.0
+    version: "{{ load_setup_py_data().version }}"
 source:
     # git_tag: v0.9.7
     # git_url: https://github.psi.ch/scm/cos/pylauncher.git
@@ -19,6 +19,8 @@ requirements:
         - future
 
 build:
+  noarch: python
+  number: 0
   entry_points:
     - pylauncher = pylauncher.launcher:main
     - pylauncher-convert = pylauncher.convert.convert:main
