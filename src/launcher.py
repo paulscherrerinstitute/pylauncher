@@ -5,19 +5,19 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-# ---------python 2/3 compatibility imports---------
-
 import platform
 import argparse
 import copy
 import enum
 import shlex
 import subprocess
+import hashlib
+import sys
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QDesktopServices, QIcon, QCursor, QKeySequence
-from PyQt5.QtWidgets import QMainWindow, QMenu, QWidgetAction, QLineEdit, QWidget, QHBoxLayout, QToolButton, QVBoxLayout, QCheckBox, QAction, QLabel, QPushButton, QApplication
+from PyQt5.QtWidgets import QMainWindow, QMenu, QWidgetAction, QLineEdit, QWidget, QHBoxLayout, QToolButton, QVBoxLayout, QCheckBox, QAction, QLabel, QPushButton, QApplication, QInputDialog, QMessageBox
 
 from .launcher_model import *
 
@@ -29,6 +29,35 @@ def stringContains(string, substring, caseSensitive):
         return substring in string
     else:
         return substring.lower() in string.lower()
+
+def convertPwdToHash(password):
+    m = hashlib.md5()
+    m.update(password.encode())
+    return m.hexdigest()
+
+def verifyPassword(object, password):
+    passwordInput = showPasswordDialog(object)
+    if passwordInput is not None:
+        convertedPwd = convertPwdToHash(passwordInput)
+        if convertedPwd == password:
+            return True
+        else:
+            showWrongPasswordDialog(object)
+    return False
+def showPasswordDialog(object):
+
+    password, ok = QInputDialog.getText(object.window(),
+                                        'Password',
+                                        'Enter password:')
+    if ok:
+        return password
+    return None
+
+def showWrongPasswordDialog(parent):
+    messageBox = QMessageBox(parent.window())
+    messageBox.setText("Wrong password")
+    messageBox.setStandardButtons(QMessageBox.Ok)
+    returnValue = messageBox.exec()
 
 
 class SearchOptions(enum.Enum):
@@ -78,6 +107,7 @@ class LauncherWindow(QMainWindow):
                                                               theme_base)
 
         self.menuModel = self.buildMenuModel(rootFilePath)
+
         self.setWindowTitle(self.menuModel.main_title.text)
         # QMainWindow has predefined layout. Content should be in the central
         # widget. Create widget with a QVBoxLayout and set it as central.
@@ -117,6 +147,10 @@ class LauncherWindow(QMainWindow):
         if self.use_sbox:
             self.searchInput.setMouseTracking(True)
 
+        if self.menuModel.password is not None:
+            if not verifyPassword(self, self.menuModel.password):
+                sys.exit(-1)
+
     def setNewView(self, rootMenuFile, text=None):
         """Rebuild launcher from new config file.
 
@@ -128,6 +162,7 @@ class LauncherWindow(QMainWindow):
         del self.menuModel
 
         self.menuModel = self.buildMenuModel(rootMenuFile)
+
         if text:
             self.setWindowTitle(text)
         else:
@@ -246,6 +281,7 @@ class LauncherMenu(QMenu):
         candidate = self
         while type(candidate) != LauncherWindow:
             candidate = candidate.parent()
+            print(candidate)
 
         return candidate
 
@@ -948,6 +984,7 @@ class LauncherCmdButton(LauncherNamedButton):
     def __init__(self, itemModel, sectionTitle=None, parent=None):
         LauncherNamedButton.__init__(self, itemModel, sectionTitle, parent)
         self.cmd = itemModel.cmd
+        self.pwd = itemModel.pwd
         self.clicked.connect(self.executeCmd)
 
         toolTip = ""
@@ -971,16 +1008,25 @@ class LauncherCmdButton(LauncherNamedButton):
         cb.setText(self.cmd, mode=cb.Clipboard)
 
 
-    def executeCmd(self):
+    def executeCmd(self, itemModel):
         """ Run specified command as a separate process
 
         Runs commands from the same environment ($PATH) as the launcher was
         started. Apart from "bash" it aboarts scripts without shebang on
         first line (strictly).
         """
+
         self.parent().hideAll()  # When done hide all popuped menus
         try:
-            subprocess.Popen(shlex.split(self.cmd))
+            if self.pwd is not None:
+                """passwordInput = showPasswordDialog(self)
+                if passwordInput is not None:
+                    convertedPwd = convertPwdToHash(passwordInput)
+                    if convertedPwd != self.pwd:
+                        showWrongPasswordDialog()
+                        return"""
+                if verifyPassword(self, self.pwd):
+                    subprocess.Popen(shlex.split(self.cmd))
         except OSError:
             warn_msg = "Command \"" + self.cmd + "\" cannot be executed. " + \
                 "Wrong path or bad/no interpreter."
