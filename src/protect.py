@@ -11,8 +11,7 @@ import logging
 import hashlib
 import argparse
 import collections
-
-from .launcher_model import *
+import sys
 
 def loadJson(filePath):
     try:
@@ -29,6 +28,30 @@ def loadJson(filePath):
         logging.error(error_msg)
 
     sys.exit(-1)
+
+def processFile(filePath, password, recursive):
+    data = loadJson(filePath)
+    dirname = os.path.dirname(filePath)
+    protected = addPassword(data, hashPassword(password))
+    saveFile(protected, filePath)
+    if recursive:
+        files = findAllFiles(data)
+        for file in files:
+            print(os.path.realpath(os.path.join(dirname, file)))
+            processFile(os.path.join(dirname, file), password, recursive)
+
+def findAllFiles(root):
+    fileList = []
+    for key in root:
+        if key == 'file':
+            fileList.append(root[key])
+        elif isinstance(root[key], list):
+            for element in root[key]:
+                if isinstance(element, dict):
+                    fileList += findAllFiles(element)
+        elif isinstance(root[key], dict):
+            fileList += findAllFiles(root[key])
+    return fileList
 
 def addPassword(root, password):
 
@@ -50,22 +73,28 @@ def main():
     """ Main logic """
 
     # Parse input arguments
-    argsPars = argparse.ArgumentParser()
-    argsPars.add_argument('configuration',
+    argsParse = argparse.ArgumentParser(description='Example: pylauncher-protect -r menus/menu.json -p *****')
+    argsParse.add_argument('configuration',
                           help="menu/configuration file")
-    args = argsPars.parse_args()
-
-    # Ask for password
-    password = input("Enter password: ")
-
-    # Load json from file into json object
-    cfg_model = loadJson(args.configuration)
+    argsParse.add_argument('--password', '-p',
+                          help="password to be added to json file, if not provided user is prompted to enter it")
+    argsParse.add_argument('--recursive', '-r',
+                          help="add recursively to all files referenced in json", action='store_true')
+    args = argsParse.parse_args()
 
     # Add password to json structure
-    jsonWithPwd = addPassword(cfg_model, hashPassword(password))
+    if args.password == None:
+        # Ask for password
+        password = input("Enter password: ")
+    else:
+        password = args.password
 
-    # Save json back to the original file
-    saveFile(jsonWithPwd, args.configuration)
+    # Get current dir and create path to json file
+    cwd = os.getcwd()
+    jsonFilePath = os.path.join(cwd, args.configuration)
+
+    # Add password to file and, if recursive, to all the files within
+    processFile(jsonFilePath, password, args.recursive)
 
 # Start program here
 if __name__ == '__main__':
