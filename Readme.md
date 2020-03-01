@@ -69,7 +69,7 @@ optional arguments:
                         password to be added to json file, if not provided
                         user is prompted to enter it
   --recursive, -r       add recursively to all files referenced in json
-
+```
 
 ## Configuration
 Launcher menus are defined via JSON configuration file(s). On top level, the configuration of the menu is divided in the following 4 sections:
