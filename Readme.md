@@ -56,7 +56,7 @@ Password can be added to all the configuration file referenced within configurat
 For all available options and detailed help run
 
 ```bash
-~$ pylauncher -h
+~$ pylauncher-protect -h
 usage: pylauncher-protect [-h] [--password PASSWORD] [--recursive] configuration
 Example: pylauncher-protect -r menus/menu.json -p *****
 
