@@ -51,7 +51,7 @@ Password can be added in the same call using the option
 If not, the user will be prompted to enter it.
 Password can be added to all the configuration file referenced within configuration file and any files referenced in the referenced file and so on using the option
 
-* `-r (--recursive) <style_qss_file>`
+* `-r (--recursive)`
 
 For all available options and detailed help run
 
