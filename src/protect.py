@@ -37,7 +37,6 @@ def processFile(filePath, password, recursive):
     if recursive:
         files = findAllFiles(data)
         for file in files:
-            print(os.path.realpath(os.path.join(dirname, file)))
             processFile(os.path.join(dirname, file), password, recursive)
 
 def findAllFiles(root):
