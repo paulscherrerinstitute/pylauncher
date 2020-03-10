@@ -40,8 +40,39 @@ optional arguments:
 
 _Note:_ `--position` - 0 0 is on the top left, -1 -1 is on the lower right.
 
+Password can be added to JSON configuration file(s) as follows:
+```bash
+pylauncher-protect <configuration>
+```
+Password can be added in the same call using the option
+
+* `-p (--password) <password>`
+
+If not, the user will be prompted to enter it.
+Password can be added to all the configuration file referenced within configuration file and any files referenced in the referenced file and so on using the option
+
+* `-r (--recursive)`
+
+For all available options and detailed help run
+
+```bash
+~$ pylauncher-protect -h
+usage: pylauncher-protect [-h] [--password PASSWORD] [--recursive] configuration
+Example: pylauncher-protect -r menus/menu.json -p *****
+
+positional arguments:
+  configuration         menu/configuration file
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --password PASSWORD, -p PASSWORD
+                        password to be added to json file, if not provided
+                        user is prompted to enter it
+  --recursive, -r       add recursively to all files referenced in json
+```
+
 ## Configuration
-Launcher menus are defined via JSON configuration file(s). On top level, the configuration of the menu is divided in the following 3 sections:
+Launcher menus are defined via JSON configuration file(s). On top level, the configuration of the menu is divided in the following 4 sections:
 
 * __menu-title__ - An optional section to set the menu title. If no title is specified a file name is used instead.
 
@@ -78,8 +109,13 @@ Launcher menus are defined via JSON configuration file(s). On top level, the con
     }
 ]
 ```
+* __password__ - Hash of a password guarding a section of menu and all submenus. Main section to define launcher items. The type of each item is defined with the `type` property. All supported types with available parameters are described in the next section.
 
-An detailed example can be found at [examples/menus/menu_example.json](examples/menus/menu_example.json).
+```json
+"password": "5f4dcc3b5aa765d61d8327deb882cf99"
+```
+
+A detailed example can be found at [examples/menus/menu_example.json](examples/menus/menu_example.json).
 
 ### Menu Items
 
@@ -91,7 +127,7 @@ For any menu item the two optional parameters __help_link__ and __tip__ can be s
 
 
 #### Styles
-The appearance of a menu item can be customized via styles and themes. Therefore each menu item has following 2 optional paramters:
+The appearance of a menu item can be customized via styles and themes. Therefore each menu item has following 2 optional parameters:
 
 * __style__ - Enables very flexible customization with [QSS](http://doc.qt.io/qt-4.8/stylesheet-syntax.html) syntax
 * __theme__ - Enables customization using one of the predefined themes. How to define a theme is described in section [Stylesheet](#stylesheet). However we strongly discourage the use of theme on a per menu item basis.
@@ -295,6 +331,7 @@ LauncherDetachButton{
 }
 ```
 
+
 # Installation
 ## Anaconda
 Anaconda comes with all required packages for __pylauncher__. To install the package use
@@ -343,3 +380,4 @@ _Note:_ To be able to build the Anaconda package you need to have the `patchelf`
 conda create -n build_environment python patchelf
 source activate build_environment
 ```
+

@@ -24,6 +24,7 @@ build:
   entry_points:
     - pylauncher = pylauncher.launcher:main
     - pylauncher-convert = pylauncher.convert.convert:main
+    - pylauncher-protect = pylauncher.protect:main
 
 about:
     home: https://github.psi.ch/projects/COS/repos/pylauncher/browse

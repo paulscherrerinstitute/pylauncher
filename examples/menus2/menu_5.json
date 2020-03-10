@@ -1,24 +1,95 @@
 {
-    "menu-title":
-        {"text": "F_L1","theme": "green", "style": "color: #FF3388"},
+    "password": "5f4dcc3b5aa765d61d8327deb882cf99",
+    "menu-title": {
+        "text": "F_L1",
+        "theme": "green",
+        "style": "color: #FF3388"
+    },
     "file-choice": [
-        {"text": "Load F_L2", "file": "../menus/menu_2.json"}
+        {
+            "text": "Load F_L2",
+            "file": "../menus/menu_2.json"
+        }
     ],
     "menu": [
-        {"type": "title", "text": "General"},
-        {"type": "cmd", "text": "Who is online", "command": "xeyes", "tip": "List of currently connected users.", "help-link": "http://www.google.com"},
-        {"type": "title", "text": "HighLevel Applications", "theme": "green"},
-        {"type": "cmd", "text": "ScreenMonitorTool", "command": "ls", "theme": "green", "style": "color: #FF3388"},
-        {"type": "cmd", "text": "QE Measurement", "command": "ls -l", "theme": "green"},
-        {"type": "separator"},
-        {"type": "title", "text": "Utilities", "theme": "green"},
-        {"type": "cmd", "text": "Remote network access control by control room", "command": "ls"},
-        {"type": "menu", "text": "Strip-tool", "file": "menu_10.json"},
-        {"type": "caqtdm", "text": "CA-screen", "macros": "SYS=TEST", "panel": "screen.ui" },
-        {"type": "medm", "text": "MEDM-screen", "macros": "SYS=TEST", "panel": "screen.adl" },
-        {"type": "cmd", "text": "Test", "command": "pep -mc S10BC02-MBND100:I-SET"},
-        {"type": "cmd", "text": "Test 2", "command": "pylauncher -h"},
-        {"type": "pep", "text": "Pep type test (.prc)", "panel": "S_TEST_REMOTECTRL_GUDE_SF-CTRL-TEST01.prc"},
-        {"type": "pep", "text": "Pep type test (.prc)", "param": "-mc S10BC02-MBND100:I-SET"}
+        {
+            "type": "title",
+            "text": "General"
+        },
+        {
+            "type": "cmd",
+            "text": "Who is online",
+            "command": "xeyes",
+            "tip": "List of currently connected users.",
+            "help-link": "http://www.google.com"
+        },
+        {
+            "type": "title",
+            "text": "HighLevel Applications",
+            "theme": "green"
+        },
+        {
+            "type": "cmd",
+            "text": "ScreenMonitorTool",
+            "command": "ls",
+            "theme": "green",
+            "style": "color: #FF3388"
+        },
+        {
+            "type": "cmd",
+            "text": "QE Measurement",
+            "command": "ls -l",
+            "theme": "green"
+        },
+        {
+            "type": "separator"
+        },
+        {
+            "type": "title",
+            "text": "Utilities",
+            "theme": "green"
+        },
+        {
+            "type": "cmd",
+            "text": "Remote network access control by control room",
+            "command": "ls"
+        },
+        {
+            "type": "menu",
+            "text": "Strip-tool",
+            "file": "menu_10.json"
+        },
+        {
+            "type": "caqtdm",
+            "text": "CA-screen",
+            "macros": "SYS=TEST",
+            "panel": "screen.ui"
+        },
+        {
+            "type": "medm",
+            "text": "MEDM-screen",
+            "macros": "SYS=TEST",
+            "panel": "screen.adl"
+        },
+        {
+            "type": "cmd",
+            "text": "Test",
+            "command": "pep -mc S10BC02-MBND100:I-SET"
+        },
+        {
+            "type": "cmd",
+            "text": "Test 2",
+            "command": "pylauncher -h"
+        },
+        {
+            "type": "pep",
+            "text": "Pep type test (.prc)",
+            "panel": "S_TEST_REMOTECTRL_GUDE_SF-CTRL-TEST01.prc"
+        },
+        {
+            "type": "pep",
+            "text": "Pep type test (.prc)",
+            "param": "-mc S10BC02-MBND100:I-SET"
+        }
     ]
 }

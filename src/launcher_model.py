@@ -4,17 +4,17 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-# ---------python 2/3 compatibility imports---------
 import sys
 from urllib.request import urlopen
 from urllib.parse import urljoin
 from urllib.error import URLError
-# ------end of python 2/3 compatibility imports-----
 
 import os
 import re
 import json
 import logging
+import hashlib
+import sys
 
 def join_launcher_path(base, file):
     # In case file is absolute path ora full url, base will be ignored
@@ -63,6 +63,7 @@ class launcher_menu_model(object):
     """
 
     def __init__(self, parent, menu_file_path, level, launcher_cfg):
+        self.password = None
         self.menu_items = list()
         self.parent = parent
         self.level = level
@@ -86,6 +87,8 @@ class launcher_menu_model(object):
 
         if 0 == self.level:
             self.flags = menu.get("flags", dict())
+
+        self.password = menu.get("password", None)
 
         main_title_item = menu.get("menu-title", dict())
         self.main_title = launcher_main_title_item(
@@ -182,7 +185,7 @@ class launcher_menu_model(object):
                 sys.exit()
 
     def __repr__(self):
-        s = "{} (nelm: {})\n".format(self.main_title, len(self.menu_items))
+        s = "{} (nelm: {}) {}\n".format(self.main_title, len(self.menu_items), self.password)
         tabs = "\t" *self.level
         strings = list(map(repr,self.menu_items))
         strings = [tabs + str for str in strings]
@@ -258,6 +261,7 @@ class launcher_cmd_item(launcher_menu_model_item):
 
         self.cmd = self.cmd.format(**params)
 
+        self.pwd = parent.password
 
 class launcher_sub_menu_item(launcher_menu_model_item):
 
