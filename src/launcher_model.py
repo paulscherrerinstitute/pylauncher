@@ -167,7 +167,7 @@ class launcher_menu_model(object):
                     ": Unknown type \"" + item_type + "\". Skipped"
                 logging.warning(warn_msg)
 
-            if menu_item != None:
+            if menu_item is not None:
                 self.menu_items.append(menu_item)
 
     def check_item_format_json(self, item, item_name, mandatory_param):

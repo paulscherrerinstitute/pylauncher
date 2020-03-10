@@ -82,7 +82,7 @@ def main():
     args = argsParse.parse_args()
 
     # Add password to json structure
-    if args.password == None:
+    if args.password is None:
         # Ask for password
         password = input("Enter password: ")
     else:
@@ -94,6 +94,7 @@ def main():
 
     # Add password to file and, if recursive, to all the files within
     processFile(jsonFilePath, password, args.recursive)
+
 
 # Start program here
 if __name__ == '__main__':

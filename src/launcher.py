@@ -24,16 +24,19 @@ from .launcher_model import *
 import signal
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
+
 def stringContains(string, substring, caseSensitive):
     if caseSensitive:
         return substring in string
     else:
         return substring.lower() in string.lower()
 
+
 def convertPwdToHash(password):
     m = hashlib.md5()
     m.update(password.encode())
     return m.hexdigest()
+
 
 def verifyPassword(object, password):
     passwordInput = showPasswordDialog(object)
@@ -44,6 +47,8 @@ def verifyPassword(object, password):
         else:
             showWrongPasswordDialog(object)
     return False
+
+
 def showPasswordDialog(object):
 
     password, ok = QInputDialog.getText(object.window(),
@@ -52,6 +57,7 @@ def showPasswordDialog(object):
     if ok:
         return password
     return None
+
 
 def showWrongPasswordDialog(parent):
     messageBox = QMessageBox(parent.window())
@@ -281,7 +287,6 @@ class LauncherMenu(QMenu):
         candidate = self
         while type(candidate) != LauncherWindow:
             candidate = candidate.parent()
-            print(candidate)
 
         return candidate
 

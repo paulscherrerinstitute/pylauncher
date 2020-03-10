@@ -10,11 +10,6 @@ import codecs
 import argparse
 import pyparsing
 import traceback
-try:
-    raw_input
-except NameError:
-    raw_input = input
-
 
 class LauncherBaseModel(object):
     """Base class to parse launcher config and level files.
@@ -382,7 +377,7 @@ class LauncherMenuModel(LauncherBaseModel):
 
                 user_input = ''
                 while True:
-                    user_input = raw_input('Overwrite? [y/N]:')
+                    user_input = input('Overwrite? [y/N]:')
                     if user_input == 'y' or user_input == 'Y':
                         break
                     elif (user_input == 'n' or
