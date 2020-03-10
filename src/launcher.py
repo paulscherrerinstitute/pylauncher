@@ -63,7 +63,7 @@ def showWrongPasswordDialog(parent):
     messageBox = QMessageBox(parent.window())
     messageBox.setText("Wrong password")
     messageBox.setStandardButtons(QMessageBox.Ok)
-    returnValue = messageBox.exec()
+    _ = messageBox.exec()
 
 
 class SearchOptions(enum.Enum):
@@ -517,7 +517,6 @@ class LauncherSearchMenuView(LauncherMenu):
         Override this method and build different visualization.
         """
         cMenuItems = list(self.menuModel.menu_items)
-        level = 0
         sectionTitle = None
         for item in cMenuItems:
             levelPrefix = ""
@@ -1198,6 +1197,7 @@ class LauncherStyle(object):
         self.styleString = self.styleString + style
         self.style = self.styleString
 
+
 def main():
     """ Main logic """
 
@@ -1258,9 +1258,7 @@ def main():
             launcherWindow.setStyleSheet(userStyle.read().decode('utf-8'))
             userStyle.close()
         except:
-            LogMsg = "Problems opening \"" + args.style + "\". " + \
-                "Launcher will be opened with default style."
-            logging.warning(logMsg)
+            logging.warning("Problems opening \"" + args.style + "\". Launcher will be opened with default style.")
 
     launcherWindow.setMinimumWidth(250)
     launcherWindow.show()
@@ -1269,7 +1267,7 @@ def main():
     # Set to desired position
     position = args.position
 
-    if not position: # Set defaults
+    if not position:  # Set defaults
         position = [0, 0]
 
     screenGeometry = app.desktop().geometry()
@@ -1284,6 +1282,7 @@ def main():
     launcherWindow.move(position[0], position[1])
 
     sys.exit(app.exec_())
+
 
 # Start program here
 if __name__ == '__main__':

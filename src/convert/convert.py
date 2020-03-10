@@ -375,7 +375,6 @@ class LauncherMenuModel(LauncherBaseModel):
             if not overwrite:
                 print('Wrn: Output file "%s" already exists!' % out_file)
 
-                user_input = ''
                 while True:
                     user_input = input('Overwrite? [y/N]:')
                     if user_input == 'y' or user_input == 'Y':
