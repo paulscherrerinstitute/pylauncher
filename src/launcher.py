@@ -1031,6 +1031,9 @@ class LauncherCmdButton(LauncherNamedButton):
                         return"""
                 if verifyPassword(self, self.pwd):
                     subprocess.Popen(shlex.split(self.cmd))
+            else:
+                subprocess.Popen(shlex.split(self.cmd))
+
         except OSError:
             warn_msg = "Command \"" + self.cmd + "\" cannot be executed. " + \
                 "Wrong path or bad/no interpreter."
