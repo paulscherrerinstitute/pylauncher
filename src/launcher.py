@@ -53,7 +53,8 @@ def showPasswordDialog(object):
 
     password, ok = QInputDialog.getText(object.window(),
                                         'Password',
-                                        'Enter password:')
+                                        'Enter password:',
+                                         QLineEdit.Password)
     if ok:
         return password
     return None
@@ -168,6 +169,10 @@ class LauncherWindow(QMainWindow):
         del self.menuModel
 
         self.menuModel = self.buildMenuModel(rootMenuFile)
+
+        if self.menuModel.password is not None:
+            if not verifyPassword(self, self.menuModel.password):
+                sys.exit(-1)
 
         if text:
             self.setWindowTitle(text)
