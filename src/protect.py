@@ -71,6 +71,8 @@ def saveFile(jsonWithPwd, filename):
 def main():
     """ Main logic """
 
+    import getpass
+
     # Parse input arguments
     argsParse = argparse.ArgumentParser(description='Example: pylauncher-protect -r menus/menu.json -p *****')
     argsParse.add_argument('configuration',
@@ -84,7 +86,7 @@ def main():
     # Add password to json structure
     if args.password is None:
         # Ask for password
-        password = input("Enter password: ")
+        password = getpass.getpass("Enter password: ")
     else:
         password = args.password
 
