@@ -1069,10 +1069,20 @@ class LauncherMenuButton(LauncherNamedButton):
         """Submenu can also be opened with right arrow key."""
 
         if event.key() == Qt.Key_Right:
+            if self.itemModel.sub_menu.password is not None:
+                if not verifyPassword(self, self.itemModel.sub_menu.password):
+                    sys.exit(-1)
             self.click()
         else:
             LauncherNamedButton.keyPressEvent(self, event)
 
+    def mousePressEvent(self, event):
+        """ Ask for password (if set) before opening the sub-menu"""
+
+        if self.itemModel.sub_menu.password is not None:
+            if not verifyPassword(self, self.itemModel.sub_menu.password):
+                sys.exit(-1)
+        LauncherButton.mousePressEvent(self, event)
 
 class LauncherViewMenu(QMenu):
 
