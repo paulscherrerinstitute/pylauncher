@@ -303,7 +303,7 @@ class LauncherMenuModel(LauncherBaseModel):
 
             element['type'] = 'cmd'
             element['text'] = text.replace('"', r'\"')
-            element['command'] = cmd_text
+            element['command'] = cmd_text.replace('"', r'\"')
             if 'opt' in extras:
                 element['style'] = extras.pop('opt')
         
