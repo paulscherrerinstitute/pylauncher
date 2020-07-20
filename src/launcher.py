@@ -172,7 +172,7 @@ class LauncherWindow(QMainWindow):
 
         if self.menuModel.password is not None:
             if not verifyPassword(self, self.menuModel.password):
-                sys.exit(-1)
+                return
 
         if text:
             self.setWindowTitle(text)
@@ -1071,7 +1071,7 @@ class LauncherMenuButton(LauncherNamedButton):
         if event.key() == Qt.Key_Right:
             if self.itemModel.sub_menu.password is not None:
                 if not verifyPassword(self, self.itemModel.sub_menu.password):
-                    sys.exit(-1)
+                    return
             self.click()
         else:
             LauncherNamedButton.keyPressEvent(self, event)
@@ -1081,7 +1081,7 @@ class LauncherMenuButton(LauncherNamedButton):
 
         if self.itemModel.sub_menu.password is not None:
             if not verifyPassword(self, self.itemModel.sub_menu.password):
-                sys.exit(-1)
+                return
         LauncherButton.mousePressEvent(self, event)
 
 class LauncherViewMenu(QMenu):
